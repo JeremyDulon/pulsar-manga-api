@@ -1,4 +1,10 @@
 {
+    "aws/aws-sdk-php": {
+        "version": "3.150.3"
+    },
+    "behat/transliterator": {
+        "version": "v1.3.0"
+    },
     "composer/package-versions-deprecated": {
         "version": "1.10.99"
     },
@@ -23,6 +29,9 @@
     "doctrine/common": {
         "version": "2.13.3"
     },
+    "doctrine/data-fixtures": {
+        "version": "1.4.3"
+    },
     "doctrine/dbal": {
         "version": "v2.9.3"
     },
@@ -39,6 +48,18 @@
             "config/packages/prod/doctrine.yaml",
             "src/Entity/.gitignore",
             "src/Repository/.gitignore"
+        ]
+    },
+    "doctrine/doctrine-fixtures-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "fc52d86631a6dfd9fdf3381d0b7e3df2069e51b3"
+        },
+        "files": [
+            "src/DataFixtures/AppFixtures.php"
         ]
     },
     "doctrine/doctrine-migrations-bundle": {
@@ -84,17 +105,125 @@
     "egulias/email-validator": {
         "version": "2.1.19"
     },
+    "exsyst/swagger": {
+        "version": "v0.4.1"
+    },
+    "friendsofsymfony/oauth-server-bundle": {
+        "version": "1.6.2"
+    },
+    "friendsofsymfony/oauth2-php": {
+        "version": "1.3.0"
+    },
+    "friendsofsymfony/rest-bundle": {
+        "version": "2.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "2.2",
+            "ref": "cad41ef93d6150067ae2bb3c7fd729492dff6f0a"
+        },
+        "files": [
+            "config/packages/fos_rest.yaml"
+        ]
+    },
+    "friendsofsymfony/user-bundle": {
+        "version": "v2.1.2"
+    },
+    "gedmo/doctrine-extensions": {
+        "version": "v2.4.41"
+    },
+    "guzzlehttp/guzzle": {
+        "version": "6.5.5"
+    },
+    "guzzlehttp/promises": {
+        "version": "v1.3.1"
+    },
+    "guzzlehttp/psr7": {
+        "version": "1.6.1"
+    },
+    "jms/metadata": {
+        "version": "1.7.0"
+    },
+    "jms/serializer": {
+        "version": "3.8.0"
+    },
+    "jms/serializer-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "384cec52df45f3bfd46a09930d6960a58872b268"
+        },
+        "files": [
+            "config/packages/dev/jms_serializer.yaml",
+            "config/packages/jms_serializer.yaml",
+            "config/packages/prod/jms_serializer.yaml"
+        ]
+    },
+    "knplabs/gaufrette": {
+        "version": "v0.9.0"
+    },
+    "knplabs/knp-gaufrette-bundle": {
+        "version": "v0.7.1"
+    },
     "monolog/monolog": {
         "version": "1.25.5"
     },
+    "mtdowling/jmespath.php": {
+        "version": "2.6.0"
+    },
+    "myclabs/php-enum": {
+        "version": "1.7.6"
+    },
+    "nelmio/api-doc-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "c8e0c38e1a280ab9e37587a8fa32b251d5bc1c94"
+        },
+        "files": [
+            "config/packages/nelmio_api_doc.yaml",
+            "config/routes/nelmio_api_doc.yaml"
+        ]
+    },
+    "nelmio/cors-bundle": {
+        "version": "1.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.5",
+            "ref": "6388de23860284db9acce0a7a5d9d13153bcb571"
+        },
+        "files": [
+            "config/packages/nelmio_cors.yaml"
+        ]
+    },
     "nikic/php-parser": {
-        "version": "v4.8.0"
+        "version": "v4.9.0"
     },
     "ocramius/proxy-manager": {
         "version": "2.1.1"
     },
+    "paquettg/php-html-parser": {
+        "version": "3.0.0"
+    },
+    "paquettg/string-encode": {
+        "version": "1.0.1"
+    },
     "php": {
-        "version": "7.1"
+        "version": "7.2"
+    },
+    "php-http/guzzle6-adapter": {
+        "version": "v2.0.1"
+    },
+    "php-http/httplug": {
+        "version": "2.2.0"
+    },
+    "php-http/promise": {
+        "version": "1.1.0"
     },
     "phpdocumentor/reflection-common": {
         "version": "2.1.0"
@@ -111,11 +240,20 @@
     "psr/container": {
         "version": "1.0.0"
     },
+    "psr/http-client": {
+        "version": "1.0.1"
+    },
+    "psr/http-message": {
+        "version": "1.0.1"
+    },
     "psr/link": {
         "version": "1.0.0"
     },
     "psr/log": {
         "version": "1.1.3"
+    },
+    "ralouphie/getallheaders": {
+        "version": "3.0.3"
     },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
@@ -324,6 +462,9 @@
             "tests/bootstrap.php"
         ]
     },
+    "symfony/polyfill-intl-grapheme": {
+        "version": "v1.18.1"
+    },
     "symfony/polyfill-intl-icu": {
         "version": "v1.18.1"
     },
@@ -405,6 +546,12 @@
         "version": "v1.1.9"
     },
     "symfony/stopwatch": {
+        "version": "v4.4.11"
+    },
+    "symfony/string": {
+        "version": "v5.1.3"
+    },
+    "symfony/templating": {
         "version": "v4.4.11"
     },
     "symfony/test-pack": {
@@ -491,13 +638,34 @@
     "twig/twig": {
         "version": "v2.13.1"
     },
+    "vich/uploader-bundle": {
+        "version": "1.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.5",
+            "ref": "c4f5755b37fb65b9c6a3cbdae91205c15a137ed4"
+        },
+        "files": [
+            "config/packages/vich_uploader.yaml"
+        ]
+    },
     "webmozart/assert": {
         "version": "1.9.1"
+    },
+    "willdurand/jsonp-callback-validator": {
+        "version": "v1.1.0"
+    },
+    "willdurand/negotiation": {
+        "version": "v2.3.1"
     },
     "zendframework/zend-code": {
         "version": "3.4.1"
     },
     "zendframework/zend-eventmanager": {
         "version": "3.2.1"
+    },
+    "zircote/swagger-php": {
+        "version": "2.0.16"
     }
 }

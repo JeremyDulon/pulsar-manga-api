@@ -1,0 +1,8 @@
+vich_uploader:
+    db_driver: orm
+
+    mappings:
+        chapter_page:
+            uri_prefix: /chapters/pages
+            upload_destination: '%kernel.project_dir%/public/chapters/pages'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer

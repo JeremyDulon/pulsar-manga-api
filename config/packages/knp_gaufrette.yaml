@@ -1,0 +1,13 @@
+knp_gaufrette:
+  adapters:
+    file_storage:
+      aws_s3:
+        service_id: 'storage.aws_s3.client'
+        bucket_name: '%env(resolve:AWS_S3_BUCKET)%'
+        options:
+          create: true
+          acl: 'public-read'
+  filesystems:
+    file_storage:
+      adapter:    file_storage
+      alias:      file_storage_filesystem

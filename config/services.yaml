@@ -4,6 +4,14 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    uploads_directory: '%kernel.project_dir%/public/uploads'
+    chapter_pages_directory: 'chapter_pages'
+    chapter_pages_path: '%uploads_directory%/%chapter_pages_directory%'
+    mangas_directory: 'mangas'
+    mangas_path: '%uploads_directory%/%mangas_directory%'
+    host_url: '%env(resolve:HOST_URL)%'
+    aws_s3_url: '%env(resolve:AWS_S3_URL)%'
+
 
 services:
     # default configuration for services in *this* file
@@ -29,3 +37,25 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    gedmo.listener.timestampable:
+        class: Gedmo\Timestampable\TimestampableListener
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+        calls:
+            - [ setAnnotationReader, [ "@annotation_reader" ] ]
+
+    App\EventListener\UrlFileListener:
+        tags:
+            - { name: doctrine.orm.entity_listener, event: 'postLoad', entity: 'App\Entity\File' }
+
+    storage.aws_s3.client:
+        class: Aws\S3\S3Client
+        #factory_class: Aws\S3\S3Client
+        arguments:
+            -   version: 'latest'
+                region: '%env(resolve:AWS_S3_REGION)%'
+                credentials:
+                    key: '%env(resolve:AWS_S3_ACCESS_KEY)%'
+                    secret: '%env(resolve:AWS_S3_SECRET)%'
+
+    Gaufrette\Filesystem: '@gaufrette.file_storage_filesystem'
