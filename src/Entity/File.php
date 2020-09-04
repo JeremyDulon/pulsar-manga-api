@@ -46,47 +46,32 @@ class File
      */
     private $externalUrl;
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     * @return File
-     */
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getPath()
+    public function getPath(): ?string
     {
         return $this->path;
     }
 
-    /**
-     * @param string $path
-     * @return File
-     */
-    public function setPath(string $path): self
+    public function setPath(?string $path): self
     {
         $this->path = $path;
+
         return $this;
     }
 
@@ -108,21 +93,15 @@ class File
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getExternalUrl()
+    public function getExternalUrl(): ?string
     {
         return $this->externalUrl;
     }
 
-    /**
-     * @param string $externalUrl
-     * @return File
-     */
-    public function setExternalUrl(string $externalUrl)
+    public function setExternalUrl(?string $externalUrl): self
     {
         $this->externalUrl = $externalUrl;
+
         return $this;
     }
 }

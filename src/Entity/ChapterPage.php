@@ -69,9 +69,11 @@ class ChapterPage
         return $this;
     }
 
-    public function setFile(?File $file = null)
+    public function setFile(File $file): self
     {
         $this->file = $file;
+
+        return $this;
     }
 
     public function getFile(): ?File

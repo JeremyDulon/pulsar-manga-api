@@ -3,9 +3,7 @@
 
 namespace App\Service;
 
-use App\Entity\File;
 use Gaufrette\Filesystem;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class UploaderService
 {

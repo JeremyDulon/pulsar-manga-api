@@ -25,10 +25,7 @@ class Client extends BaseClient
      */
     protected $type;
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

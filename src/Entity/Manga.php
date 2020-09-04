@@ -3,15 +3,13 @@
 namespace App\Entity;
 
 use App\Entity\Macro\Timestamps;
-use App\Repository\MangaRepository;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as JMS;
 
 /**
- * @ORM\Entity(repositoryClass=MangaRepository::class)
+ * @ORM\Entity
  */
 class Manga
 {
@@ -28,16 +26,25 @@ class Manga
     private $id;
 
     /**
+     * @ORM\Column(type="string")
+     */
+    private $title;
+
+    /**
      * @ORM\Column(type="string", length=255)
      * @JMS\Groups({ "mangaList" })
      */
-    private $title;
+    private $slug;
+
+    /**
+     * @ORM\Column(type="simple_array")
+     */
+    private $altTitles;
 
     /**
      * @var File
      *
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
      * @JMS\Groups({ "mangaList" })
      */
     private $image;
@@ -49,32 +56,14 @@ class Manga
     private $status;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @JMS\Groups({ "mangaList" })
+     * @ORM\OneToMany(targetEntity=MangaPlatform::class, mappedBy="manga", orphanRemoval=true)
+     * @JMS\Groups({ })
      */
-    private $slug;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @JMS\Groups({ "mangaList" })
-     */
-    private $lastUpdated;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * @JMS\Groups({ "mangaList" })
-     */
-    private $views;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Chapter::class, mappedBy="manga", orphanRemoval=true)
-     * @JMS\Groups({ "mangaList" })
-     */
-    private $chapters;
+    private $platforms;
 
     public function __construct()
     {
-        $this->chapters = new ArrayCollection();
+        $this->platforms = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -94,18 +83,6 @@ class Manga
         return $this;
     }
 
-    public function getStatus(): ?int
-    {
-        return $this->status;
-    }
-
-    public function setStatus(int $status): self
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
     public function getSlug(): ?string
     {
         return $this->slug;
@@ -118,76 +95,72 @@ class Manga
         return $this;
     }
 
-    public function getLastUpdated(): ?DateTimeInterface
+    public function getAltTitles(): ?array
     {
-        return $this->lastUpdated;
+        return $this->altTitles;
     }
 
-    public function setLastUpdated(?DateTimeInterface $lastUpdated): self
+    public function setAltTitles(array $altTitles): self
     {
-        $this->lastUpdated = $lastUpdated;
+        $this->altTitles = $altTitles;
 
         return $this;
     }
 
-    public function getViews(): ?string
+    public function getStatus(): ?int
     {
-        return $this->views;
+        return $this->status;
     }
 
-    public function setViews(?string $views): self
+    public function setStatus(int $status): self
     {
-        $this->views = $views;
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getImage(): ?File
+    {
+        return $this->image;
+    }
+
+    public function setImage(File $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
 
     /**
-     * @return Collection|Chapter[]
+     * @return Collection|MangaPlatform[]
      */
-    public function getChapters(): Collection
+    public function getPlatforms(): Collection
     {
-        return $this->chapters;
+        return $this->platforms;
     }
 
-    public function addChapter(Chapter $chapter): self
+    public function addPlatform(MangaPlatform $platform): self
     {
-        if (!$this->chapters->contains($chapter)) {
-            $this->chapters[] = $chapter;
-            $chapter->setManga($this);
+        if (!$this->platforms->contains($platform)) {
+            $this->platforms[] = $platform;
+            $platform->setManga($this);
         }
 
         return $this;
     }
 
-    public function removeChapter(Chapter $chapter): self
+    public function removePlatform(MangaPlatform $platform): self
     {
-        if ($this->chapters->contains($chapter)) {
-            $this->chapters->removeElement($chapter);
+        if ($this->platforms->contains($platform)) {
+            $this->platforms->removeElement($platform);
             // set the owning side to null (unless already changed)
-            if ($chapter->getManga() === $this) {
-                $chapter->setManga(null);
+            if ($platform->getManga() === $this) {
+                $platform->setManga(null);
             }
         }
 
         return $this;
     }
 
-    /**
-     * @return File
-     */
-    public function getImage(): File
-    {
-        return $this->image;
-    }
 
-    /**
-     * @param File $image
-     * @return Manga
-     */
-    public function setImage(File $image): Manga
-    {
-        $this->image = $image;
-        return $this;
-    }
 }

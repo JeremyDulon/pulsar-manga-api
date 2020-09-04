@@ -37,19 +37,19 @@ class Chapter
     private $number;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @JMS\Groups({ "mangaList", "chapter" })
-     */
-    private $platform;
-
-    /**
      * @ORM\Column(type="datetime")
      * @JMS\Groups({ "mangaList", "chapter" })
      */
     private $date;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="chapters")
+     * @ORM\Column(type="string", length=255)
+     * @JMS\Groups({ }) TODO: Groupes
+     */
+    private $sourceUrl;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=MangaPlatform::class, inversedBy="chapters")
      * @ORM\JoinColumn(nullable=false)
      */
     private $manga;
@@ -82,26 +82,14 @@ class Chapter
         return $this;
     }
 
-    public function getNumber(): ?string
+    public function getNumber(): ?float
     {
         return $this->number;
     }
 
-    public function setNumber(string $number): self
+    public function setNumber(float $number): self
     {
         $this->number = $number;
-
-        return $this;
-    }
-
-    public function getPlatform(): ?string
-    {
-        return $this->platform;
-    }
-
-    public function setPlatform(string $platform): self
-    {
-        $this->platform = $platform;
 
         return $this;
     }
@@ -118,12 +106,30 @@ class Chapter
         return $this;
     }
 
-    public function getManga(): ?Manga
+    /**
+     * @return string
+     */
+    public function getSourceUrl()
+    {
+        return $this->sourceUrl;
+    }
+
+    /**
+     * @param string $sourceUrl
+     * @return Chapter
+     */
+    public function setSourceUrl(string $sourceUrl)
+    {
+        $this->sourceUrl = $sourceUrl;
+        return $this;
+    }
+
+    public function getManga(): ?MangaPlatform
     {
         return $this->manga;
     }
 
-    public function setManga(?Manga $manga): self
+    public function setManga(?MangaPlatform $manga): self
     {
         $this->manga = $manga;
 

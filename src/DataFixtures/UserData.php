@@ -38,13 +38,13 @@ class UserData extends Fixture implements ContainerAwareInterface
         $user = $this->userManager->createUser();
 
         $user
-            ->setFirstName("Admin")
-            ->setLastName("admin")
+            ->setFirstName("Jeremy")
+            ->setLastName("Dulon")
             ->setEnabled(true)
             ->setRoles(array(User::ROLE_SUPER_ADMIN))
-            ->setUsername("admin")
-            ->setPlainPassword("admin")
-            ->setEmail("admin@gmail.com")
+            ->setUsername("jeremy")
+            ->setPlainPassword("jeremy")
+            ->setEmail("j.dulon.64@gmail.com")
         ;
         $manager->persist($user);
         $manager->flush();

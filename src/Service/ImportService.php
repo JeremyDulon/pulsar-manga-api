@@ -1,0 +1,229 @@
+<?php
+
+
+namespace App\Service;
+
+
+use App\Entity\Chapter;
+use App\Entity\ChapterPage;
+use App\Entity\Manga;
+use App\Entity\MangaPlatform;
+use App\Entity\Platform;
+use App\Utils\Functions;
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
+use PHPHtmlParser\Dom;
+use PHPHtmlParser\Exceptions\ChildNotFoundException;
+use PHPHtmlParser\Exceptions\CircularException;
+use PHPHtmlParser\Exceptions\ContentLengthException;
+use PHPHtmlParser\Exceptions\LogicalException;
+use PHPHtmlParser\Exceptions\NotLoadedException;
+use PHPHtmlParser\Exceptions\StrictException;
+use PhpParser\Node;
+use Psr\Http\Client\ClientExceptionInterface;
+use App\Utils\Platform as UtilPlatform;
+
+class ImportService
+{
+    /** @var Dom $mangaDom */
+    protected $mangaDom;
+
+    /** @var Dom $chapterDom */
+    protected $chapterDom;
+
+    /** @var EntityManagerInterface $em */
+    protected $em;
+
+    /** @var ImageHelper $imageHelper */
+    protected $imageHelper;
+
+    public const MANGA_DOM = 'mangaDom';
+    public const CHAPTER_DOM = 'chapterDom';
+
+    public function __construct(EntityManagerInterface $em, ImageHelper $imageHelper) {
+        $this->em = $em;
+        $this->imageHelper = $imageHelper;
+
+        $this->mangaDom = new Dom();
+        $this->chapterDom = new Dom();
+    }
+
+    /**
+     * @param string $url
+     * @param int $chaptersCount
+     * @return MangaPlatform|null
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ClientExceptionInterface
+     * @throws ContentLengthException
+     * @throws LogicalException
+     * @throws StrictException
+     */
+    public function importManga(string $url, int $chaptersCount = 0, bool $addImages = false) {
+        /** @var MangaPlatform|null $mangaPlatform */
+        $mangaPlatform = $this->em->getRepository(MangaPlatform::class)->findOneBy([
+            'sourceUrl' => $url
+        ]);
+
+        if (!$mangaPlatform) {
+            $mangaPlatform = $this->createManga($url);
+        }
+
+        $this->fillManga($mangaPlatform);
+        $this->importChapters($mangaPlatform, $chaptersCount, $addImages);
+
+        return $mangaPlatform;
+    }
+
+    public function createManga($mangaUrl) {
+        $this->mangaDom->loadFromUrl($mangaUrl);
+
+        $platform = UtilPlatform::findPlatformFromUrl($mangaUrl);
+        $nodes = $platform['nodes'];
+        /** @var Platform $platformEntity */
+        $platformEntity = $this->em->getRepository(Platform::class)->findOneBy([
+            'name' => $platform['name']
+        ]);
+
+        $title = $this->findNode(self::MANGA_DOM, $nodes['titleNode']);
+        $slug = Functions::slugify($title);
+
+        $status = $this->findNode(self::MANGA_DOM, $nodes['statusNode']);
+        // Todo: altTitles function callback ?
+        $altTitles = $this->findNode(self::MANGA_DOM, $nodes['altTitlesNode']);
+
+        $manga = new Manga();
+        $manga
+            ->setStatus($status)
+            ->setTitle($title)
+            ->setSlug($slug)
+            ->setAltTitles($altTitles);
+
+            $this->em->persist($manga);
+
+            $mangaPlatform = new MangaPlatform();
+            $mangaPlatform->setPlatform($platformEntity)
+                ->setManga($manga)
+                ->setSourceUrl($mangaUrl);
+
+            $this->em->persist($mangaPlatform);
+
+//            $mangaImageNode = $this->mangaDom->find('.info-image .img-loading', 0);
+//            $mangaImageUrl = $mangaImageNode->getAttribute('src');
+//            $mangaImage = $this->uploadService->uploadMangaImage($mangaImageUrl);
+//            $manga->setImage($mangaImage);
+
+            $this->em->flush();
+
+            return $mangaPlatform;
+    }
+
+    /**
+     * @param MangaPlatform|null $mangaPlatform
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ClientExceptionInterface
+     * @throws ContentLengthException
+     * @throws LogicalException
+     * @throws StrictException
+     */
+    public function fillManga(?MangaPlatform $mangaPlatform) {
+        $mangaUrl = $mangaPlatform->getSourceUrl();
+        $platform = UtilPlatform::getPlatform($mangaPlatform->getPlatform());
+        $nodes = $platform['nodes'];
+        $this->mangaDom->loadFromUrl($mangaUrl);
+
+        $description = $this->findNode(self::MANGA_DOM, $nodes['descriptionNode']);
+        if ($description) {
+            $mangaPlatform->setDescription($description);
+        }
+
+        $views = $this->findNode(self::MANGA_DOM, $nodes['viewsNode']);
+        if ($views) {
+            $mangaPlatform->setViewsCount($views);
+        }
+
+        $lastUpdated = $this->findNode(self::MANGA_DOM, $nodes['lastUpdateNode']);
+        if ($lastUpdated) {
+            $mangaPlatform->setLastUpdated($lastUpdated);
+        }
+
+        $this->em->flush();
+    }
+
+    /**
+     * @param MangaPlatform $mangaPlatform
+     * @param int $chaptersCount
+     * @param bool $addImages
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ClientExceptionInterface
+     * @throws ContentLengthException
+     * @throws LogicalException
+     * @throws StrictException
+     */
+    public function importChapters(MangaPlatform $mangaPlatform, int $chaptersCount = 0, bool $addImages = false) {
+        $mangaUrl = $mangaPlatform->getSourceUrl();
+        $this->mangaDom->loadFromUrl($mangaUrl);
+        $platform = UtilPlatform::getPlatform($mangaPlatform->getPlatform());
+        $nodes = $platform['nodes'];
+
+        /** @var Dom\Node\Collection $chapters */
+        $chaptersData = array_slice($this->findNode(self::MANGA_DOM, $nodes['chapterDataNode']), $chaptersCount);
+
+        foreach ($chaptersData as $chapterData) {
+            $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
+                'number' => $chapterData['number'],
+                'manga' => $mangaPlatform
+            ]);
+
+            if (!$chapter) {
+                $chapter = new Chapter();
+                $chapter
+                    ->setTitle($chapterData['title'])
+                    ->setNumber($chapterData['number'])
+                    ->setDate($chapterData['date'])
+                    ->setSourceUrl($chapterData['url'])
+                    ->setManga($mangaPlatform);
+
+                $this->em->persist($chapter);
+            }
+
+            if (empty($chapter->getChapterPages()) && $addImages) {
+                $chapter->removeAllChapterPages();
+
+                $chapterPagesData = $this->findNode(self::CHAPTER_DOM, $nodes['chapterPagesNode'], ['chapter' => $chapter]);
+                foreach ($chapterPagesData as $pageData) {
+                    $file = $this->imageHelper->uploadChapterImage($pageData['url'], $pageData['imageHeaders']);
+                    $chapterPage = new ChapterPage();
+                    $chapterPage
+                        ->setFile($file)
+                        ->setNumber($pageData['number'])
+                        ->setChapter($chapter);
+
+                    $this->em->persist($chapterPage);
+                }
+            }
+        }
+
+        $this->em->flush();
+    }
+
+    public function findNode($dom, $platformNode, array $callbackParameters = []) {
+        $node = $this->$dom->find($platformNode['selector'], $platformNode['child-index'] ?? null);
+
+        if (isset($platformNode['callback'])) {
+            return $platformNode['callback']($node, $callbackParameters);
+        }
+
+        if (isset($platformNode['text']) && $platformNode['text']) {
+            return $node->text;
+        }
+
+        if (isset($platformNode['attribute'])) {
+            return $node->getAttribute($platformNode['attribute']);
+        }
+
+        return $node;
+    }
+}
