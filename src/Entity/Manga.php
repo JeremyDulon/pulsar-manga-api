@@ -27,6 +27,7 @@ class Manga
 
     /**
      * @ORM\Column(type="string")
+     * @JMS\Groups({ "mangaList" })
      */
     private $title;
 

@@ -49,22 +49,29 @@ class ImportMangaKakalotCommand extends BaseCommand
 
         $this->addOption(
             'url',
-            null,
+            'u',
             InputOption::VALUE_REQUIRED,
             'The url of the manga or chapter you want to import'
         );
         $this->addOption(
-            'add-image',
-            'ai',
+            'images',
+            'i',
             InputOption::VALUE_NONE,
             'If you want to add chapter images or not.'
         );
         $this->addOption(
-            'chapters',
-                'c',
+            'offset',
+                'o',
             InputOption::VALUE_REQUIRED,
-            'The number of chapters you want to get from the manga',
-            0 // 0 Means all chapter, -x means x from the end, x means x from the beginning
+            'The number of chapters from the start',
+            0
+        );
+        $this->addOption(
+            'chapter',
+            'c',
+            InputOption::VALUE_REQUIRED,
+            'The number of the chapter you want to start from',
+            null
         );
         // Todo: add other parameters
     }
@@ -87,13 +94,15 @@ class ImportMangaKakalotCommand extends BaseCommand
         $this->stopwatch->start('manga');
 
         $url = $this->input->getOption('url');
-        $chapters = $this->input->getOption('chapters');
+        $offset = $this->input->getOption('offset');
+        $chapter = $this->input->getOption('chapter');
+        $addImages = $this->input->getOption('images');
 
         if ($url) {
-            $isManga = UtilsPlatform::checkUrl($url);
-            if (is_bool($isManga)) {
-                if ($isManga === true) {
-                    $mangaPlatform = $this->importService->importManga($url);
+            $platformUrlInfo = UtilsPlatform::checkUrl($url);
+            if (!empty($platformUrlInfo)) {
+                if ($platformUrlInfo['type'] === 'manga') {
+                    $mangaPlatform = $this->importService->importManga($url, $platformUrlInfo['manga'], $offset, $chapter, $addImages);
 
                     $stopEvent = (string) $this->stopwatch->stop('manga');
                     $title = $mangaPlatform->getManga()->getTitle();
@@ -107,76 +116,5 @@ class ImportMangaKakalotCommand extends BaseCommand
 
         $this->em->flush();
         return 0;
-    }
-
-    /**
-     * @param MangaPlatform $mangaPlatform
-     * @throws ChildNotFoundException
-     * @throws CircularException
-     * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws NotLoadedException
-     * @throws StrictException
-     */
-    public function addChapters(MangaPlatform $mangaPlatform) {
-        $chaptersLinks = $this->mangaDom->find('ul.row-content-chapter li.a-h');
-        foreach ($chaptersLinks as $chapterLink) {
-            $chapterUrlNode = $chapterLink->find('a');
-            $chapterUrl = $chapterUrlNode->getAttribute('href');
-            $chapterTitle = $chapterUrlNode->text;
-
-            $chapterDateNode = $chapterLink->find('.chapter-time');
-            $chapterDate = $chapterDateNode->getAttribute('title');
-
-            $chapterNumber = explode('_', basename($chapterUrl))[1];
-            $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
-                'number' => $chapterNumber,
-                'manga' => $mangaPlatform,
-            ]);
-
-            if (!$chapter) {
-                $chapter = new Chapter();
-                $chapter
-                    ->setTitle($chapterTitle)
-                    ->setNumber($chapterNumber)
-                    ->setManga($mangaPlatform);
-
-                if ($chapterDate) {
-                    $chapter->setDate(DateTime::createFromFormat(self::CHAPTER_DATE_FORMAT, $chapterDate));
-                }
-
-                $this->em->persist($chapter);
-
-                // CHAPTER IMAGES
-                $this->chapterDom = new Dom();
-                $this->chapterDom->loadFromUrl($chapterUrl);
-
-                $chapter->removeAllChapterPages();
-
-                $chapterPages = $this->chapterDom->find('.container-chapter-reader img');
-                $pageNumber = 1;
-                foreach ($chapterPages as $page) {
-                    $imageUrl = $page->getAttribute('src');
-                    $file = $this->uploadService->uploadChapterImage($imageUrl, [
-                        'Referer: ' . $chapterUrl
-                    ]);
-
-                    $chapterPage = new ChapterPage();
-                    $chapterPage
-                        ->setChapter($chapter)
-                        ->setNumber($pageNumber)
-                        ->setFile($file);
-
-                    $this->em->persist($chapterPage);
-                    $pageNumber++;
-                }
-                $this->em->flush();
-
-                $this->output->writeln("New chapter chapter added: $chapterNumber");
-            } else {
-                $this->output->writeln("Chapter already added: $chapterNumber");
-            }
-        }
     }
 }

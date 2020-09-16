@@ -9,6 +9,7 @@ use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Utils\Platform as UtilPlatform;
 use DateTime;
+use PHPHtmlParser\Dom\Node\Collection;
 
 class Platform
 {
@@ -64,7 +65,10 @@ class Platform
                     ],
                     'mangaImageNode' => [
                         'selector' => '.info-image .img-loading',
-                        'child-index' => 0
+                        'child-index' => 0,
+                        'callback' => function ($el) {
+                            return $el->getAttribute('src');
+                        }
                     ],
                     'viewsNode' => [
                         'selector' => '.story-info-right-extent .stre-value',
@@ -89,8 +93,17 @@ class Platform
                     'chapterDataNode' => [
                         'selector' => 'ul.row-content-chapter li.a-h',
                         'callback' => function ($el, $parameters) {
+                            $offset = $parameters['offset'];
+                            $chapterNumber = $parameters['chapterNumber'];
                             $val = [];
-                            foreach ($el as $item) {
+                            $chaptersArray = array_reverse($el->toArray());
+                            $numberCb = function ($val) {
+                                $a = $val->find('a');
+                                return explode('_', basename($a->getAttribute('href')))[1];
+                            };
+                            // todo: mettre les valeurs par défaut si number est null ou offset est null
+                            $chaptersArray = self::filterChapters($chaptersArray, $numberCb, $chapterNumber, $offset);
+                            foreach ($chaptersArray as $item) {
                                 $a = $item->find('a');
                                 $url = $a->getAttribute('href');
                                 $val[] = [
@@ -175,18 +188,25 @@ class Platform
     /**
      * @param $url
      *
-     * @return bool|null
+     * @return array|null
      */
     public static function checkUrl($url) {
         $urlInfo = parse_url($url);
         $baseUrl = Functions::baseUrlInfo($urlInfo);
         $platform = self::getPlatformFromKey('baseUrl', $baseUrl);
         if (preg_match($platform['mangaRegex']['regex'], $urlInfo['path'], $matches)) {
-            return true;
+            return [
+                'type' => 'manga', // todo: const
+                'manga' => $matches[$platform['chapterRegex']['manga']]
+            ];
         }
 
         if (preg_match($platform['chapterRegex']['regex'], $urlInfo['path'], $matches)) {
-            return false;
+            return [
+                'type' => 'chapter', // todo: const
+                'manga' => $matches[$platform['chapterRegex']['manga']],
+                'chapter' => $matches[$platform['chapterRegex']['chapter']]
+            ];
         }
 
         return null;
@@ -196,5 +216,39 @@ class Platform
         $urlInfo = parse_url($url);
         $baseUrl = $urlInfo['scheme'] . '://' . $urlInfo['host'];
         return self::getPlatformFromKey('baseUrl', $baseUrl);
+    }
+
+    public static function filterChapters($chapters, $chapterNumberCb, $chapterNumber = null, $offset = 0) {
+        $lastChapterNumber = $chapterNumberCb(end($chapters));
+        $min = $max = 0;
+        $maxChapter = (int) $lastChapterNumber + 10;
+        $offset = $offset !== 0 ? $offset : $maxChapter;
+        $chapterNumber = $chapterNumber ?? ($offset >= 0 ? 0 : $maxChapter);
+        if ($offset < 0) {
+            $min = $offset + $chapterNumber;
+            $max = $chapterNumber ?? $lastChapterNumber;
+        } else {
+            $min = $chapterNumber;
+            $max = $offset + $chapterNumber;
+        }
+        dump($min, $max);
+        $chapters = array_filter(
+            $chapters,
+            function ($val) use ($lastChapterNumber, $chapterNumberCb, $min, $max) {
+                $chNumber = $chapterNumberCb($val);
+                $classicChapter = strpos($chNumber, '.') === false;
+                if ($classicChapter) {
+                    $chNumber = (int) $chNumber;
+                    return Functions::in_range(
+                        $chNumber,
+                        $min,
+                        $max
+                    );
+                }
+                return false;
+            }
+        );
+
+        return $chapters;
     }
 }

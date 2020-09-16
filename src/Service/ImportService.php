@@ -50,7 +50,10 @@ class ImportService
 
     /**
      * @param string $url
-     * @param int $chaptersCount
+     * @param string $mangaSlug
+     * @param int $offset
+     * @param int|null $chapter
+     * @param bool $addImages
      * @return MangaPlatform|null
      * @throws ChildNotFoundException
      * @throws CircularException
@@ -59,23 +62,23 @@ class ImportService
      * @throws LogicalException
      * @throws StrictException
      */
-    public function importManga(string $url, int $chaptersCount = 0, bool $addImages = false) {
+    public function importManga(string $url, string $mangaSlug, int $offset = 0, int $chapter = null, bool $addImages = false) {
         /** @var MangaPlatform|null $mangaPlatform */
         $mangaPlatform = $this->em->getRepository(MangaPlatform::class)->findOneBy([
             'sourceUrl' => $url
         ]);
 
         if (!$mangaPlatform) {
-            $mangaPlatform = $this->createManga($url);
+            $mangaPlatform = $this->createManga($url, $mangaSlug);
         }
 
         $this->fillManga($mangaPlatform);
-        $this->importChapters($mangaPlatform, $chaptersCount, $addImages);
+        $this->importChapters($mangaPlatform, $offset, $chapter, $addImages);
 
         return $mangaPlatform;
     }
 
-    public function createManga($mangaUrl) {
+    public function createManga($mangaUrl, $mangaSlug) {
         $this->mangaDom->loadFromUrl($mangaUrl);
 
         $platform = UtilPlatform::findPlatformFromUrl($mangaUrl);
@@ -99,23 +102,23 @@ class ImportService
             ->setSlug($slug)
             ->setAltTitles($altTitles);
 
-            $this->em->persist($manga);
+        $this->em->persist($manga);
 
-            $mangaPlatform = new MangaPlatform();
-            $mangaPlatform->setPlatform($platformEntity)
-                ->setManga($manga)
-                ->setSourceUrl($mangaUrl);
+        $mangaPlatform = new MangaPlatform();
+        $mangaPlatform->setPlatform($platformEntity)
+            ->setManga($manga)
+            ->setSourceSlug($mangaSlug)
+            ->setSourceUrl($mangaUrl);
 
-            $this->em->persist($mangaPlatform);
+        $mangaImageUrl = $this->findNode(self::MANGA_DOM, $nodes['mangaImageNode']);
+        $mangaImage = $this->imageHelper->uploadMangaImage($mangaImageUrl);
+        $manga->setImage($mangaImage);
 
-//            $mangaImageNode = $this->mangaDom->find('.info-image .img-loading', 0);
-//            $mangaImageUrl = $mangaImageNode->getAttribute('src');
-//            $mangaImage = $this->uploadService->uploadMangaImage($mangaImageUrl);
-//            $manga->setImage($mangaImage);
+        $this->em->persist($mangaPlatform);
 
-            $this->em->flush();
+        $this->em->flush();
 
-            return $mangaPlatform;
+        return $mangaPlatform;
     }
 
     /**
@@ -153,7 +156,8 @@ class ImportService
 
     /**
      * @param MangaPlatform $mangaPlatform
-     * @param int $chaptersCount
+     * @param int $offset
+     * @param int|null $chapterNumber
      * @param bool $addImages
      * @throws ChildNotFoundException
      * @throws CircularException
@@ -162,15 +166,16 @@ class ImportService
      * @throws LogicalException
      * @throws StrictException
      */
-    public function importChapters(MangaPlatform $mangaPlatform, int $chaptersCount = 0, bool $addImages = false) {
+    public function importChapters(MangaPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $this->mangaDom->loadFromUrl($mangaUrl);
         $platform = UtilPlatform::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
 
         /** @var Dom\Node\Collection $chapters */
-        $chaptersData = array_slice($this->findNode(self::MANGA_DOM, $nodes['chapterDataNode']), $chaptersCount);
+        $chaptersData = $this->findNode(self::MANGA_DOM, $nodes['chapterDataNode'], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
 
+        die;
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
                 'number' => $chapterData['number'],
@@ -189,9 +194,10 @@ class ImportService
                 $this->em->persist($chapter);
             }
 
-            if (empty($chapter->getChapterPages()) && $addImages) {
+            if ($chapter->getChapterPages()->isEmpty() && $addImages) {
                 $chapter->removeAllChapterPages();
 
+                $this->chapterDom->loadFromUrl($chapterData['url']);
                 $chapterPagesData = $this->findNode(self::CHAPTER_DOM, $nodes['chapterPagesNode'], ['chapter' => $chapter]);
                 foreach ($chapterPagesData as $pageData) {
                     $file = $this->imageHelper->uploadChapterImage($pageData['url'], $pageData['imageHeaders']);

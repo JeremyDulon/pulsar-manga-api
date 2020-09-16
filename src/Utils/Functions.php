@@ -41,6 +41,7 @@ class Functions
      * @param string $url
      * @return string
      */
+    // todo: slugify fn name
     public static function baseUrl(string $url) {
         $urlInfo = parse_url($url);
         return self::baseUrlInfo($urlInfo);
@@ -50,7 +51,29 @@ class Functions
      * @param array $urlInfo
      * @return string
      */
+    // todo: slugify fn name
     public static function baseUrlInfo(array $urlInfo) {
         return $urlInfo['scheme'] . '://' . $urlInfo['host'];
+    }
+
+    /**
+     * Determines if $number is between $min and $max
+     *
+     * @param integer $number The number to test
+     * @param integer $min The minimum value in the range
+     * @param integer $max The maximum value in the range
+     * @param boolean $inclusive Whether the range should be inclusive or not
+     * @return boolean              Whether the number was in the range
+     */
+    public static function in_range(int $number, int $min, int $max, bool $inclusive = true)
+    {
+        if (is_int($number) && is_int($min) && is_int($max))
+        {
+            return $inclusive
+                ? ($number >= $min && $number <= $max)
+                : ($number > $min && $number < $max) ;
+        }
+
+        return FALSE;
     }
 }
