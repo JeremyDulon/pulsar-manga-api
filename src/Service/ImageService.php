@@ -7,7 +7,7 @@ namespace App\Service;
 use App\Entity\File;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class ImageHelper
+class ImageService
 {
     protected $parameterBag;
 

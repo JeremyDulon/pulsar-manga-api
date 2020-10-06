@@ -101,7 +101,6 @@ class Platform
                                 $a = $val->find('a');
                                 return explode('_', basename($a->getAttribute('href')))[1];
                             };
-                            // todo: mettre les valeurs par défaut si number est null ou offset est null
                             $chaptersArray = self::filterChapters($chaptersArray, $numberCb, $chapterNumber, $offset);
                             foreach ($chaptersArray as $item) {
                                 $a = $item->find('a');
@@ -221,17 +220,22 @@ class Platform
     public static function filterChapters($chapters, $chapterNumberCb, $chapterNumber = null, $offset = 0) {
         $lastChapterNumber = $chapterNumberCb(end($chapters));
         $min = $max = 0;
-        $maxChapter = (int) $lastChapterNumber + 10;
-        $offset = $offset !== 0 ? $offset : $maxChapter;
-        $chapterNumber = $chapterNumber ?? ($offset >= 0 ? 0 : $maxChapter);
-        if ($offset < 0) {
-            $min = $offset + $chapterNumber;
-            $max = $chapterNumber ?? $lastChapterNumber;
+        $maxChapter = (int) $lastChapterNumber;
+        if ($chapterNumber === null) {
+            $min = $offset < 0 ? $lastChapterNumber + $offset : 0;
+            $max = $offset > 0 ? $offset : $maxChapter;
         } else {
-            $min = $chapterNumber;
-            $max = $offset + $chapterNumber;
+            if ($offset === 0) {
+                $min = $chapterNumber;
+                $max = $maxChapter;
+            } else if ($offset > 0) {
+                $min = $chapterNumber;
+                $max = $chapterNumber + $offset;
+            } else {
+                $min = $chapterNumber + $offset;
+                $max = $chapterNumber;
+            }
         }
-        dump($min, $max);
         $chapters = array_filter(
             $chapters,
             function ($val) use ($lastChapterNumber, $chapterNumberCb, $min, $max) {

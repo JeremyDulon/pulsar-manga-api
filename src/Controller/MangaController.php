@@ -22,7 +22,7 @@ class MangaController extends BaseController
 
     /**
      * @Rest\Get("/manga/{slug}", name="get_manga")
-     * @Rest\View(serializerGroups={"mangaList", "image"})
+     * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData", "chapterList"})
      *
      * @ParamConverter(
      *     "manga",

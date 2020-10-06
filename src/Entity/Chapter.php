@@ -7,7 +7,7 @@ use App\Repository\ChapterRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as JMS;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=ChapterRepository::class)
@@ -20,31 +20,31 @@ class Chapter
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @JMS\Groups({ "mangaList", "chapter" })
+     * @Serializer\Groups({ "mangaList", "chapter" })
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @JMS\Groups({ "mangaList", "chapter" })
+     * @Serializer\Groups({ "mangaList", "chapter" })
      */
     private $title;
 
     /**
      * @ORM\Column(type="float")
-     * @JMS\Groups({ "mangaList", "chapter" })
+     * @Serializer\Groups({ "mangaList", "chapter" })
      */
     private $number;
 
     /**
      * @ORM\Column(type="datetime")
-     * @JMS\Groups({ "mangaList", "chapter" })
+     * @Serializer\Groups({ "mangaList", "chapter" })
      */
     private $date;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @JMS\Groups({ }) TODO: Groupes
+     * @Serializer\Groups({ }) TODO: Groupes
      */
     private $sourceUrl;
 
@@ -56,7 +56,7 @@ class Chapter
 
     /**
      * @ORM\OneToMany(targetEntity=ChapterPage::class, mappedBy="chapter", orphanRemoval=true)
-     * @JMS\Groups({ "chapter" })
+     * @Serializer\Groups({ "chapter" })
      */
     private $chapterPages;
 

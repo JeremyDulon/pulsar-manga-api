@@ -5,7 +5,7 @@ namespace App\Entity;
 
 use App\Entity\Macro\Timestamps;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as JMS;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity
@@ -18,31 +18,31 @@ class File
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @JMS\Groups({ "image" })
+     * @Serializer\Groups({ "image" })
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @JMS\Groups({ "image" })
+     * @Serializer\Groups({ "image" })
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @JMS\Groups({ "image" })
+     * @Serializer\Groups({ "image" })
      */
     private $path;
 
     /**
      * @var string
-     * @JMS\Groups({ "image" })
+     * @Serializer\Groups({ "image" })
      */
     private $url;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @JMS\Groups({ "image" })
+     * @Serializer\Groups({ "image" })
      */
     private $externalUrl;
 

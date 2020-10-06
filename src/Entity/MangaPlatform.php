@@ -8,7 +8,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as JMS;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=MangaPlatformRepository::class)
@@ -26,55 +26,55 @@ class MangaPlatform
 
     /**
      * @var string
-     * @ORM\Column(type="string", nullable=true)
-     * @JMS\Groups({ "mangaList" })
+     * @ORM\Column(type="text", nullable=true)
+     * @Serializer\Groups({ "mangaList" })
      */
     private $description;
 
     /**
      * @var DateTimeInterface
      * @ORM\Column(type="datetime", nullable=true)
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $lastUpdated;
 
     /**
      * @var string
      * @ORM\Column(type="string", nullable=true)
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $viewsCount;
 
     /**
      * @var string
      * @ORM\Column(type="string")
-     * @JMS\Groups({ })
+     * @Serializer\Groups({ "platformData" })
      */
     private $sourceUrl;
 
     /**
      * @var string
      * @ORM\Column(type="string")
-     * @JMS\Groups({ })
+     * @Serializer\Groups({ })
      */
     private $sourceSlug;
 
     /**
      * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="platforms")
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $manga;
 
     /**
      * @ORM\ManyToOne(targetEntity=Platform::class)
      * @ORM\JoinColumn(nullable=false)
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "platformData" })
      */
     private $platform;
 
     /**
      * @ORM\OneToMany(targetEntity=Chapter::class, mappedBy="manga", orphanRemoval=true)
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "chapterList" })
      */
     private $chapters;
 

@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Entity\Macro\Timestamps;
 use App\Repository\ChapterPageRepository;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as JMS;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=ChapterPageRepository::class)
@@ -29,14 +29,14 @@ class ChapterPage
 
     /**
      * @ORM\Column(type="integer")
-     * @JMS\Groups({ "chapter" })
+     * @Serializer\Groups({ "chapter" })
      */
     private $number;
 
     /**
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
-     * @JMS\Groups({ "chapter" })
+     * @Serializer\Groups({ "chapter" })
      */
     private $file;
 

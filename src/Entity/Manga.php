@@ -6,7 +6,7 @@ use App\Entity\Macro\Timestamps;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as JMS;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity
@@ -27,13 +27,13 @@ class Manga
 
     /**
      * @ORM\Column(type="string")
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $slug;
 
@@ -46,19 +46,19 @@ class Manga
      * @var File
      *
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $image;
 
     /**
      * @ORM\Column(type="integer")
-     * @JMS\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList" })
      */
     private $status;
 
     /**
      * @ORM\OneToMany(targetEntity=MangaPlatform::class, mappedBy="manga", orphanRemoval=true)
-     * @JMS\Groups({ })
+     * @Serializer\Groups({ "mangaData" })
      */
     private $platforms;
 

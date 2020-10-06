@@ -2,33 +2,22 @@
 
 namespace App\Command;
 
-use App\Entity\Chapter;
-use App\Entity\ChapterPage;
-use App\Entity\Manga;
-use App\Entity\MangaPlatform;
-use App\Entity\Platform;
-use App\Service\ImageHelper;
 use App\Service\ImportService;
-use App\Utils\Functions;
 use App\Utils\Platform as UtilsPlatform;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPHtmlParser\Dom;
 use PHPHtmlParser\Exceptions\ChildNotFoundException;
 use PHPHtmlParser\Exceptions\CircularException;
 use PHPHtmlParser\Exceptions\ContentLengthException;
 use PHPHtmlParser\Exceptions\LogicalException;
-use PHPHtmlParser\Exceptions\NotLoadedException;
 use PHPHtmlParser\Exceptions\StrictException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ImportMangaKakalotCommand extends BaseCommand
+class ImportMangaCommand extends BaseCommand
 {
-    protected static $defaultName = 'pm:import:manga';
+    public static $defaultName = 'pm:import:manga';
 
     protected $mangaDom;
     protected $chapterDom;
@@ -73,7 +62,6 @@ class ImportMangaKakalotCommand extends BaseCommand
             'The number of the chapter you want to start from',
             null
         );
-        // Todo: add other parameters
     }
 
 
@@ -101,20 +89,14 @@ class ImportMangaKakalotCommand extends BaseCommand
         if ($url) {
             $platformUrlInfo = UtilsPlatform::checkUrl($url);
             if (!empty($platformUrlInfo)) {
-                if ($platformUrlInfo['type'] === 'manga') {
-                    $mangaPlatform = $this->importService->importManga($url, $platformUrlInfo['manga'], $offset, $chapter, $addImages);
+                $mangaPlatform = $this->importService->importManga($url, $platformUrlInfo['manga'], $offset, $chapter, $addImages);
 
-                    $stopEvent = (string) $this->stopwatch->stop('manga');
-                    $title = $mangaPlatform->getManga()->getTitle();
+                $stopEvent = (string) $this->stopwatch->stop('manga');
+                $title = $mangaPlatform->getManga()->getTitle();
 
-                    $this->output->writeln("Manga added: $title - $stopEvent");
-                } else {
-                    $this->output->writeln("Todo add chapter");
-                }
+                $this->output->writeln("Manga updated: $title - $stopEvent");
             }
         }
-
-        $this->em->flush();
         return 0;
     }
 }

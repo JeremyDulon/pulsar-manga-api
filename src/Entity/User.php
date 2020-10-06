@@ -16,9 +16,9 @@ use JMS\Serializer\Annotation as Serializer;
  * })
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  *
- * @UniqueEntity(fields={"email"}, message="EMAIL_IS_ALREADY_IN_USE")
+ * @UniqueEntity(fields={"email"}, errorPath="email", message="EMAIL_IS_ALREADY_IN_USE")
+ * @UniqueEntity(fields={"username"}, errorPath="username", message="USERNAME_IS_ALREADY_IN_USE")
  *
- * @Serializer\ExclusionPolicy("all")
  */
 class User extends BaseUser
 {
@@ -54,8 +54,25 @@ class User extends BaseUser
      *     message = "INCORRECT_EMAIL_ADDRESS",
      *     checkMX = true
      * )
+     * @Serializer\Groups({ "postUser" })
      */
     protected $email;
+
+    /**
+     * @var string
+     * @Serializer\Groups({
+     *     "postManager", "putUser", "postUser", "postAgent"
+     * })
+     * @Serializer\Accessor(setter="setPlainPassword", getter="getPassword")
+     */
+    protected $password;
+
+    /**
+     * @var string
+     *
+     * @Serializer\Groups({ "postUser" })
+     */
+    protected $username;
 
     /**
      * @var string
@@ -85,6 +102,12 @@ class User extends BaseUser
      */
     private $lastName;
 
+    /**
+     *
+     * @var array|string[]
+     */
+    protected $roles = [self::ROLE_DEFAULT];
+
 
     /**
      * @var boolean
@@ -104,6 +127,7 @@ class User extends BaseUser
     public function __construct()
     {
         parent::__construct();
+        $this->roles = [ self::ROLE_USER ];
         $this->deleted = false;
     }
 

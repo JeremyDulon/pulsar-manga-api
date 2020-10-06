@@ -10,18 +10,16 @@ use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Entity\Platform;
 use App\Utils\Functions;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPHtmlParser\Dom;
 use PHPHtmlParser\Exceptions\ChildNotFoundException;
 use PHPHtmlParser\Exceptions\CircularException;
 use PHPHtmlParser\Exceptions\ContentLengthException;
 use PHPHtmlParser\Exceptions\LogicalException;
-use PHPHtmlParser\Exceptions\NotLoadedException;
 use PHPHtmlParser\Exceptions\StrictException;
-use PhpParser\Node;
 use Psr\Http\Client\ClientExceptionInterface;
 use App\Utils\Platform as UtilPlatform;
+use Psr\Log\LoggerInterface;
 
 class ImportService
 {
@@ -34,15 +32,19 @@ class ImportService
     /** @var EntityManagerInterface $em */
     protected $em;
 
-    /** @var ImageHelper $imageHelper */
-    protected $imageHelper;
+    /** @var ImageService $imageService  */
+    protected $imageService;
+
+    /** @var LoggerInterface $logger */
+    protected $logger;
 
     public const MANGA_DOM = 'mangaDom';
     public const CHAPTER_DOM = 'chapterDom';
 
-    public function __construct(EntityManagerInterface $em, ImageHelper $imageHelper) {
+    public function __construct(EntityManagerInterface $em, ImageService $imageService, LoggerInterface $logger) {
         $this->em = $em;
-        $this->imageHelper = $imageHelper;
+        $this->imageService = $imageService;
+        $this->logger = $logger;
 
         $this->mangaDom = new Dom();
         $this->chapterDom = new Dom();
@@ -92,7 +94,6 @@ class ImportService
         $slug = Functions::slugify($title);
 
         $status = $this->findNode(self::MANGA_DOM, $nodes['statusNode']);
-        // Todo: altTitles function callback ?
         $altTitles = $this->findNode(self::MANGA_DOM, $nodes['altTitlesNode']);
 
         $manga = new Manga();
@@ -111,7 +112,7 @@ class ImportService
             ->setSourceUrl($mangaUrl);
 
         $mangaImageUrl = $this->findNode(self::MANGA_DOM, $nodes['mangaImageNode']);
-        $mangaImage = $this->imageHelper->uploadMangaImage($mangaImageUrl);
+        $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
         $manga->setImage($mangaImage);
 
         $this->em->persist($mangaPlatform);
@@ -175,7 +176,6 @@ class ImportService
         /** @var Dom\Node\Collection $chapters */
         $chaptersData = $this->findNode(self::MANGA_DOM, $nodes['chapterDataNode'], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
 
-        die;
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
                 'number' => $chapterData['number'],
@@ -200,7 +200,7 @@ class ImportService
                 $this->chapterDom->loadFromUrl($chapterData['url']);
                 $chapterPagesData = $this->findNode(self::CHAPTER_DOM, $nodes['chapterPagesNode'], ['chapter' => $chapter]);
                 foreach ($chapterPagesData as $pageData) {
-                    $file = $this->imageHelper->uploadChapterImage($pageData['url'], $pageData['imageHeaders']);
+                    $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders']);
                     $chapterPage = new ChapterPage();
                     $chapterPage
                         ->setFile($file)
@@ -209,6 +209,15 @@ class ImportService
 
                     $this->em->persist($chapterPage);
                 }
+            }
+
+            $logInfos = [
+                'number' => $chapter->getNumber()
+            ];
+            if (!$chapter->getId()) {
+                $this->logger->info('New chapter added', $logInfos);
+            } else {
+                $this->logger->info('Chapter already added', $logInfos);
             }
         }
 
