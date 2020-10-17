@@ -11,25 +11,27 @@ use PHPHtmlParser\Exceptions\ContentLengthException;
 use PHPHtmlParser\Exceptions\LogicalException;
 use PHPHtmlParser\Exceptions\StrictException;
 use Psr\Http\Client\ClientExceptionInterface;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ImportMangaCommand extends BaseCommand
+class DBBackupCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:import:manga';
+    public static $defaultName = 'pm:db:backup';
 
-    protected $mangaDom;
-    protected $chapterDom;
+    protected static $tables = [
+        'user',
+        'chapter',
+        'chapter_page',
+        'manga',
+        'manga_platform',
+        'platform'
+    ];
 
-    /** @var ImportService $importService */
-    protected $importService;
-
-    public function __construct(EntityManagerInterface $em, ImportService $importService)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em);
-
-        $this->importService = $importService;
     }
 
     protected function configure()
@@ -37,30 +39,11 @@ class ImportMangaCommand extends BaseCommand
         parent::configure();
 
         $this->addOption(
-            'url',
-            'u',
-            InputOption::VALUE_REQUIRED,
-            'The url of the manga or chapter you want to import'
-        );
-        $this->addOption(
-            'images',
-            'i',
-            InputOption::VALUE_NONE,
-            'If you want to add chapter images or not.'
-        );
-        $this->addOption(
-            'offset',
-                'o',
-            InputOption::VALUE_REQUIRED,
-            'The number of chapters from the start',
-            0
-        );
-        $this->addOption(
-            'chapter',
-            'c',
-            InputOption::VALUE_REQUIRED,
-            'The number of the chapter you want to start from',
-            null
+            'backup',
+            'b',
+            InputOption::VALUE_OPTIONAL,
+            'Backup mode',
+            false
         );
     }
 
@@ -79,24 +62,30 @@ class ImportMangaCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
-        $this->stopwatch->start('manga');
+        $this->stopwatch->start('backup');
+        $backupMode = $input->getOption('backup');
 
-        $url = $this->input->getOption('url');
-        $offset = $this->input->getOption('offset');
-        $chapter = $this->input->getOption('chapter');
-        $addImages = $this->input->getOption('images');
-
-        if ($url) {
-            $platformUrlInfo = UtilsPlatform::checkUrl($url);
-            if (!empty($platformUrlInfo)) {
-                $mangaPlatform = $this->importService->importManga($url, $platformUrlInfo['manga'], $offset, $chapter, $addImages);
-
-                $stopEvent = (string) $this->stopwatch->stop('manga');
-                $title = $mangaPlatform->getManga()->getTitle();
-
-                $this->output->writeln("Manga updated: $title - $stopEvent");
-            }
+        if ($backupMode !== false) {
+            $this->backup();
+        } else {
+            $this->restore();
         }
+
+
+        $stopEvent = (string) $this->stopwatch->stop('backup');
+        $this->output->writeln("Backup done - $stopEvent");
         return 0;
+    }
+
+    protected function backup() {
+        $mds = $this->em->getMetadataFactory()->getAllMetadata();
+
+        foreach ($mds as $md) {
+            dump($md);
+        }
+    }
+
+    protected function restore() {
+
     }
 }
