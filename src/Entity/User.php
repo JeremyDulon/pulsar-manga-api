@@ -1,6 +1,8 @@
 <?php
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use FOS\UserBundle\Model\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -22,7 +24,6 @@ use JMS\Serializer\Annotation as Serializer;
  */
 class User extends BaseUser
 {
-    const ROLE_SUPER_ADMIN = "ROLE_SUPER_ADMIN";
     const ROLE_ADMIN = "ROLE_ADMIN";
     const ROLE_USER = "ROLE_USER";
 
@@ -54,7 +55,7 @@ class User extends BaseUser
      *     message = "INCORRECT_EMAIL_ADDRESS",
      *     checkMX = true
      * )
-     * @Serializer\Groups({ "postUser" })
+     * @Serializer\Groups({ "postUser", "getUser" })
      */
     protected $email;
 
@@ -70,7 +71,7 @@ class User extends BaseUser
     /**
      * @var string
      *
-     * @Serializer\Groups({ "postUser" })
+     * @Serializer\Groups({ "postUser", "getUser" })
      */
     protected $username;
 
@@ -105,6 +106,7 @@ class User extends BaseUser
     /**
      *
      * @var array|string[]
+     * @Serializer\Groups({ "getUser" })
      */
     protected $roles = [self::ROLE_DEFAULT];
 
@@ -122,6 +124,16 @@ class User extends BaseUser
     private $deleted;
 
     /**
+     * @ORM\OneToMany(targetEntity=UserMangaPlatform::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $userMangaPlatforms;
+
+    /**
+     * @ORM\OneToMany(targetEntity=UserManga::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $userMangas;
+
+    /**
      * User constructor.
      */
     public function __construct()
@@ -129,6 +141,8 @@ class User extends BaseUser
         parent::__construct();
         $this->roles = [ self::ROLE_USER ];
         $this->deleted = false;
+        $this->userMangaPlatforms = new ArrayCollection();
+        $this->userMangas = new ArrayCollection();
     }
 
     public function setFirstName(?string $firstName): self
@@ -165,5 +179,65 @@ class User extends BaseUser
     public function getDeleted(): ?bool
     {
         return $this->deleted;
+    }
+
+    /**
+     * @return Collection|UserMangaPlatform[]
+     */
+    public function getUserMangaPlatforms(): Collection
+    {
+        return $this->userMangaPlatforms;
+    }
+
+    public function addUserMangaPlatform(UserMangaPlatform $userMangaPlatform): self
+    {
+        if (!$this->userMangaPlatforms->contains($userMangaPlatform)) {
+            $this->userMangaPlatforms[] = $userMangaPlatform;
+            $userMangaPlatform->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserMangaPlatform(UserMangaPlatform $userMangaPlatform): self
+    {
+        if ($this->userMangaPlatforms->removeElement($userMangaPlatform)) {
+            // set the owning side to null (unless already changed)
+            if ($userMangaPlatform->getUser() === $this) {
+                $userMangaPlatform->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserManga[]
+     */
+    public function getUserMangas(): Collection
+    {
+        return $this->userMangas;
+    }
+
+    public function addUserManga(UserManga $userManga): self
+    {
+        if (!$this->userMangas->contains($userManga)) {
+            $this->userMangas[] = $userManga;
+            $userManga->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserManga(UserManga $userManga): self
+    {
+        if ($this->userMangas->removeElement($userManga)) {
+            // set the owning side to null (unless already changed)
+            if ($userManga->getUser() === $this) {
+                $userManga->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

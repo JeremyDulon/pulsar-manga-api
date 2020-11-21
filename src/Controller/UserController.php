@@ -15,6 +15,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Swift_Mailer;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class UserController extends BaseController
@@ -75,5 +76,15 @@ class UserController extends BaseController
         }
 
         throw new HttpException(400, 'User already exists');
+    }
+
+    /**
+     * @Rest\Get("/user", name="get_user")
+     * @Rest\View(serializerGroups={ "getUser" })
+     *
+     * @return object|UserInterface|null
+     */
+    public function getUserAction() {
+        return $this->getUser();
     }
 }
