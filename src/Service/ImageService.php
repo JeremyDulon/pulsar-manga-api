@@ -19,6 +19,21 @@ class ImageService
         $this->uploaderService = $uploaderService;
     }
 
+    public function unparse_url($parsed_url): string
+    {
+        $scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+        $host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
+        $port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+        $user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+        $pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
+        $pass     = ($user || $pass) ? "$pass@" : '';
+        $path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+        $query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+        $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+        return "$scheme$user$pass$host$port$path$query$fragment";
+    }
+
+
     /**
      * @param string $imageUrl
      * @param array $headers
@@ -108,10 +123,20 @@ class ImageService
      * @return string
      */
     public function uploadImage(string $directory, string $imageUrl, array $headers = []) {
-        $result = $this->getImage($imageUrl, $headers);
-        $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
 
-        $url = $this->parameterBag->get('aws_s3_url') . $this->uploaderService->upload($result, $directory, $extension);
+        $parsed = parse_url($imageUrl);
+        unset($parsed['query'], $parsed['fragment']);
+        $imageUrl = $this->unparse_url($parsed);
+
+        if ($this->parameterBag->get('amazon_store_files') === true) {
+            $result = $this->getImage($imageUrl, $headers);
+            $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
+
+            $url = $this->parameterBag->get('aws_s3_url') . $this->uploaderService->upload($result, $directory, $extension);
+        } else {
+            $url = $imageUrl;
+        }
+
         $file = new File();
         $file->setExternalUrl($url);
 

@@ -102,6 +102,19 @@
     "doctrine/sql-formatter": {
         "version": "1.1.1"
     },
+    "easycorp/easyadmin-bundle": {
+        "version": "2.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.0",
+            "ref": "0a51040a43c6f2172a3a0135cd15daf2043905d7"
+        },
+        "files": [
+            "config/packages/easy_admin.yaml",
+            "config/routes/easy_admin.yaml"
+        ]
+    },
     "egulias/email-validator": {
         "version": "2.1.19"
     },
@@ -170,6 +183,9 @@
     "knplabs/knp-gaufrette-bundle": {
         "version": "v0.7.1"
     },
+    "laminas/laminas-zendframework-bridge": {
+        "version": "1.1.1"
+    },
     "monolog/monolog": {
         "version": "1.25.5"
     },
@@ -210,6 +226,9 @@
     "ocramius/proxy-manager": {
         "version": "2.1.1"
     },
+    "pagerfanta/pagerfanta": {
+        "version": "v2.5.1"
+    },
     "paquettg/php-html-parser": {
         "version": "3.0.0"
     },
@@ -225,6 +244,9 @@
     "php-http/promise": {
         "version": "1.1.0"
     },
+    "php-webdriver/webdriver": {
+        "version": "1.9.0"
+    },
     "phpdocumentor/reflection-common": {
         "version": "2.1.0"
     },
@@ -233,6 +255,9 @@
     },
     "phpdocumentor/type-resolver": {
         "version": "1.0.1"
+    },
+    "phpstan/phpdoc-parser": {
+        "version": "0.4.10"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -321,6 +346,9 @@
     },
     "symfony/dependency-injection": {
         "version": "v4.4.11"
+    },
+    "symfony/deprecation-contracts": {
+        "version": "v2.2.0"
     },
     "symfony/doctrine-bridge": {
         "version": "v4.4.11"
@@ -450,6 +478,9 @@
     "symfony/orm-pack": {
         "version": "v2.0.0"
     },
+    "symfony/panther": {
+        "version": "v0.8.0"
+    },
     "symfony/phpunit-bridge": {
         "version": "4.3",
         "recipe": {
@@ -488,6 +519,9 @@
     },
     "symfony/polyfill-php80": {
         "version": "v1.18.1"
+    },
+    "symfony/polyfill-uuid": {
+        "version": "v1.20.0"
     },
     "symfony/process": {
         "version": "v4.4.11"
@@ -609,6 +643,9 @@
     },
     "symfony/twig-pack": {
         "version": "v1.0.0"
+    },
+    "symfony/uid": {
+        "version": "v5.2.1"
     },
     "symfony/validator": {
         "version": "4.3",

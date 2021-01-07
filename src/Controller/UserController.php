@@ -80,9 +80,9 @@ class UserController extends BaseController
 
     /**
      * @Rest\Get("/user", name="get_user")
-     * @Rest\View(serializerGroups={ "getUser" })
+     * @Rest\View(serializerGroups={ "getUser", "getUserManga", "mangaSlug" })
      *
-     * @return object|UserInterface|null
+     * @return User|UserInterface|null
      */
     public function getUserAction() {
         return $this->getUser();

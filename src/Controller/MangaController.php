@@ -12,11 +12,10 @@ class MangaController extends BaseController
     /**
      * @Rest\Get("/mangas", name="get_mangas")
      * @Rest\View(serializerGroups={"mangaList", "image"})
-     * @param Request $request
      *
      * @return array
      */
-    public function getMangasAction(Request $request): array {
+    public function getMangasAction(): array {
         return $this->em->getRepository(Manga::class)->findBy([]);
     }
 

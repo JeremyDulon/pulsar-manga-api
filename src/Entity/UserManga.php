@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserMangaRepository;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=UserMangaRepository::class)
@@ -24,8 +25,10 @@ class UserManga
     private $user;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Manga::class)
+     * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="userMangas")
      * @ORM\JoinColumn(nullable=false)
+     *
+     * @Serializer\Groups({ "getUserManga" })
      */
     private $manga;
 

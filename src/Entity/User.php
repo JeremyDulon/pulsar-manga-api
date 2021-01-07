@@ -110,7 +110,6 @@ class User extends BaseUser
      */
     protected $roles = [self::ROLE_DEFAULT];
 
-
     /**
      * @var boolean
      *
@@ -239,5 +238,32 @@ class User extends BaseUser
         }
 
         return $this;
+    }
+
+    /**
+     * @param Manga $manga
+     * @return UserManga|bool
+     */
+    public function isFavorite(Manga $manga) {
+        /** @var UserManga $userManga */
+        foreach ($this->userMangas as $userManga) {
+            if ($userManga->getManga() === $manga) {
+                return $userManga;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @Serializer\VirtualProperty()
+     * @Serializer\Groups({ "getUser" })
+     * @Serializer\SerializedName("favorites")
+     * @Serializer\Expose
+     */
+    public function getFavorites()
+    {
+        return array_map(function (UserManga $userManga) {
+            return $userManga->getManga()->getSlug();
+        }, $this->userMangas->toArray());
     }
 }

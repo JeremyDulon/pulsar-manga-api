@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Service\ValidationService;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -36,5 +38,12 @@ class BaseController extends AbstractFOSRestController
     public function validate($subject)
     {
         $this->validation->validate($subject);
+    }
+
+    /**
+     * @return User|UserInterface|void|null
+     */
+    public function getUser() {
+        return parent::getUser();
     }
 }
