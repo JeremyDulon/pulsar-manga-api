@@ -35,9 +35,16 @@ class UserMangaPlatform
     private $lastChapter;
 
     /**
+     * @var int
+     *
      * @ORM\Column(type="integer", nullable=true)
      */
     private $lastPage;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $favorite;
 
     public function getId(): ?int
     {
@@ -89,6 +96,24 @@ class UserMangaPlatform
     {
         $this->lastPage = $lastPage;
 
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getFavorite(): bool
+    {
+        return $this->favorite;
+    }
+
+    /**
+     * @param bool $favorite
+     * @return UserMangaPlatform
+     */
+    public function setFavorite(bool $favorite): UserMangaPlatform
+    {
+        $this->favorite = $favorite;
         return $this;
     }
 }

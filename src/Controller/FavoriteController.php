@@ -5,8 +5,9 @@ namespace App\Controller;
 
 
 use App\Entity\Manga;
+use App\Entity\MangaPlatform;
 use App\Entity\User;
-use App\Entity\UserManga;
+use App\Entity\UserMangaPlatform;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -21,46 +22,47 @@ class FavoriteController extends BaseController
      * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData", "chapterList"})
      *
      */
-    public function getFavoritesAction() {
-        $userMangas = $this->em->getRepository(UserManga::class)
-            ->createQueryBuilder('um')
-            ->select('um', 'm', 'mi')
-            ->leftJoin('um.manga', 'm')
+    public function getFavoritesAction(): array
+    {
+        $userMangaPlatforms = $this->em->getRepository(UserMangaPlatform::class)
+            ->createQueryBuilder('ump')
+            ->select('ump', 'mp', 'm', 'mi')
+            ->leftJoin('ump.mangaPlatform', 'mp')
+            ->leftJoin('mp.manga', 'm')
             ->leftJoin('m.image', 'mi')
-            ->where('um.user = :user')
+            ->where('ump.user = :user')
             ->setParameter('user', $this->getUser())
             ->getQuery()
             ->getResult();
 
-        return array_map(function (UserManga $um) {
-            return $um->getManga();
-        }, $userMangas);
+        return array_map(function (UserMangaPlatform $um) {
+            return $um->getMangaPlatform()->getManga();
+        }, $userMangaPlatforms);
     }
 
     /**
-     * @Rest\Get("/favorites/add/{slug}", name="add_favorite")
+     * @Rest\Put("/favorites/add/{mangaPlatformId}", name="add_favorite")
      * @Rest\View(serializerGroups={ "getUser", "getUserManga", "mangaSlug" })
      *
      * @ParamConverter(
-     *     "manga",
-     *     options={"mapping": {"slug": "slug" }}
+     *     "mangaPlatform",
+     *     options={"mapping": {"mangaPlatformId": "id" }}
      * )
-     * @param Manga $manga
+     * @param MangaPlatform $mangaPlatform
      * @return User|UserInterface|void|null
      * @throws ORMException
      */
-    public function addFavoriteAction(Manga $manga) {
+    public function addFavoriteAction(MangaPlatform $mangaPlatform) {
         $user = $this->getUser();
-        $userManga = $user->isFavorite($manga);
-        if ($userManga === false) {
-            $userManga = new UserManga();
-            $userManga->setManga($manga)
+        $userMangaPlatform = $user->isFavorite($mangaPlatform);
+        if ($userMangaPlatform === false) {
+            $userMangaPlatform = new UserMangaPlatform();
+            $userMangaPlatform->setMangaPlatform($mangaPlatform)
                 ->setUser($user);
 
-            $this->em->persist($userManga);
-        } else {
-            $user->removeUserManga($userManga);
+            $this->em->persist($userMangaPlatform);
         }
+        $userMangaPlatform->setFavorite(!$userMangaPlatform->getFavorite());
         $this->em->flush();
         $this->em->refresh($user);
 

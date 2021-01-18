@@ -218,8 +218,6 @@ class ImportService
 
         $chaptersData = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::CHAPTER_DATA_NODE], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
 
-        dump($chaptersData);
-        exit;
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
                 'number' => $chapterData['number'],

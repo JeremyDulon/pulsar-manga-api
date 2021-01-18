@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Manga;
+use App\Entity\UserMangaPlatform;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;

@@ -62,11 +62,6 @@ class Manga
      */
     private $platforms;
 
-    /**
-     * @ORM\OneToMany(targetEntity=UserManga::class, mappedBy="manga", orphanRemoval=true)
-     */
-    private $userMangas;
-
     public function __construct()
     {
         $this->platforms = new ArrayCollection();
@@ -166,13 +161,5 @@ class Manga
         }
 
         return $this;
-    }
-
-    /**
-     * @return Collection|UserManga[]
-     */
-    public function getUserMangas(): Collection
-    {
-        return $this->userMangas;
     }
 }

@@ -21,6 +21,7 @@ class MangaPlatform
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Groups({ "mangaList", "addFavorite" })
      */
     private $id;
 

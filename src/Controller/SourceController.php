@@ -24,10 +24,10 @@ class SourceController extends BaseController
      * @throws OptimisticLockException
      */
     public function addSourceAction(Request $request): bool {
-        $url = $request->get('url', null);
-        $offset = $request->get('offset', null);
+        $url = $request->get('url');
+        $offset = $request->get('offset');
         $images = $request->get('images', true);
-        $chapter = $request->get('chapter', null);
+        $chapter = $request->get('chapter');
 
         if ($url) {
             $options = ["--url=".$url];
