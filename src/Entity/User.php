@@ -230,6 +230,7 @@ class User extends BaseUser
             $manga = $userMangaPlatform->getMangaPlatform()->getManga();
             return [
                 'chapter' => $userMangaPlatform->getLastChapter()->getId(),
+                'page' => $userMangaPlatform->getLastPage(),
                 'slug' => $manga->getSlug()
             ];
         }, $this->userMangaPlatforms->toArray());

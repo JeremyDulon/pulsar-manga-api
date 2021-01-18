@@ -48,8 +48,6 @@ class ReadController extends BaseController
                 ->setMangaPlatform($mangaPlatform);
         }
 
-        dump($chapter, $page);
-
         $userMangaPlatform->setLastChapter($chapter);
         $userMangaPlatform->setLastPage($page);
         $this->em->flush();
