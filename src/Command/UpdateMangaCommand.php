@@ -2,8 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\MangaPlatform;
 use App\Service\ImportService;
-use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPHtmlParser\Exceptions\ChildNotFoundException;
 use PHPHtmlParser\Exceptions\CircularException;
@@ -15,12 +15,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ImportMangaCommand extends BaseCommand
+class UpdateMangaCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:manga:import';
-
-    protected $mangaDom;
-    protected $chapterDom;
+    public static $defaultName = 'pm:manga:update';
 
     /** @var ImportService $importService */
     protected $importService;
@@ -37,30 +34,10 @@ class ImportMangaCommand extends BaseCommand
         parent::configure();
 
         $this->addOption(
-            'url',
-            'u',
+            'slug',
+            's',
             InputOption::VALUE_REQUIRED,
-            'The url of the manga or chapter you want to import'
-        );
-        $this->addOption(
-            'images',
-            'i',
-            InputOption::VALUE_NONE,
-            'If you want to add chapter images or not.'
-        );
-        $this->addOption(
-            'offset',
-                'o',
-            InputOption::VALUE_REQUIRED,
-            'The number of chapters from the start',
-            0
-        );
-        $this->addOption(
-            'chapter',
-            'c',
-            InputOption::VALUE_REQUIRED,
-            'The number of the chapter you want to start from',
-            null
+            'The slug of the manga you want to update'
         );
     }
 
@@ -81,22 +58,39 @@ class ImportMangaCommand extends BaseCommand
         parent::execute($input, $output);
         $this->stopwatch->start('manga');
 
-        $url = $this->input->getOption('url');
-        $offset = $this->input->getOption('offset');
-        $chapter = $this->input->getOption('chapter');
-        $addImages = $this->input->getOption('images');
+        $slug = $this->input->getOption('slug');
 
-        if ($url) {
-            $platformUrlInfo = PlatformUtil::checkUrl($url);
-            if (!empty($platformUrlInfo)) {
-                $mangaPlatform = $this->importService->importManga($url, $platformUrlInfo['manga'], $offset, $chapter, $addImages);
+        $mangaRepository = $this->em->getRepository(MangaPlatform::class);
 
-                $stopEvent = (string) $this->stopwatch->stop('manga');
-                $title = $mangaPlatform->getManga()->getTitle();
-
-                $this->output->writeln("Manga updated: $title - $stopEvent");
+        if ($slug) {
+            $mangaPlatform = $mangaRepository->findOneBy(['slug' => $slug]);
+            if ($mangaPlatform !== null) {
+                /** @var MangaPlatform $mangaPlatform */
+                $this->updateManga($mangaPlatform);
+            }
+        } else {
+            $mangaPlatforms = $mangaRepository->findAll();
+            foreach ($mangaPlatforms as $mangaPlatform) {
+                /** @var MangaPlatform $mangaPlatform */
+                $this->updateManga($mangaPlatform);
             }
         }
+
         return 0;
+    }
+
+    /**
+     * @param MangaPlatform $mangaPlatform
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ClientExceptionInterface
+     * @throws ContentLengthException
+     * @throws LogicalException
+     * @throws StrictException
+     */
+    protected function updateManga(MangaPlatform $mangaPlatform) {
+        $this->importService->fillManga($mangaPlatform);
+        $title = $mangaPlatform->getManga()->getTitle();
+        $this->output->writeln("Manga updated: $title");
     }
 }

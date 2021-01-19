@@ -22,36 +22,6 @@ class MangaPlatformRepository extends ServiceEntityRepository
         parent::__construct($registry, MangaPlatform::class);
     }
 
-    /**
-     * @param string $title
-     * @param array $altTitles
-     * @param Platform $platform
-     * @return Manga
-     * @throws NonUniqueResultException
-     */
-    public function findOneByNames(string $title, array $altTitles, Platform $platform) {
-        $qb = $this->createQueryBuilder('mp')
-            ->select('mp')
-            ->leftJoin('mp.manga','m')->addSelect('m')
-            ->where('m.title LIKE :title OR m.title IN (:altTitles)')
-            ->setParameter('title', $title)
-            ->setParameter('altTitles', $altTitles);
-
-        foreach ($altTitles as $key => $altTitle) {
-            $altTitleKey = 'altTitle_'.$key;
-            $altTitleLikeKey = 'altTitleLike_'.$key;
-            $qb
-                ->orWhere("m.title LIKE :$altTitleKey OR m.altTitles LIKE :$altTitleLikeKey")
-                ->setParameter($altTitleKey, $altTitle)
-                ->setParameter($altTitleLikeKey, '%'.$altTitle.'%');
-        }
-
-        return $qb->andWhere('mp.platform = :platform')
-            ->setParameter('platform', $platform)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
     // /**
     //  * @return Manga[] Returns an array of Manga objects
     //  */

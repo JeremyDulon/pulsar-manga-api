@@ -1,0 +1,11 @@
+easy_admin:
+  entities:
+    Job:
+      class: JMS\JobQueueBundle\Entity\Job
+      list:
+        fields:
+          - id
+          - state
+          - command
+          - args
+          - output

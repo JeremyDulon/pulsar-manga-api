@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass=App\Repository\MangaRepository::class)
  */
 class Manga
 {
@@ -33,7 +33,7 @@ class Manga
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Serializer\Groups({ "mangaList" })
+     * @Serializer\Groups({ "mangaList", "mangaSlug" })
      */
     private $slug;
 
@@ -162,6 +162,4 @@ class Manga
 
         return $this;
     }
-
-
 }

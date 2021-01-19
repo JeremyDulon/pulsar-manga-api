@@ -1,0 +1,11 @@
+easy_admin:
+  design:
+    menu:
+      - label: 'Manga'
+        icon: 'books'
+        children:
+          - { entity: 'Manga', icon: 'books', label: 'Mangas' }
+      - label: 'Jobs'
+        icon: 'wrench'
+        children:
+          - { entity: 'Job', icon: 'wrench', label: 'Jobs' }

@@ -110,7 +110,6 @@ class User extends BaseUser
      */
     protected $roles = [self::ROLE_DEFAULT];
 
-
     /**
      * @var boolean
      *
@@ -129,11 +128,6 @@ class User extends BaseUser
     private $userMangaPlatforms;
 
     /**
-     * @ORM\OneToMany(targetEntity=UserManga::class, mappedBy="user", orphanRemoval=true)
-     */
-    private $userMangas;
-
-    /**
      * User constructor.
      */
     public function __construct()
@@ -142,7 +136,6 @@ class User extends BaseUser
         $this->roles = [ self::ROLE_USER ];
         $this->deleted = false;
         $this->userMangaPlatforms = new ArrayCollection();
-        $this->userMangas = new ArrayCollection();
     }
 
     public function setFirstName(?string $firstName): self
@@ -212,32 +205,34 @@ class User extends BaseUser
     }
 
     /**
-     * @return Collection|UserManga[]
+     * @param MangaPlatform $mangaPlatform
+     * @return UserMangaPlatform|bool
      */
-    public function getUserMangas(): Collection
-    {
-        return $this->userMangas;
-    }
-
-    public function addUserManga(UserManga $userManga): self
-    {
-        if (!$this->userMangas->contains($userManga)) {
-            $this->userMangas[] = $userManga;
-            $userManga->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUserManga(UserManga $userManga): self
-    {
-        if ($this->userMangas->removeElement($userManga)) {
-            // set the owning side to null (unless already changed)
-            if ($userManga->getUser() === $this) {
-                $userManga->setUser(null);
+    public function isFavorite(MangaPlatform $mangaPlatform) {
+        /** @var UserMangaPlatform $userMangaPlatform */
+        foreach ($this->userMangaPlatforms as $userMangaPlatform) {
+            if ($userMangaPlatform->getMangaPlatform() === $mangaPlatform) {
+                return $userMangaPlatform;
             }
         }
+        return false;
+    }
 
-        return $this;
+    /**
+     * @Serializer\VirtualProperty()
+     * @Serializer\Groups({ "getUser" })
+     * @Serializer\SerializedName("favorites")
+     * @Serializer\Expose
+     */
+    public function getFavorites(): array
+    {
+        return array_map(function (UserMangaPlatform $userMangaPlatform) {
+            $manga = $userMangaPlatform->getMangaPlatform()->getManga();
+            return [
+                'chapter' => $userMangaPlatform->getLastChapter()->getId(),
+                'page' => $userMangaPlatform->getLastPage(),
+                'slug' => $manga->getSlug()
+            ];
+        }, $this->userMangaPlatforms->toArray());
     }
 }

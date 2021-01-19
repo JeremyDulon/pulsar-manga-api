@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
- * @ORM\Entity(repositoryClass=MangaPlatformRepository::class)
+ * @ORM\Entity(repositoryClass=App\Repository\MangaPlatformRepository::class)
  */
 class MangaPlatform
 {
@@ -21,6 +21,7 @@ class MangaPlatform
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Groups({ "mangaList", "addFavorite" })
      */
     private $id;
 
@@ -77,6 +78,12 @@ class MangaPlatform
      * @Serializer\Groups({ "chapterList" })
      */
     private $chapters;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Serializer\Groups({ "platformData" })
+     */
+    private $author;
 
     public function __construct()
     {
@@ -211,6 +218,18 @@ class MangaPlatform
     public function setPlatform(?Platform $platform): self
     {
         $this->platform = $platform;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?string
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?string $author): self
+    {
+        $this->author = $author;
 
         return $this;
     }

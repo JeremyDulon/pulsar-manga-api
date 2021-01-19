@@ -17,8 +17,10 @@ use PHPHtmlParser\Exceptions\CircularException;
 use PHPHtmlParser\Exceptions\ContentLengthException;
 use PHPHtmlParser\Exceptions\LogicalException;
 use PHPHtmlParser\Exceptions\StrictException;
+use PHPHtmlParser\Options;
+use PhpParser\Node;
 use Psr\Http\Client\ClientExceptionInterface;
-use App\Utils\Platform as UtilPlatform;
+use App\Utils\PlatformUtil;
 use Psr\Log\LoggerInterface;
 
 class ImportService
@@ -75,45 +77,71 @@ class ImportService
         }
 
         $this->fillManga($mangaPlatform);
+
         $this->importChapters($mangaPlatform, $offset, $chapter, $addImages);
 
         return $mangaPlatform;
     }
 
-    public function createManga($mangaUrl, $mangaSlug) {
-        $this->mangaDom->loadFromUrl($mangaUrl);
+    /**
+     * @param $mangaUrl
+     * @param $mangaSlug
+     * @return MangaPlatform
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ClientExceptionInterface
+     * @throws ContentLengthException
+     * @throws LogicalException
+     * @throws StrictException
+     */
+    public function createManga($mangaUrl, $mangaSlug): MangaPlatform
+    {
+        $options = new Options();
+        $options->setRemoveSmartyScripts(true);
+        $options->setRemoveScripts(true);
+        $this->mangaDom->loadFromUrl($mangaUrl, $options);
 
-        $platform = UtilPlatform::findPlatformFromUrl($mangaUrl);
+        $platform = PlatformUtil::findPlatformFromUrl($mangaUrl);
         $nodes = $platform['nodes'];
         /** @var Platform $platformEntity */
         $platformEntity = $this->em->getRepository(Platform::class)->findOneBy([
             'name' => $platform['name']
         ]);
 
-        $title = $this->findNode(self::MANGA_DOM, $nodes['titleNode']);
-        $slug = Functions::slugify($title);
+        $title = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::TITLE_NODE]);
+        if (array_key_exists(PlatformUtil::ALT_TITLES_NODE, $nodes)) {
+            $altTitles = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::ALT_TITLES_NODE]);
+        }
 
-        $status = $this->findNode(self::MANGA_DOM, $nodes['statusNode']);
-        $altTitles = $this->findNode(self::MANGA_DOM, $nodes['altTitlesNode']);
+        $manga = $this->em->getRepository(Manga::class)->findOneByAltTitles($title, $altTitles ?? []);
 
-        $manga = new Manga();
-        $manga
-            ->setStatus($status)
-            ->setTitle($title)
-            ->setSlug($slug)
-            ->setAltTitles($altTitles);
+        if (!($manga instanceof Manga)) {
+            $slug = Functions::slugify($title);
 
-        $this->em->persist($manga);
+            $status = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::STATUS_NODE]);
+
+            $manga = new Manga();
+            $manga
+                ->setStatus($status)
+                ->setTitle($title)
+                ->setSlug($slug);
+
+            $mangaImageUrl = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::MANGA_IMAGE_NODE]);
+            $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
+            $manga->setImage($mangaImage);
+
+            $this->em->persist($manga);
+        }
+
+        if (isset($altTitles)) {
+            $manga->setAltTitles(array_merge($manga->getAltTitles() ?? [], $altTitles ?? []));
+        }
 
         $mangaPlatform = new MangaPlatform();
         $mangaPlatform->setPlatform($platformEntity)
             ->setManga($manga)
             ->setSourceSlug($mangaSlug)
             ->setSourceUrl($mangaUrl);
-
-        $mangaImageUrl = $this->findNode(self::MANGA_DOM, $nodes['mangaImageNode']);
-        $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
-        $manga->setImage($mangaImage);
 
         $this->em->persist($mangaPlatform);
 
@@ -133,23 +161,36 @@ class ImportService
      */
     public function fillManga(?MangaPlatform $mangaPlatform) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
-        $platform = UtilPlatform::getPlatform($mangaPlatform->getPlatform());
+        $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
         $this->mangaDom->loadFromUrl($mangaUrl);
 
-        $description = $this->findNode(self::MANGA_DOM, $nodes['descriptionNode']);
-        if ($description) {
-            $mangaPlatform->setDescription($description);
+        if (array_key_exists(PlatformUtil::AUTHOR_NODE, $nodes)) {
+            $author = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::AUTHOR_NODE]);
+            if ($author) {
+                $mangaPlatform->setAuthor($author);
+            }
         }
 
-        $views = $this->findNode(self::MANGA_DOM, $nodes['viewsNode']);
-        if ($views) {
-            $mangaPlatform->setViewsCount($views);
+        if (array_key_exists(PlatformUtil::DESCRIPTION_NODE, $nodes)) {
+            $description = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::DESCRIPTION_NODE]);
+            if ($description) {
+                $mangaPlatform->setDescription($description);
+            }
         }
 
-        $lastUpdated = $this->findNode(self::MANGA_DOM, $nodes['lastUpdateNode']);
-        if ($lastUpdated) {
-            $mangaPlatform->setLastUpdated($lastUpdated);
+        if (array_key_exists(PlatformUtil::VIEWS_NODE, $nodes)) {
+            $views = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::VIEWS_NODE]);
+            if ($views) {
+                $mangaPlatform->setViewsCount($views);
+            }
+        }
+
+        if (array_key_exists(PlatformUtil::LAST_UPDATE_NODE, $nodes)) {
+            $lastUpdated = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::LAST_UPDATE_NODE]);
+            if ($lastUpdated) {
+                $mangaPlatform->setLastUpdated($lastUpdated);
+            }
         }
 
         $this->em->flush();
@@ -170,11 +211,12 @@ class ImportService
     public function importChapters(MangaPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $this->mangaDom->loadFromUrl($mangaUrl);
-        $platform = UtilPlatform::getPlatform($mangaPlatform->getPlatform());
+        $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
 
         /** @var Dom\Node\Collection $chapters */
-        $chaptersData = $this->findNode(self::MANGA_DOM, $nodes['chapterDataNode'], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+
+        $chaptersData = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::CHAPTER_DATA_NODE], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
 
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
@@ -192,15 +234,16 @@ class ImportService
                     ->setManga($mangaPlatform);
 
                 $this->em->persist($chapter);
+                $this->em->flush();
             }
 
             if ($chapter->getChapterPages()->isEmpty() && $addImages) {
                 $chapter->removeAllChapterPages();
 
-                $this->chapterDom->loadFromUrl($chapterData['url']);
-                $chapterPagesData = $this->findNode(self::CHAPTER_DOM, $nodes['chapterPagesNode'], ['chapter' => $chapter]);
+                $this->chapterDom->loadFromUrl($chapter->getSourceUrl());
+                $chapterPagesData = $this->findNode(self::CHAPTER_DOM, $nodes[PlatformUtil::CHAPTER_PAGES_NODE], ['chapter' => $chapter]);
                 foreach ($chapterPagesData as $pageData) {
-                    $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders']);
+                    $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
                     $chapterPage = new ChapterPage();
                     $chapterPage
                         ->setFile($file)
@@ -225,20 +268,31 @@ class ImportService
     }
 
     public function findNode($dom, $platformNode, array $callbackParameters = []) {
-        $node = $this->$dom->find($platformNode['selector'], $platformNode['child-index'] ?? null);
+        if (isset($platformNode['selector'])) {
+            if (!is_array($platformNode['selector'])) {
+                $platformNode['selector'] = [$platformNode['selector']];
+            }
 
-        if (isset($platformNode['callback'])) {
-            return $platformNode['callback']($node, $callbackParameters);
+            $node = $this->$dom;
+            foreach ($platformNode['selector'] as $selector => $index) {
+                $node = $node->find($selector, $index ?? null);
+            }
+
+            if (isset($platformNode['callback'])) {
+                return $platformNode['callback']($node, $callbackParameters);
+            }
+
+            if (isset($platformNode['text']) && $platformNode['text']) {
+                return $node->text;
+            }
+
+            if (isset($platformNode['attribute'])) {
+                return $node->getAttribute($platformNode['attribute']);
+            }
+
+            return $node;
         }
 
-        if (isset($platformNode['text']) && $platformNode['text']) {
-            return $node->text;
-        }
-
-        if (isset($platformNode['attribute'])) {
-            return $node->getAttribute($platformNode['attribute']);
-        }
-
-        return $node;
+        return null;
     }
 }

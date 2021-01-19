@@ -17,6 +17,21 @@ security:
             fos_oauth: true
             stateless: true
             anonymous: true
+        admin:
+            pattern: ^/admin
+            user_checker: security.user_checker
+#            form_login:
+#                default_target_path: easyadmin
+            anonymous: ~
+            form_login:
+                provider: fos_userbundle
+                default_target_path: easyadmin
+                check_path: /admin/login_check
+                login_path: /admin/login
+            logout:
+              path: /admin/logout
+              target: /admin/login
+
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication
@@ -28,8 +43,12 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-         - { path: '^/api/source', roles: ROLE_ADMIN }
+        - { path: '^/admin/login$', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: '^/admin', roles: ROLE_ADMIN }
+        # Api routes
+        - { path: '^/api', roles: [ROLE_USER, ROLE_ADMIN] }
+        - { path: '^/api/source', roles: ROLE_ADMIN }
         # Auth routes
-         - { path: '^/api/user', roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [POST] } # Register
-         - { path: '^/api/user/(.*)/confirm$', roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [GET] } # Register confirm
-         - { path: '^/api/user/forgot-password', roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [PUT] } # Register forgot
+        - { path: '^/api/user', roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [POST] } # Register
+        - { path: '^/api/user/(.*)/confirm$', roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [GET] } # Register confirm
+        - { path: '^/api/user/forgot-password', roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [PUT] } # Register forgot
