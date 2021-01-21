@@ -236,7 +236,7 @@
         "version": "1.0.1"
     },
     "php": {
-        "version": "7.3"
+        "version": "7.2"
     },
     "php-http/httplug": {
         "version": "2.2.0"
@@ -532,9 +532,6 @@
     "symfony/polyfill-php80": {
         "version": "v1.18.1"
     },
-    "symfony/polyfill-uuid": {
-        "version": "v1.20.0"
-    },
     "symfony/process": {
         "version": "v4.4.11"
     },
@@ -655,9 +652,6 @@
     },
     "symfony/twig-pack": {
         "version": "v1.0.0"
-    },
-    "symfony/uid": {
-        "version": "v5.2.1"
     },
     "symfony/validator": {
         "version": "4.3",
