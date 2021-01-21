@@ -1,0 +1,14 @@
+easy_admin:
+  entities:
+    MangaPlatform:
+      class: App\Entity\MangaPlatform
+      list:
+        fields:
+          - id
+          - { property: 'manga.title', label: 'Title' }
+          - { property: 'platform.name', label: 'Platform' }
+          - description
+          - viewsCount
+          - sourceUrl
+          - lastUpdated
+          - chapters

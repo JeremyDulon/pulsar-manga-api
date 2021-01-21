@@ -55,7 +55,7 @@ class Chapter
     private $manga;
 
     /**
-     * @ORM\OneToMany(targetEntity=ChapterPage::class, mappedBy="chapter", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ChapterPage::class, mappedBy="chapter", orphanRemoval=true, cascade={"remove"})
      * @Serializer\Groups({ "chapter" })
      */
     private $chapterPages;

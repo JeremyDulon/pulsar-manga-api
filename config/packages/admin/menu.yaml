@@ -5,7 +5,9 @@ easy_admin:
         icon: 'books'
         children:
           - { entity: 'Manga', icon: 'books', label: 'Mangas' }
+          - { entity: 'MangaPlatform', icon: 'books', label: 'Manga Platforms' }
       - label: 'Jobs'
         icon: 'wrench'
         children:
-          - { entity: 'Job', icon: 'wrench', label: 'Jobs' }
+          - { entity: 'Job', icon: 'wrench', label: 'JMS Jobs' }
+          - { entity: 'Cron', icon: 'wrench', label: 'JMose Jobs' }

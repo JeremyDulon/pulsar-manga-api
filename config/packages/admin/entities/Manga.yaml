@@ -9,4 +9,3 @@ easy_admin:
           - status
           - createdAt
           - platforms
-          - userMangas

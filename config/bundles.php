@@ -24,4 +24,5 @@ return [
     JMS\JobQueueBundle\JMSJobQueueBundle::class => ['all' => true],
     Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle::class => ['all' => true],
     EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle::class => ['all' => true],
+    JMose\CommandSchedulerBundle\JMoseCommandSchedulerBundle::class => ['all' => true],
 ];

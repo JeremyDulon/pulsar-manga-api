@@ -74,7 +74,7 @@ class MangaPlatform
     private $platform;
 
     /**
-     * @ORM\OneToMany(targetEntity=Chapter::class, mappedBy="manga", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Chapter::class, mappedBy="manga", orphanRemoval=true, cascade={"remove"})
      * @Serializer\Groups({ "chapterList" })
      */
     private $chapters;
@@ -84,6 +84,11 @@ class MangaPlatform
      * @Serializer\Groups({ "platformData" })
      */
     private $author;
+
+    /**
+     * @ORM\OneToMany(targetEntity=UserMangaPlatform::class, mappedBy="mangaPlatform", cascade={"remove"}, orphanRemoval=true)
+     */
+    private $userMangaPlatforms;
 
     public function __construct()
     {

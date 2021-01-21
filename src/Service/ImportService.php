@@ -235,6 +235,9 @@ class ImportService
 
                 $this->em->persist($chapter);
                 $this->em->flush();
+                $new = true;
+            } else {
+                $new = false;
             }
 
             if ($chapter->getChapterPages()->isEmpty() && $addImages) {
@@ -257,10 +260,10 @@ class ImportService
             $logInfos = [
                 'number' => $chapter->getNumber()
             ];
-            if (!$chapter->getId()) {
-                $this->logger->info('New chapter added', $logInfos);
+            if ($new) {
+                $this->logger->info('New chapter added: ' . $logInfos['number']);
             } else {
-                $this->logger->info('Chapter already added', $logInfos);
+                $this->logger->info('Chapter already added: ' . $logInfos['number']);
             }
         }
 

@@ -18,7 +18,7 @@ class UserMangaPlatform
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=MangaPlatform::class)
+     * @ORM\ManyToOne(targetEntity=MangaPlatform::class, inversedBy="userMangaPlatforms")
      * @ORM\JoinColumn(nullable=false)
      */
     private $mangaPlatform;
