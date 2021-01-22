@@ -170,9 +170,6 @@
             "config/routes/scheduler.yaml"
         ]
     },
-    "jms/job-queue-bundle": {
-        "version": "2.1.0"
-    },
     "jms/metadata": {
         "version": "1.7.0"
     },

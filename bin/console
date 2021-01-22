@@ -2,8 +2,7 @@
 <?php
 
 use App\Kernel;
-//use Symfony\Bundle\FrameworkBundle\Console\Application;
-use JMS\JobQueueBundle\Console\Application;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\ErrorHandler\Debug;
 

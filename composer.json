@@ -19,7 +19,6 @@
         "friendsofsymfony/user-bundle": "^2.1",
         "gedmo/doctrine-extensions": "^2.4",
         "jmose/command-scheduler-bundle": "^3.0",
-        "jms/job-queue-bundle": "dev-master as 2.0.x-dev",
         "jms/serializer-bundle": "^3.5",
         "knplabs/knp-gaufrette-bundle": "^0.7.1",
         "nelmio/api-doc-bundle": "^3.5",
