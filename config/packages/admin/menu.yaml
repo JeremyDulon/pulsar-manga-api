@@ -2,12 +2,11 @@ easy_admin:
   design:
     menu:
       - label: 'Manga'
-        icon: 'books'
+        icon: 'book'
         children:
-          - { entity: 'Manga', icon: 'books', label: 'Mangas' }
-          - { entity: 'MangaPlatform', icon: 'books', label: 'Manga Platforms' }
+          - { entity: 'Manga', icon: 'book', label: 'Mangas' }
+          - { entity: 'MangaPlatform', icon: 'book', label: 'Manga Platforms' }
       - label: 'Jobs'
         icon: 'wrench'
         children:
-          - { entity: 'Job', icon: 'wrench', label: 'JMS Jobs' }
           - { entity: 'Cron', icon: 'wrench', label: 'JMose Jobs' }
