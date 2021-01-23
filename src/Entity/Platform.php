@@ -41,13 +41,13 @@ class Platform
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $mangaPath;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $chapterPath;
 
@@ -83,7 +83,7 @@ class Platform
     /**
      * @return string
      */
-    public function getBaseUrl(): string
+    public function getBaseUrl(): ?string
     {
         return $this->baseUrl;
     }
@@ -101,7 +101,7 @@ class Platform
     /**
      * @return string
      */
-    public function getMangaPath(): string
+    public function getMangaPath(): ?string
     {
         return $this->mangaPath;
     }
@@ -119,7 +119,7 @@ class Platform
     /**
      * @return string
      */
-    public function getChapterPath(): string
+    public function getChapterPath(): ?string
     {
         return $this->chapterPath;
     }

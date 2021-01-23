@@ -123,12 +123,10 @@ class ImageService
      * @return string
      */
     public function uploadImage(string $directory, string $imageUrl, array $headers = []) {
-
-        $parsed = parse_url($imageUrl);
-        unset($parsed['query'], $parsed['fragment']);
-        $imageUrl = $this->unparse_url($parsed);
-
         if ($this->parameterBag->get('amazon_store_files') === true) {
+            $parsed = parse_url($imageUrl);
+            unset($parsed['query'], $parsed['fragment']);
+            $imageUrl = $this->unparse_url($parsed);
             $result = $this->getImage($imageUrl, $headers);
             $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
 

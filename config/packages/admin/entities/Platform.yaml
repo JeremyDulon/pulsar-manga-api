@@ -1,0 +1,12 @@
+easy_admin:
+  entities:
+    Platform:
+      class: App\Entity\Platform
+      list:
+        fields:
+          - id
+          - name
+          - language
+          - baseUrl
+          - mangaPath
+          - chapterPath
