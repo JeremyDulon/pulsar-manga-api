@@ -6,6 +6,7 @@ easy_admin:
         children:
           - { entity: 'Manga', icon: 'book', label: 'Mangas' }
           - { entity: 'MangaPlatform', icon: 'book', label: 'Manga Platforms' }
+          - { entity: 'Chapter', label: 'Chapters' }
           - { entity: 'Platform', label: 'Platforms' }
       - label: 'Jobs'
         icon: 'wrench'

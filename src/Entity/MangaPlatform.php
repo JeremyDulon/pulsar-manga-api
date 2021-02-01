@@ -61,12 +61,14 @@ class MangaPlatform
     private $sourceSlug;
 
     /**
+     * @var Manga
      * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="platforms")
      * @Serializer\Groups({ "mangaList" })
      */
     private $manga;
 
     /**
+     * @var Platform
      * @ORM\ManyToOne(targetEntity=Platform::class)
      * @ORM\JoinColumn(nullable=false)
      * @Serializer\Groups({ "platformData" })
@@ -93,6 +95,10 @@ class MangaPlatform
     public function __construct()
     {
         $this->chapters = new ArrayCollection();
+    }
+
+    public function __toString() {
+        return $this->id . ': ' . $this->manga->getTitle() . ' - ' . $this->platform->getName();
     }
 
     public function getId(): ?int

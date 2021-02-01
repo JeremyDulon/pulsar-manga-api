@@ -8,7 +8,10 @@ use App\Entity\Chapter;
 use App\Entity\Manga;
 use App\Entity\Platform;
 use DateTime;
+use Facebook\WebDriver\Remote\RemoteWebElement;
+use Facebook\WebDriver\WebDriverBy;
 use PHPHtmlParser\Dom\Node\Collection;
+use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class PlatformUtil
 {
@@ -324,108 +327,85 @@ class PlatformUtil
                 ],
                 'nodes' => [
                     self::TITLE_NODE => [
-                        'selector' => [
-                            '.cover img' => null
-                        ],
+                        'selector' => '.cover img',
                         'callback' => function ($el) {
                             return $el->getAttribute('title');
                         }
                     ],
                     self::STATUS_NODE => [
-                        'selector' => [
-                            '.attr tr' => 8,
-                            'td' => null
-                        ],
+                        'selector' => '.attr tr:nth-child(8)',
                         'callback' => function ($el, $parameters) {
                             return $el->text === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
                         }
                     ],
                     self::ALT_TITLES_NODE => [
-                        'selector' => [
-                            '.attr tr' => 3,
-                            'td' => null
-                        ],
-                        'callback' => function ($el, $parameters) {
-                            return explode(';', trim($el->text));
+                        'selector' => '.attr tr:nth-child(4)',
+                        'callback' => function (Crawler $el, $parameters) {
+                            return array_map(function ($v) {
+                                return trim($v);
+                            }, explode(';', $el->getText()));
                         }
                     ],
                     self::MANGA_IMAGE_NODE => [
-                        'selector' => [
-                            '.cover img' => null
-                        ],
+                        'selector' => '.cover img',
                         'callback' => function ($el) {
                             return $el->getAttribute('src');
                         }
                     ],
                     self::AUTHOR_NODE => [
-                        'selector' => [
-                            '.attr tr' => 4,
-                            'td' => null
-                        ],
+                        'selector' => '.attr tr:nth-child(5)',
                         'text' => true
                     ],
                     self::DESCRIPTION_NODE => [
-                        'selector' => [
-                            '.summary' => null
-                        ],
+                        'selector' => '.summary',
                         'text' => true
                     ],
                     self::CHAPTER_DATA_NODE => [
-                        'selector' => [
-                            '.book-list-1 #stream_1 .chapter .item' => null
-                        ],
-                        'callback' => function ($el, $parameters) {
-                            $chaptersArray = array_filter($el->toArray(), function ($node) {
-                                $chapNumber = str_replace('ch.', '', $node->find('a.ch')->text);
-                                return ctype_digit($chapNumber) === true ;
+                        'selector' => '.book-list-1 #stream_1 .chapter',
+                        'callback' => function (Crawler $el, $parameters) {
+                            $chaptersArray = $el->children('.item')->reduce(function (Crawler $node, $i) {
+                                $chapNumber = str_replace('ch.', '', $node->filter('a.ch')->getText());
+                                return ctype_digit($chapNumber) === true;
+                            })->each(function (Crawler $ch) {
+                                $chapterData = $ch->filter('a.ch');
+                                $number = str_replace('ch.', '', $chapterData->getText());
+                                $url = $ch->filter('.ext em a:nth-child(5)')->getAttribute('href');
+                                return [
+                                    'title' => 'Chapter ' . $number,
+                                    'number' => $number,
+                                    'url' => $url,
+                                    'date' => new DateTime($ch->filter('.time')->getText())
+                                ];
                             });
+
                             $offset = $parameters['offset'];
                             $chapterNumber = $parameters['chapterNumber'];
-                            $val = [];
-                            $numberCb = function ($node) {
-                                return str_replace('ch.', '', $node->find('a.ch')->text);
+                            $numberCb = function ($ch) {
+                                return $ch['number'];
                             };
 
-                            usort($chaptersArray, function ($a, $b) {
-                                return str_replace('ch.', '', $a->find('a.ch')->text) < str_replace('ch.', '', $b->find('a.ch')->text)
-                                    ? -1
-                                    : 1;
+                            usort($chaptersArray, function ($chA, $chB) {
+                                return $chA['number'] < $chB['number'] ? -1 : 1;
                             });
 
                             $lastChapterNumber = (int) $numberCb(end($chaptersArray));
 
                             $chaptersArray = self::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
-                            foreach ($chaptersArray as $chapterNode) {
-                                $chapterData = $chapterNode->find('a.ch');
-                                $number = str_replace('ch.', '', $chapterData->text);
-                                $url = 'https://mangapark.net' . $chapterNode->find('.ext em a', 4)->getAttribute('href');
-                                $val[] = [
-                                    'title' => 'Chapter ' . $number,
-                                    'number' => $number,
-                                    'url' => $url,
-                                    'date' => new DateTime($chapterNode->find('.time')->text)
-                                ];
-                            }
-                            return $val;
+                            return $chaptersArray;
                         }
                     ],
                     self::CHAPTER_PAGES_NODE => [
-                        'selector' => [
-                            '#viewer .canvas .img-num' => null
-                        ],
-                        'callback' => function ($el, $parameters) {
+                        'script_callback' => function ($client, $parameters) {
+                            $chPages = $client->executeScript('return _load_pages');
                             /** @var Chapter|null $chapter */
                             $chapter = $parameters['chapter'] ?? null;
                             $val = [];
                             if ($chapter) {
-                                $pageNumber = 1;
-                                foreach ($el as $item) {
-                                    $url = $item->getAttribute('href');
+                                foreach ($chPages as $chPage) {
                                     $val[] = [
-                                        'number' => $pageNumber,
-                                        'url' => $url
+                                        'number' => $chPage['n'],
+                                        'url' => $chPage['u']
                                     ];
-                                    $pageNumber++;
                                 }
                             }
                             return $val;

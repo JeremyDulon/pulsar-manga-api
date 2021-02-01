@@ -45,14 +45,22 @@ class TestCrawlCommand extends BaseCommand
     {
         parent::execute($input, $output);
 
+        dump('beforeClient');
+
         $client = Client::createChromeClient();
 //        $client->request('GET', 'https://mangafast.net/read/boruto-naruto-next-generations-english/');
-        $client->request('GET', 'https://mangafast.net/boruto-naruto-next-generations-chapter-53/');
-        $crawler = $client->waitFor('.inftable', 10);
+        dump('beforeRequest');
+//        $client->request('GET', 'https://mangapark.net/manga/dragon-ball-super-toyotarou/i2640593/c068');
+        $client->request('GET', 'https://www.mangahere.cc/manga/dragon_ball_super/c001/1.html');
+//        $crawler = $client->waitFor('#viewer');
 //        dump($client);
+        dump('afterRequest');
 
-        dump($crawler->filter('.inftable tr:nth-child(2) td:nth-child(6)')->text());
+        $pages = $client->executeScript('return _load_pages;');
+        dump(count($pages));
 
         return 0;
     }
+
+
 }

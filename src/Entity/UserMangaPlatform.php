@@ -44,7 +44,7 @@ class UserMangaPlatform
     /**
      * @ORM\Column(type="boolean")
      */
-    private $favorite;
+    private $favorite = false;
 
     public function getId(): ?int
     {

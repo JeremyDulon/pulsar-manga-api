@@ -11,25 +11,20 @@ use App\Entity\MangaPlatform;
 use App\Entity\Platform;
 use App\Utils\Functions;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPHtmlParser\Dom;
-use PHPHtmlParser\Exceptions\ChildNotFoundException;
-use PHPHtmlParser\Exceptions\CircularException;
-use PHPHtmlParser\Exceptions\ContentLengthException;
-use PHPHtmlParser\Exceptions\LogicalException;
-use PHPHtmlParser\Exceptions\StrictException;
-use PHPHtmlParser\Options;
-use PhpParser\Node;
+use Facebook\WebDriver\Remote\RemoteWebElement;
 use Psr\Http\Client\ClientExceptionInterface;
 use App\Utils\PlatformUtil;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Panther\Client;
+use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class ImportService
 {
-    /** @var Dom $mangaDom */
-    protected $mangaDom;
+    /** @var Client $mangaClient */
+    protected $mangaClient;
 
-    /** @var Dom $chapterDom */
-    protected $chapterDom;
+    /** @var Client $chapterClient */
+    protected $chapterClient;
 
     /** @var EntityManagerInterface $em */
     protected $em;
@@ -40,16 +35,15 @@ class ImportService
     /** @var LoggerInterface $logger */
     protected $logger;
 
-    public const MANGA_DOM = 'mangaDom';
-    public const CHAPTER_DOM = 'chapterDom';
+    public const MANGA_CLIENT = 'mangaClient';
+    public const CHAPTER_CLIENT = 'chapterClient';
 
     public function __construct(EntityManagerInterface $em, ImageService $imageService, LoggerInterface $logger) {
         $this->em = $em;
         $this->imageService = $imageService;
         $this->logger = $logger;
 
-        $this->mangaDom = new Dom();
-        $this->chapterDom = new Dom();
+        $this->mangaClient = Client::createChromeClient();
     }
 
     /**
@@ -59,14 +53,10 @@ class ImportService
      * @param int|null $chapter
      * @param bool $addImages
      * @return MangaPlatform|null
-     * @throws ChildNotFoundException
-     * @throws CircularException
      * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws StrictException
      */
-    public function importManga(string $url, string $mangaSlug, int $offset = 0, int $chapter = null, bool $addImages = false) {
+    public function importManga(string $url, string $mangaSlug, int $offset = 0, int $chapter = null, bool $addImages = false): ?MangaPlatform
+    {
         /** @var MangaPlatform|null $mangaPlatform */
         $mangaPlatform = $this->em->getRepository(MangaPlatform::class)->findOneBy([
             'sourceUrl' => $url
@@ -87,19 +77,11 @@ class ImportService
      * @param $mangaUrl
      * @param $mangaSlug
      * @return MangaPlatform
-     * @throws ChildNotFoundException
-     * @throws CircularException
-     * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws StrictException
+     *
      */
     public function createManga($mangaUrl, $mangaSlug): MangaPlatform
     {
-        $options = new Options();
-        $options->setRemoveSmartyScripts(true);
-        $options->setRemoveScripts(true);
-        $this->mangaDom->loadFromUrl($mangaUrl, $options);
+        $this->mangaClient->request('GET', $mangaUrl);
 
         $platform = PlatformUtil::findPlatformFromUrl($mangaUrl);
         $nodes = $platform['nodes'];
@@ -108,9 +90,10 @@ class ImportService
             'name' => $platform['name']
         ]);
 
-        $title = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::TITLE_NODE]);
+        $title = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::TITLE_NODE]);
+
         if (array_key_exists(PlatformUtil::ALT_TITLES_NODE, $nodes)) {
-            $altTitles = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::ALT_TITLES_NODE]);
+            $altTitles = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::ALT_TITLES_NODE]);
         }
 
         $manga = $this->em->getRepository(Manga::class)->findOneByAltTitles($title, $altTitles ?? []);
@@ -118,7 +101,7 @@ class ImportService
         if (!($manga instanceof Manga)) {
             $slug = Functions::slugify($title);
 
-            $status = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::STATUS_NODE]);
+            $status = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::STATUS_NODE]);
 
             $manga = new Manga();
             $manga
@@ -126,7 +109,7 @@ class ImportService
                 ->setTitle($title)
                 ->setSlug($slug);
 
-            $mangaImageUrl = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::MANGA_IMAGE_NODE]);
+            $mangaImageUrl = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::MANGA_IMAGE_NODE]);
             $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
             $manga->setImage($mangaImage);
 
@@ -152,42 +135,36 @@ class ImportService
 
     /**
      * @param MangaPlatform|null $mangaPlatform
-     * @throws ChildNotFoundException
-     * @throws CircularException
-     * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws StrictException
      */
     public function fillManga(?MangaPlatform $mangaPlatform) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
-        $this->mangaDom->loadFromUrl($mangaUrl);
+        $this->mangaClient->request('GET', $mangaUrl);
 
         if (array_key_exists(PlatformUtil::AUTHOR_NODE, $nodes)) {
-            $author = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::AUTHOR_NODE]);
+            $author = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::AUTHOR_NODE]);
             if ($author) {
                 $mangaPlatform->setAuthor($author);
             }
         }
 
         if (array_key_exists(PlatformUtil::DESCRIPTION_NODE, $nodes)) {
-            $description = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::DESCRIPTION_NODE]);
+            $description = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::DESCRIPTION_NODE]);
             if ($description) {
                 $mangaPlatform->setDescription($description);
             }
         }
 
         if (array_key_exists(PlatformUtil::VIEWS_NODE, $nodes)) {
-            $views = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::VIEWS_NODE]);
+            $views = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::VIEWS_NODE]);
             if ($views) {
                 $mangaPlatform->setViewsCount($views);
             }
         }
 
         if (array_key_exists(PlatformUtil::LAST_UPDATE_NODE, $nodes)) {
-            $lastUpdated = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::LAST_UPDATE_NODE]);
+            $lastUpdated = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::LAST_UPDATE_NODE]);
             if ($lastUpdated) {
                 $mangaPlatform->setLastUpdated($lastUpdated);
             }
@@ -201,22 +178,15 @@ class ImportService
      * @param int $offset
      * @param int|null $chapterNumber
      * @param bool $addImages
-     * @throws ChildNotFoundException
-     * @throws CircularException
-     * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws StrictException
+     *
      */
     public function importChapters(MangaPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
-        $this->mangaDom->loadFromUrl($mangaUrl);
+        $this->mangaClient->request('GET', $mangaUrl);
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
 
-        /** @var Dom\Node\Collection $chapters */
-
-        $chaptersData = $this->findNode(self::MANGA_DOM, $nodes[PlatformUtil::CHAPTER_DATA_NODE], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+        $chaptersData = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::CHAPTER_DATA_NODE], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
 
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
@@ -224,7 +194,7 @@ class ImportService
                 'manga' => $mangaPlatform
             ]);
 
-            if (!$chapter) {
+            if (empty($chapter)) {
                 $chapter = new Chapter();
                 $chapter
                     ->setTitle($chapterData['title'])
@@ -234,7 +204,6 @@ class ImportService
                     ->setManga($mangaPlatform);
 
                 $this->em->persist($chapter);
-                $this->em->flush();
                 $new = true;
             } else {
                 $new = false;
@@ -243,23 +212,29 @@ class ImportService
             if ($chapter->getChapterPages()->isEmpty() && $addImages) {
                 $chapter->removeAllChapterPages();
 
-                $this->chapterDom->loadFromUrl($chapter->getSourceUrl());
-                $chapterPagesData = $this->findNode(self::CHAPTER_DOM, $nodes[PlatformUtil::CHAPTER_PAGES_NODE], ['chapter' => $chapter]);
-                foreach ($chapterPagesData as $pageData) {
-                    $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
-                    $chapterPage = new ChapterPage();
-                    $chapterPage
-                        ->setFile($file)
-                        ->setNumber($pageData['number'])
-                        ->setChapter($chapter);
+                $this->mangaClient->request('GET', $chapter->getSourceUrl());
+                $chapterPagesData = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::CHAPTER_PAGES_NODE], ['chapter' => $chapter]);
 
-                    $this->em->persist($chapterPage);
+                if ($chapterPagesData) {
+                    foreach ($chapterPagesData as $pageData) {
+                        $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
+                        $chapterPage = new ChapterPage();
+                        $chapterPage
+                            ->setFile($file)
+                            ->setNumber($pageData['number'])
+                            ->setChapter($chapter);
+
+                        $this->em->persist($chapterPage);
+                    }
                 }
             }
+
+            $this->em->flush();
 
             $logInfos = [
                 'number' => $chapter->getNumber()
             ];
+
             if ($new) {
                 $this->logger->info('New chapter added: ' . $logInfos['number']);
             } else {
@@ -270,23 +245,28 @@ class ImportService
         $this->em->flush();
     }
 
-    public function findNode($dom, $platformNode, array $callbackParameters = []) {
+    /**
+     * @param string $client
+     * @param array $platformNode
+     * @param array $callbackParameters
+     * @return mixed
+     */
+    public function findNode(string $client, array $platformNode, array $callbackParameters = [])
+    {
         if (isset($platformNode['selector'])) {
-            if (!is_array($platformNode['selector'])) {
-                $platformNode['selector'] = [$platformNode['selector']];
-            }
+            /** @var Crawler $crawler */
+            $crawler = $this->$client->getCrawler();
 
-            $node = $this->$dom;
-            foreach ($platformNode['selector'] as $selector => $index) {
-                $node = $node->find($selector, $index ?? null);
-            }
+            $node = $crawler->filter($platformNode['selector']);
 
             if (isset($platformNode['callback'])) {
+                /** @var RemoteWebElement $item */
+
                 return $platformNode['callback']($node, $callbackParameters);
             }
 
-            if (isset($platformNode['text']) && $platformNode['text']) {
-                return $node->text;
+            if (isset($platformNode['text']) && $platformNode['text'] === true) {
+                return $node->getText();
             }
 
             if (isset($platformNode['attribute'])) {
@@ -294,6 +274,10 @@ class ImportService
             }
 
             return $node;
+        }
+
+        if (isset($platformNode['script_callback'])) {
+            return $platformNode['script_callback']($this->$client, $callbackParameters);
         }
 
         return null;

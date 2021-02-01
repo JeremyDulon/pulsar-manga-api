@@ -46,6 +46,7 @@ class ReadController extends BaseController
             $userMangaPlatform = (new UserMangaPlatform())
                 ->setUser($user)
                 ->setMangaPlatform($mangaPlatform);
+            $this->em->persist($userMangaPlatform);
         }
 
         $userMangaPlatform->setLastChapter($chapter);

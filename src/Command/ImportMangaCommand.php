@@ -11,6 +11,7 @@ use PHPHtmlParser\Exceptions\ContentLengthException;
 use PHPHtmlParser\Exceptions\LogicalException;
 use PHPHtmlParser\Exceptions\StrictException;
 use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,10 +26,13 @@ class ImportMangaCommand extends BaseCommand
     /** @var ImportService $importService */
     protected $importService;
 
-    public function __construct(EntityManagerInterface $em, ImportService $importService)
+    protected $logger;
+
+    public function __construct(EntityManagerInterface $em, ImportService $importService, LoggerInterface $logger)
     {
         parent::__construct($em);
 
+        $this->logger = $logger;
         $this->importService = $importService;
     }
 

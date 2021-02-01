@@ -174,4 +174,14 @@ class Chapter
 
         return $this;
     }
+
+    /**
+     * @Serializer\VirtualProperty()
+     * @Serializer\Groups({ "chapter" })
+     * @Serializer\SerializedName("manga")
+     * @Serializer\Expose
+     */
+    public function getMangaSlug() {
+        return $this->getManga()->getManga()->getSlug();
+    }
 }

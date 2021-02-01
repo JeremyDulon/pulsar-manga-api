@@ -1,0 +1,17 @@
+easy_admin:
+  entities:
+    Chapter:
+      class: App\Entity\Chapter
+      list:
+        fields:
+          - id
+          - title
+          - number
+          - sourceUrl
+          - date
+      form:
+        fields:
+          - { property: 'title', label: 'Title' }
+          - { property: 'number', label: 'Number' }
+          - { property: 'sourceUrl', label: 'Source Url' }
+          - { property: 'date', label: 'Date' }
