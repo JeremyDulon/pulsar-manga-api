@@ -11,7 +11,7 @@ parameters:
     mangas_path: '%uploads_directory%/%mangas_directory%'
     host_url: '%env(resolve:HOST_URL)%'
     aws_s3_url: '%env(resolve:AWS_S3_URL)%'
-    amazon_store_files: false # A activer si on peut plus utiliser l'url par défaut
+    amazon_store_files: true # A activer si on peut plus utiliser l'url par défaut
 
 
 services:

@@ -20,9 +20,6 @@ class ImportMangaCommand extends BaseCommand
 {
     public static $defaultName = 'pm:manga:import';
 
-    protected $mangaDom;
-    protected $chapterDom;
-
     /** @var ImportService $importService */
     protected $importService;
 
@@ -73,12 +70,6 @@ class ImportMangaCommand extends BaseCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int|void|null
-     * @throws ChildNotFoundException
-     * @throws CircularException
-     * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws StrictException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

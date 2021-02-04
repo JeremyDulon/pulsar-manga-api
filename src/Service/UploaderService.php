@@ -10,6 +10,8 @@ class UploaderService
     /** @var Filesystem $filesystem  */
     private $filesystem;
 
+    private const KEY = 'art/';
+
     public function __construct(Filesystem $filesystem) {
         $this->filesystem = $filesystem;
     }
@@ -45,7 +47,7 @@ class UploaderService
     public function uploadToAdapter(string $fileData, string $filePath, string $mime) {
         $adapter = $this->filesystem->getAdapter();
         $adapter->setMetadata($filePath, array('contentType' => $mime));
-        $adapter->write($filePath, $fileData);
+        $adapter->write(self::KEY . $filePath, $fileData);
 
         return $filePath;
     }

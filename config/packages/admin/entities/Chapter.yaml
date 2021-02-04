@@ -9,6 +9,7 @@ easy_admin:
           - number
           - sourceUrl
           - date
+          - chapterPages
       form:
         fields:
           - { property: 'title', label: 'Title' }

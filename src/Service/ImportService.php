@@ -11,9 +11,8 @@ use App\Entity\MangaPlatform;
 use App\Entity\Platform;
 use App\Utils\Functions;
 use Doctrine\ORM\EntityManagerInterface;
-use Facebook\WebDriver\Remote\RemoteWebElement;
-use Psr\Http\Client\ClientExceptionInterface;
 use App\Utils\PlatformUtil;
+use Facebook\WebDriver\Chrome\ChromeOptions;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\DomCrawler\Crawler;
@@ -43,7 +42,17 @@ class ImportService
         $this->imageService = $imageService;
         $this->logger = $logger;
 
-        $this->mangaClient = Client::createChromeClient();
+        $args = [
+            "--headless",
+            "--disable-gpu",
+            "--no-sandbox"
+        ];
+
+        $options = [
+            'connection_timeout_in_ms' => 60000,
+            'request_timeout_in_ms' => 60000,
+        ];
+        $this->mangaClient = Client::createChromeClient(null, $args, ['port' => 9514]);
     }
 
     /**
@@ -53,7 +62,6 @@ class ImportService
      * @param int|null $chapter
      * @param bool $addImages
      * @return MangaPlatform|null
-     * @throws ClientExceptionInterface
      */
     public function importManga(string $url, string $mangaSlug, int $offset = 0, int $chapter = null, bool $addImages = false): ?MangaPlatform
     {
@@ -81,7 +89,7 @@ class ImportService
      */
     public function createManga($mangaUrl, $mangaSlug): MangaPlatform
     {
-        $this->mangaClient->request('GET', $mangaUrl);
+        $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
 
         $platform = PlatformUtil::findPlatformFromUrl($mangaUrl);
         $nodes = $platform['nodes'];
@@ -140,7 +148,7 @@ class ImportService
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
-        $this->mangaClient->request('GET', $mangaUrl);
+        $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
 
         if (array_key_exists(PlatformUtil::AUTHOR_NODE, $nodes)) {
             $author = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::AUTHOR_NODE]);
@@ -182,7 +190,7 @@ class ImportService
      */
     public function importChapters(MangaPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
-        $this->mangaClient->request('GET', $mangaUrl);
+        $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $nodes = $platform['nodes'];
 
@@ -212,37 +220,50 @@ class ImportService
             if ($chapter->getChapterPages()->isEmpty() && $addImages) {
                 $chapter->removeAllChapterPages();
 
-                $this->mangaClient->request('GET', $chapter->getSourceUrl());
-                $chapterPagesData = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::CHAPTER_PAGES_NODE], ['chapter' => $chapter]);
-
-                if ($chapterPagesData) {
-                    foreach ($chapterPagesData as $pageData) {
-                        $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
-                        $chapterPage = new ChapterPage();
-                        $chapterPage
-                            ->setFile($file)
-                            ->setNumber($pageData['number'])
-                            ->setChapter($chapter);
-
-                        $this->em->persist($chapterPage);
-                    }
-                }
+                $this->importChapterImages($chapter);
             }
-
-            $this->em->flush();
 
             $logInfos = [
                 'number' => $chapter->getNumber()
             ];
 
+            $this->em->flush();
+
             if ($new) {
-                $this->logger->info('New chapter added: ' . $logInfos['number']);
+                $this->logger->info('[CHAPTER] Added: ' . $logInfos['number']);
             } else {
-                $this->logger->info('Chapter already added: ' . $logInfos['number']);
+                $this->logger->info('[CHAPTER] Already added: ' . $logInfos['number']);
             }
         }
+    }
 
-        $this->em->flush();
+    /**
+     * @param Chapter $chapter
+     */
+    public function importChapterImages(Chapter $chapter) {
+        $platform = PlatformUtil::getPlatform($chapter->getManga()->getPlatform());
+        $nodes = $platform['nodes'];
+
+        $this->openUrl(self::MANGA_CLIENT, $chapter->getSourceUrl());
+        $chapterPagesData = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::CHAPTER_PAGES_NODE], ['chapter' => $chapter]);
+
+        if ($chapterPagesData) {
+
+            $countPages = count($chapterPagesData);
+            $this->logger->info("[CHAPTER] $countPages pages to add.");
+
+            foreach ($chapterPagesData as $pageData) {
+                $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
+                $this->logger->info('[CHAPTER] Page added.');
+                $chapterPage = new ChapterPage();
+                $chapterPage
+                    ->setFile($file)
+                    ->setNumber($pageData['number'])
+                    ->setChapter($chapter);
+
+                $this->em->persist($chapterPage);
+            }
+        }
     }
 
     /**
@@ -260,8 +281,6 @@ class ImportService
             $node = $crawler->filter($platformNode['selector']);
 
             if (isset($platformNode['callback'])) {
-                /** @var RemoteWebElement $item */
-
                 return $platformNode['callback']($node, $callbackParameters);
             }
 
@@ -281,5 +300,16 @@ class ImportService
         }
 
         return null;
+    }
+
+    public function openUrl($client, $url) {
+        /** @var Client $client */
+        $client = $this->$client;
+
+        if ($client instanceof Client && $client->getCurrentURL() !== $url) {
+            $this->logger->info("[URL] opening $url");
+            $client->request('GET', $url);
+            $this->logger->info("[URL] $url opened.");
+        }
     }
 }

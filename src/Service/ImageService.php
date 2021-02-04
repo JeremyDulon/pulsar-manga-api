@@ -124,10 +124,11 @@ class ImageService
      */
     public function uploadImage(string $directory, string $imageUrl, array $headers = []) {
         if ($this->parameterBag->get('amazon_store_files') === true) {
+            $result = $this->getImage($imageUrl, $headers);
+
             $parsed = parse_url($imageUrl);
             unset($parsed['query'], $parsed['fragment']);
             $imageUrl = $this->unparse_url($parsed);
-            $result = $this->getImage($imageUrl, $headers);
             $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
 
             $url = $this->parameterBag->get('aws_s3_url') . $this->uploaderService->upload($result, $directory, $extension);
