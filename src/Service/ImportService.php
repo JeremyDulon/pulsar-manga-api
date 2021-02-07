@@ -117,9 +117,7 @@ class ImportService
                 ->setTitle($title)
                 ->setSlug($slug);
 
-            $mangaImageUrl = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::MANGA_IMAGE_NODE]);
-            $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
-            $manga->setImage($mangaImage);
+            $this->addMangaImage($manga);
 
             $this->em->persist($manga);
         }
@@ -254,7 +252,7 @@ class ImportService
 
             foreach ($chapterPagesData as $pageData) {
                 $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
-                $this->logger->info('[CHAPTER] Page added.');
+                $this->logger->info('[CHAPTER] Page added. ' . ($countPages - $pageData['number']) . ' to go.');
                 $chapterPage = new ChapterPage();
                 $chapterPage
                     ->setFile($file)
@@ -310,6 +308,18 @@ class ImportService
             $this->logger->info("[URL] opening $url");
             $client->request('GET', $url);
             $this->logger->info("[URL] $url opened.");
+        }
+    }
+
+    public function addMangaImage(MangaPlatform $mangaPlatform) {
+        if (empty($mangaPlatform->getManga()->getImage())) {
+            $platform = PlatformUtil::findPlatformFromUrl($mangaPlatform->getSourceUrl());
+            $nodes = $platform['nodes'];
+            $this->openUrl(self::MANGA_CLIENT, $mangaPlatform->getSourceUrl());
+
+            $mangaImageUrl = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::MANGA_IMAGE_NODE]);
+            $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
+            $mangaPlatform->getManga()->setImage($mangaImage);
         }
     }
 }

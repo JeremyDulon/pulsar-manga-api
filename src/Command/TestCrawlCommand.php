@@ -2,17 +2,10 @@
 
 namespace App\Command;
 
-use App\Entity\MangaPlatform;
+use App\MangaPlatform\Platform\MangaParkPlatform;
 use App\Service\ImportService;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPHtmlParser\Exceptions\ChildNotFoundException;
-use PHPHtmlParser\Exceptions\CircularException;
-use PHPHtmlParser\Exceptions\ContentLengthException;
-use PHPHtmlParser\Exceptions\LogicalException;
-use PHPHtmlParser\Exceptions\StrictException;
-use Psr\Http\Client\ClientExceptionInterface;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
@@ -45,6 +38,13 @@ class TestCrawlCommand extends BaseCommand
     {
         parent::execute($input, $output);
 
+        $platform = new MangaParkPlatform();
+
+        dump($platform->getTitleNode());
+        return 0;
+    }
+
+    protected function test() {
         dump('beforeClient');
 
         $client = Client::createChromeClient();
@@ -58,9 +58,5 @@ class TestCrawlCommand extends BaseCommand
 
         $pages = $client->executeScript('return _load_pages;');
         dump(count($pages));
-
-        return 0;
     }
-
-
 }

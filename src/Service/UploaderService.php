@@ -45,9 +45,10 @@ class UploaderService
      * @return string
      */
     public function uploadToAdapter(string $fileData, string $filePath, string $mime) {
+        $filePath = self::KEY . $filePath;
         $adapter = $this->filesystem->getAdapter();
         $adapter->setMetadata($filePath, array('contentType' => $mime));
-        $adapter->write(self::KEY . $filePath, $fileData);
+        $adapter->write($filePath, $fileData);
 
         return $filePath;
     }

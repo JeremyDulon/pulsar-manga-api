@@ -40,6 +40,10 @@ class PlatformUtil
     public const CHAPTER_DATA_NODE = 'chapterDataNode';
     public const CHAPTER_PAGES_NODE = 'chapterPagesNode';
 
+    public static function getClassPlatforms() {
+
+    }
+
     /** @todo en faire une classe */
     public static function getPlatforms() {
         return [
@@ -335,7 +339,7 @@ class PlatformUtil
                     self::STATUS_NODE => [
                         'selector' => '.attr tr:nth-child(8)',
                         'callback' => function ($el, $parameters) {
-                            return $el->text === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
+                            return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
                         }
                     ],
                     self::ALT_TITLES_NODE => [

@@ -34,10 +34,10 @@ class UpdateMangaCommand extends BaseCommand
         parent::configure();
 
         $this->addOption(
-            'slug',
-            's',
+            'url',
+            'u',
             InputOption::VALUE_REQUIRED,
-            'The slug of the manga you want to update'
+            'The source url of the manga you want to update'
         );
     }
 
@@ -58,12 +58,12 @@ class UpdateMangaCommand extends BaseCommand
         parent::execute($input, $output);
         $this->stopwatch->start('manga');
 
-        $slug = $this->input->getOption('slug');
+        $url = $this->input->getOption('url');
 
         $mangaRepository = $this->em->getRepository(MangaPlatform::class);
 
-        if ($slug) {
-            $mangaPlatform = $mangaRepository->findOneBy(['slug' => $slug]);
+        if ($url) {
+            $mangaPlatform = $mangaRepository->findOneBy(['sourceUrl' => $url]);
             if ($mangaPlatform !== null) {
                 /** @var MangaPlatform $mangaPlatform */
                 $this->updateManga($mangaPlatform);
@@ -81,14 +81,9 @@ class UpdateMangaCommand extends BaseCommand
 
     /**
      * @param MangaPlatform $mangaPlatform
-     * @throws ChildNotFoundException
-     * @throws CircularException
-     * @throws ClientExceptionInterface
-     * @throws ContentLengthException
-     * @throws LogicalException
-     * @throws StrictException
      */
     protected function updateManga(MangaPlatform $mangaPlatform) {
+        $this->importService->addMangaImage($mangaPlatform);
         $this->importService->fillManga($mangaPlatform);
         $title = $mangaPlatform->getManga()->getTitle();
         $this->output->writeln("Manga updated: $title");

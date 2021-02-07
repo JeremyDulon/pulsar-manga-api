@@ -7,5 +7,12 @@ easy_admin:
           - id
           - title
           - status
+          - { property: 'image.url', type: 'image' }
           - createdAt
           - platforms
+      form:
+        fields:
+          - id
+          - title
+          - status
+          - createdAt
