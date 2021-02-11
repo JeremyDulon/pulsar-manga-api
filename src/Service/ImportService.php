@@ -117,8 +117,6 @@ class ImportService
                 ->setTitle($title)
                 ->setSlug($slug);
 
-            $this->addMangaImage($manga);
-
             $this->em->persist($manga);
         }
 
@@ -131,6 +129,8 @@ class ImportService
             ->setManga($manga)
             ->setSourceSlug($mangaSlug)
             ->setSourceUrl($mangaUrl);
+
+        $this->addMangaImage($mangaPlatform);
 
         $this->em->persist($mangaPlatform);
 
