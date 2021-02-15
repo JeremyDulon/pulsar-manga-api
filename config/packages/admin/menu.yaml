@@ -4,10 +4,10 @@ easy_admin:
       - label: 'Manga'
         icon: 'book'
         children:
-          - { entity: 'Manga', icon: 'book', label: 'Mangas' }
-          - { entity: 'MangaPlatform', icon: 'book', label: 'Manga Platforms' }
-          - { entity: 'Chapter', label: 'Chapters' }
-          - { entity: 'Platform', label: 'Platforms' }
+          - { entity: 'Manga', label: 'Mangas', icon: 'book', default: true }
+          - { entity: 'MangaPlatform', label: 'Manga Platforms', icon: 'book' }
+          - { entity: 'Chapter', label: 'Chapters', icon: 'book-open' }
+          - { entity: 'Platform', label: 'Platforms', icon: 'server' }
       - label: 'Jobs'
         icon: 'wrench'
         children:

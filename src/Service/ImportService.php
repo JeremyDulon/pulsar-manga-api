@@ -9,6 +9,7 @@ use App\Entity\ChapterPage;
 use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Entity\Platform;
+use App\MangaPlatform\PlatformNode;
 use App\Utils\Functions;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Utils\PlatformUtil;
@@ -92,16 +93,16 @@ class ImportService
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
 
         $platform = PlatformUtil::findPlatformFromUrl($mangaUrl);
-        $nodes = $platform['nodes'];
         /** @var Platform $platformEntity */
         $platformEntity = $this->em->getRepository(Platform::class)->findOneBy([
-            'name' => $platform['name']
+            'name' => $platform->getName()
         ]);
 
-        $title = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::TITLE_NODE]);
+        $title = $this->findNode(self::MANGA_CLIENT, $platform->getTitleNode());
 
-        if (array_key_exists(PlatformUtil::ALT_TITLES_NODE, $nodes)) {
-            $altTitles = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::ALT_TITLES_NODE]);
+
+        if ($platform->getAltTitlesNode()->isInit() === true) {
+            $altTitles = $this->findNode(self::MANGA_CLIENT, $platform->getAltTitlesNode());
         }
 
         $manga = $this->em->getRepository(Manga::class)->findOneByAltTitles($title, $altTitles ?? []);
@@ -109,7 +110,7 @@ class ImportService
         if (!($manga instanceof Manga)) {
             $slug = Functions::slugify($title);
 
-            $status = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::STATUS_NODE]);
+            $status = $this->findNode(self::MANGA_CLIENT, $platform->getStatusNode());
 
             $manga = new Manga();
             $manga
@@ -145,32 +146,31 @@ class ImportService
     public function fillManga(?MangaPlatform $mangaPlatform) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
-        $nodes = $platform['nodes'];
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
 
-        if (array_key_exists(PlatformUtil::AUTHOR_NODE, $nodes)) {
-            $author = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::AUTHOR_NODE]);
+        if ($platform->getAuthorNode()->isInit() === true) {
+            $author = $this->findNode(self::MANGA_CLIENT, $platform->getAuthorNode());
             if ($author) {
                 $mangaPlatform->setAuthor($author);
             }
         }
 
-        if (array_key_exists(PlatformUtil::DESCRIPTION_NODE, $nodes)) {
-            $description = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::DESCRIPTION_NODE]);
+        if ($platform->getDescriptionNode()->isInit() === true) {
+            $description = $this->findNode(self::MANGA_CLIENT, $platform->getDescriptionNode());
             if ($description) {
                 $mangaPlatform->setDescription($description);
             }
         }
 
-        if (array_key_exists(PlatformUtil::VIEWS_NODE, $nodes)) {
-            $views = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::VIEWS_NODE]);
+        if ($platform->getViewsNode()->isInit() === true) {
+            $views = $this->findNode(self::MANGA_CLIENT, $platform->getViewsNode());
             if ($views) {
                 $mangaPlatform->setViewsCount($views);
             }
         }
 
-        if (array_key_exists(PlatformUtil::LAST_UPDATE_NODE, $nodes)) {
-            $lastUpdated = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::LAST_UPDATE_NODE]);
+        if ($platform->getLastUpdatedNode()->isInit() === true) {
+            $lastUpdated = $this->findNode(self::MANGA_CLIENT, $platform->getLastUpdatedNode());
             if ($lastUpdated) {
                 $mangaPlatform->setLastUpdated($lastUpdated);
             }
@@ -190,9 +190,8 @@ class ImportService
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
-        $nodes = $platform['nodes'];
 
-        $chaptersData = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::CHAPTER_DATA_NODE], ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+        $chaptersData = $this->findNode(self::MANGA_CLIENT, $platform->getChapterDataNode(), ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
 
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([
@@ -240,10 +239,9 @@ class ImportService
      */
     public function importChapterImages(Chapter $chapter) {
         $platform = PlatformUtil::getPlatform($chapter->getManga()->getPlatform());
-        $nodes = $platform['nodes'];
 
         $this->openUrl(self::MANGA_CLIENT, $chapter->getSourceUrl());
-        $chapterPagesData = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::CHAPTER_PAGES_NODE], ['chapter' => $chapter]);
+        $chapterPagesData = $this->findNode(self::MANGA_CLIENT, $platform->getChapterPagesNode(), ['chapter' => $chapter]);
 
         if ($chapterPagesData) {
 
@@ -266,35 +264,35 @@ class ImportService
 
     /**
      * @param string $client
-     * @param array $platformNode
+     * @param PlatformNode $platformNode
      * @param array $callbackParameters
      * @return mixed
      */
-    public function findNode(string $client, array $platformNode, array $callbackParameters = [])
+    public function findNode(string $client, PlatformNode $platformNode, array $callbackParameters = [])
     {
-        if (isset($platformNode['selector'])) {
+        if (!empty($selector = $platformNode->getSelector())) {
             /** @var Crawler $crawler */
             $crawler = $this->$client->getCrawler();
 
-            $node = $crawler->filter($platformNode['selector']);
+            $node = $crawler->filter($selector);
 
-            if (isset($platformNode['callback'])) {
-                return $platformNode['callback']($node, $callbackParameters);
+            if ($platformNode->hasCallback()) {
+                return $platformNode->executeCallback($node, $callbackParameters);
             }
 
-            if (isset($platformNode['text']) && $platformNode['text'] === true) {
+            if ($platformNode->isText()) {
                 return $node->getText();
             }
 
-            if (isset($platformNode['attribute'])) {
-                return $node->getAttribute($platformNode['attribute']);
+            if (!empty($attribute = $platformNode->getAttribute())) {
+                return $node->getAttribute($attribute);
             }
 
             return $node;
         }
 
-        if (isset($platformNode['script_callback'])) {
-            return $platformNode['script_callback']($this->$client, $callbackParameters);
+        if ($platformNode->hasScript()) {
+            return $platformNode->executeScript($this->$client, $callbackParameters);
         }
 
         return null;
@@ -314,10 +312,9 @@ class ImportService
     public function addMangaImage(MangaPlatform $mangaPlatform) {
         if (empty($mangaPlatform->getManga()->getImage())) {
             $platform = PlatformUtil::findPlatformFromUrl($mangaPlatform->getSourceUrl());
-            $nodes = $platform['nodes'];
             $this->openUrl(self::MANGA_CLIENT, $mangaPlatform->getSourceUrl());
 
-            $mangaImageUrl = $this->findNode(self::MANGA_CLIENT, $nodes[PlatformUtil::MANGA_IMAGE_NODE]);
+            $mangaImageUrl = $this->findNode(self::MANGA_CLIENT, $platform->getMangaImageNode());
             $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
             $mangaPlatform->getManga()->setImage($mangaImage);
         }

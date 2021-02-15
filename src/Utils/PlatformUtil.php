@@ -7,6 +7,8 @@ namespace App\Utils;
 use App\Entity\Chapter;
 use App\Entity\Manga;
 use App\Entity\Platform;
+use App\MangaPlatform\AbstractPlatform;
+use App\MangaPlatform\Platforms\MangaParkPlatform;
 use DateTime;
 use Facebook\WebDriver\Remote\RemoteWebElement;
 use Facebook\WebDriver\WebDriverBy;
@@ -40,12 +42,14 @@ class PlatformUtil
     public const CHAPTER_DATA_NODE = 'chapterDataNode';
     public const CHAPTER_PAGES_NODE = 'chapterPagesNode';
 
-    public static function getClassPlatforms() {
-
+    public static function getPlatforms() {
+        return [
+            new MangaParkPlatform()
+        ];
     }
 
     /** @todo en faire une classe */
-    public static function getPlatforms() {
+    public static function getOldPlatforms() {
         return [
             [
                 'name' => self::PLATFORM_KAKALOT,
@@ -316,108 +320,6 @@ class PlatformUtil
             ],
 
             [
-                'name' => self::PLATFORM_MANGAPARK,
-                'language' => self::LANGUAGE_EN,
-                'baseUrl' => 'https://mangapark.net',
-                'mangaPath' => '/manga/' . self::MANGA_SLUG,
-                'mangaRegex' => [
-                    'regex' => '/\/manga\/((?:[a-z]*-?)*)/',
-                    'manga' => 1
-                ],
-                'chapterRegex' => [
-                    'regex' => '/\/manga\/((?:[A-Za-z0-9]*-?)*)\/(i[0-9]*\/c[0-9]*)',
-                    'manga' => 1,
-                    'chapter' => 2
-                ],
-                'nodes' => [
-                    self::TITLE_NODE => [
-                        'selector' => '.cover img',
-                        'callback' => function ($el) {
-                            return $el->getAttribute('title');
-                        }
-                    ],
-                    self::STATUS_NODE => [
-                        'selector' => '.attr tr:nth-child(8)',
-                        'callback' => function ($el, $parameters) {
-                            return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
-                        }
-                    ],
-                    self::ALT_TITLES_NODE => [
-                        'selector' => '.attr tr:nth-child(4)',
-                        'callback' => function (Crawler $el, $parameters) {
-                            return array_map(function ($v) {
-                                return trim($v);
-                            }, explode(';', $el->getText()));
-                        }
-                    ],
-                    self::MANGA_IMAGE_NODE => [
-                        'selector' => '.cover img',
-                        'callback' => function ($el) {
-                            return $el->getAttribute('src');
-                        }
-                    ],
-                    self::AUTHOR_NODE => [
-                        'selector' => '.attr tr:nth-child(5)',
-                        'text' => true
-                    ],
-                    self::DESCRIPTION_NODE => [
-                        'selector' => '.summary',
-                        'text' => true
-                    ],
-                    self::CHAPTER_DATA_NODE => [
-                        'selector' => '.book-list-1 #stream_1 .chapter',
-                        'callback' => function (Crawler $el, $parameters) {
-                            $chaptersArray = $el->children('.item')->reduce(function (Crawler $node, $i) {
-                                $chapNumber = str_replace('ch.', '', $node->filter('a.ch')->getText());
-                                return ctype_digit($chapNumber) === true;
-                            })->each(function (Crawler $ch) {
-                                $chapterData = $ch->filter('a.ch');
-                                $number = str_replace('ch.', '', $chapterData->getText());
-                                $url = $ch->filter('.ext em a:nth-child(5)')->getAttribute('href');
-                                return [
-                                    'title' => 'Chapter ' . $number,
-                                    'number' => $number,
-                                    'url' => $url,
-                                    'date' => new DateTime($ch->filter('.time')->getText())
-                                ];
-                            });
-
-                            $offset = $parameters['offset'];
-                            $chapterNumber = $parameters['chapterNumber'];
-                            $numberCb = function ($ch) {
-                                return $ch['number'];
-                            };
-
-                            usort($chaptersArray, function ($chA, $chB) {
-                                return $chA['number'] < $chB['number'] ? -1 : 1;
-                            });
-
-                            $lastChapterNumber = (int) $numberCb(end($chaptersArray));
-
-                            $chaptersArray = self::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
-                            return $chaptersArray;
-                        }
-                    ],
-                    self::CHAPTER_PAGES_NODE => [
-                        'script_callback' => function ($client, $parameters) {
-                            $chPages = $client->executeScript('return _load_pages');
-                            /** @var Chapter|null $chapter */
-                            $chapter = $parameters['chapter'] ?? null;
-                            $val = [];
-                            if ($chapter) {
-                                foreach ($chPages as $chPage) {
-                                    $val[] = [
-                                        'number' => $chPage['n'],
-                                        'url' => $chPage['u']
-                                    ];
-                                }
-                            }
-                            return $val;
-                        }
-                    ]
-                ]
-            ],
-            [
                 'name' => self::PLATFORM_MANGAZUKI,
                 'language' => self::LANGUAGE_EN
             ],
@@ -509,7 +411,8 @@ class PlatformUtil
 
     public static function getPlatform(Platform $platformEntity) {
         foreach (self::getPlatforms() as $platform) {
-            if ($platformEntity->getName() === $platform['name']) {
+            /** @var AbstractPlatform $platform */
+            if ($platformEntity->getName() === $platform->getName()) {
                 return $platform;
             }
         }
@@ -517,9 +420,10 @@ class PlatformUtil
         return null;
     }
 
-    public static function getPlatformFromKey($key, $value) {
+    public static function getPlatformFromBaseUrl($baseUrl): ?MangaParkPlatform
+    {
         foreach (self::getPlatforms() as $platform) {
-            if (array_key_exists($key, $platform) && $platform[$key] === $value) {
+            if ($platform->getBaseUrl() === $baseUrl) {
                 return $platform;
             }
         }
@@ -532,24 +436,27 @@ class PlatformUtil
      *
      * @return array|null
      */
-    public static function checkUrl($url) {
+    public static function checkUrl($url): ?array
+    {
         $urlInfo = parse_url($url);
         $baseUrl = Functions::baseUrlInfo($urlInfo);
-        $platform = self::getPlatformFromKey('baseUrl', $baseUrl);
-        if (preg_match($platform['mangaRegex']['regex'], $urlInfo['path'], $matches)) {
+        $platform = self::getPlatformFromBaseUrl($baseUrl);
+
+        $regex = $platform->getMangaRegex();
+        if (preg_match($regex->getRegex(), $urlInfo['path'], $matches)) {
             return [
                 'type' => 'manga', // todo: const
-                'manga' => $matches[$platform['chapterRegex']['manga']]
+                'manga' => $matches[$regex->getMangaPosition()]
             ];
         }
 
-        if (preg_match($platform['chapterRegex']['regex'], $urlInfo['path'], $matches)) {
-            return [
-                'type' => 'chapter', // todo: const
-                'manga' => $matches[$platform['chapterRegex']['manga']],
-                'chapter' => $matches[$platform['chapterRegex']['chapter']]
-            ];
-        }
+//        if (preg_match($platform['chapterRegex']['regex'], $urlInfo['path'], $matches)) {
+//            return [
+//                'type' => 'chapter', // todo: const
+//                'manga' => $matches[$platform['chapterRegex']['manga']],
+//                'chapter' => $matches[$platform['chapterRegex']['chapter']]
+//            ];
+//        }
 
         return null;
     }
@@ -557,7 +464,7 @@ class PlatformUtil
     public static function findPlatformFromUrl($url) {
         $urlInfo = parse_url($url);
         $baseUrl = $urlInfo['scheme'] . '://' . $urlInfo['host'];
-        return self::getPlatformFromKey('baseUrl', $baseUrl);
+        return self::getPlatformFromBaseUrl($baseUrl);
     }
 
     /**

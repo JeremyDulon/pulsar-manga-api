@@ -31,6 +31,8 @@ class SourceController extends BaseController
         $chapter = $request->get('chapter');
 
         if ($url) {
+            // TODO: Check if url if form one of our platforms
+
             $options = ["--url=".$url];
 
             if ($images) {
@@ -52,6 +54,7 @@ class SourceController extends BaseController
             $cronJob->setCommand(ImportMangaCommand::$defaultName);
             $cronJob->setArguments(join(' ', $options));
             $cronJob->setExecuteImmediately(true);
+            $cronJob->setLogFile('import.log');
 
             $this->em->persist($cronJob);
             $this->em->flush();

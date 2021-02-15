@@ -1,9 +1,9 @@
 <?php
 
-namespace App\MangaPlatform\Platform;
+namespace App\MangaPlatform;
 
 use Closure;
-use Exception;
+use Symfony\Component\DomCrawler\Crawler;
 
 class PlatformNode
 {
@@ -22,6 +22,14 @@ class PlatformNode
     /** @var Closure $script */
     protected $script;
 
+    /** @var bool $init */
+    protected $init = false;
+
+    public function isInit(): bool
+    {
+        return $this->init;
+    }
+
     /**
      * @return string
      */
@@ -36,6 +44,7 @@ class PlatformNode
      */
     public function setSelector(string $selector): PlatformNode
     {
+        $this->init = true;
         $this->selector = $selector;
         return $this;
     }
@@ -54,6 +63,7 @@ class PlatformNode
      */
     public function setAttribute(string $attribute): PlatformNode
     {
+        $this->init = true;
         $this->attribute = $attribute;
         return $this;
     }
@@ -63,7 +73,7 @@ class PlatformNode
      */
     public function isText(): bool
     {
-        return $this->text;
+        return $this->text ?? false;
     }
 
     /**
@@ -72,6 +82,7 @@ class PlatformNode
      */
     public function setText(bool $text): PlatformNode
     {
+        $this->init = true;
         $this->text = $text;
         return $this;
     }
@@ -82,17 +93,28 @@ class PlatformNode
      */
     public function setCallback(Closure $callback): PlatformNode
     {
+        $this->init = true;
         $this->callback = $callback;
         return $this;
     }
 
     /**
+     * @return bool
+     */
+    public function hasCallback(): bool
+    {
+        return isset($this->callback);
+    }
+
+    /**
+     * @param Crawler $el
+     * @param $cbParams
      * @return mixed
      */
-    public function executeCallback()
+    public function executeCallback(Crawler $el, $cbParams)
     {
         $cb = $this->callback;
-        return $cb();
+        return $cb($el, $cbParams);
     }
 
     /**
@@ -101,15 +123,26 @@ class PlatformNode
      */
     public function setScript(Closure $script): PlatformNode
     {
+        $this->init = true;
         $this->script = $script;
         return $this;
     }
 
     /**
+     * @return bool
+     */
+    public function hasScript(): bool
+    {
+        return isset($this->script);
+    }
+
+    /**
+     * @param $client
+     * @param $cbParams
      * @return mixed
      */
-    public function executeScript() {
+    public function executeScript($client, $cbParams) {
         $script = $this->script;
-        return $script();
+        return $script($client, $cbParams);
     }
 }

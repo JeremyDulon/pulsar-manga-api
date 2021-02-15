@@ -1,20 +1,21 @@
 <?php
 
-namespace App\MangaPlatform\Platform;
+namespace App\MangaPlatform\Platforms;
 
 use App\Entity\Chapter;
 use App\Entity\Manga;
+use App\MangaPlatform\AbstractPlatform;
 use App\Utils\PlatformUtil;
 use DateTime;
 use Symfony\Component\Panther\DomCrawler\Crawler;
 
-class MangaParkPlatform extends AbstractPlatform
+class MangaFastPlatform extends AbstractPlatform
 {
-    protected $name = 'MangaPark';
+    protected $name = 'MangaFast';
 
-    protected $baseUrl = 'https://mangapark.net';
+    protected $baseUrl = 'https://mangafast.net';
 
-    protected $mangaPath = '/manga/' . self::MANGA_SLUG;
+    protected $mangaPath = '/read/' . self::MANGA_SLUG;
 
     public function __construct() {
         parent::__construct();
@@ -32,14 +33,14 @@ class MangaParkPlatform extends AbstractPlatform
     public function setTitleNode() {
         $titleNode = $this->getTitleNode();
 
-        $titleNode->setSelector('.cover img');
-        $titleNode->setAttribute('title');
+        $titleNode->setSelector('.inftable tr td b');
+        $titleNode->setText(true);
     }
 
     public function setStatusNode() {
         $statusNode = $this->getStatusNode();
 
-        $statusNode->setSelector('.attr tr:nth-child(8');
+        $statusNode->setSelector('.inftable tr:nth-child(5) td:nth-child(1)');
         $statusNode->setCallback(function (Crawler $el) {
             return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
         });
@@ -48,69 +49,71 @@ class MangaParkPlatform extends AbstractPlatform
     public function setAltTitlesNode() {
         $altTitlesNode = $this->getAltTitlesNode();
 
-        $altTitlesNode->setSelector('.attr tr:nth-child(4)');
+        $altTitlesNode->setSelector('.inftable tr:nth-child(1) td:nth-child(1)');
         $altTitlesNode->setCallback(function (Crawler $el) {
-            return array_map(function ($v) {
-                return trim($v);
-            }, explode(';', $el->getText()));
+            return [$el->getText()];
         });
     }
 
     public function setMangaImageNode() {
         $mangaImageNode = $this->getMangaImageNode();
 
-        $mangaImageNode->setSelector('.cover img');
-        $mangaImageNode->setAttribute('src');
+        $mangaImageNode->setSelector('#Thumbnail');
+        $mangaImageNode->setAttribute('data-src');
     }
 
     public function setAuthorNode() {
         $authorNode = $this->getAuthorNode();
 
-        $authorNode->setSelector('.attr tr:nth-child(5)');
+        $authorNode->setSelector('.inftable tr:nth-child(3) td:nth-child(1)');
         $authorNode->setText(true);
     }
 
     public function setDescriptionNode() {
         $descriptionNode = $this->getDescriptionNode();
 
-        $descriptionNode->setSelector('.summary');
+        $descriptionNode->setSelector('.sc p[itemprop=description]');
         $descriptionNode->setText(true);
     }
 
     public function setChapterDataNode() {
         $chapterDataNode = $this->getChapterDataNode();
 
-        $chapterDataNode->setSelector('.book-list-1 #stream_1 .chapter');
+        $chapterDataNode->setSelector('.lsch tr[itemprop=hasPart]');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
-            $chaptersArray = $el->children('.item')->reduce(function (Crawler $node, $i) {
-                $chapNumber = str_replace('ch.', '', $node->filter('a.ch')->getText());
-                return ctype_digit($chapNumber) === true;
-            })->each(function (Crawler $ch) {
-                $chapterData = $ch->filter('a.ch');
-                $number = str_replace('ch.', '', $chapterData->getText());
-                $url = $ch->filter('.ext em a:nth-child(5)')->getAttribute('href');
-                return [
-                    'title' => 'Chapter ' . $number,
-                    'number' => $number,
-                    'url' => $url,
-                    'date' => new DateTime($ch->filter('.time')->getText())
-                ];
+            $chaptersArray = array_filter($el->toArray(), function ($node) {
+                $a = $node->filter('.jds a');
+                $date = $node->filter('.tgs');
+                return ctype_digit($a->find('span[itemprop=issueNumber]')->text) === true && trim($date->text) !== 'Scheduled';
             });
-
             $offset = $parameters['offset'];
             $chapterNumber = $parameters['chapterNumber'];
-            $numberCb = function ($ch) {
-                return $ch['number'];
+            $val = [];
+            $numberCb = function ($node) {
+                return $node->filter('.jds a span')->text;
             };
 
-            usort($chaptersArray, function ($chA, $chB) {
-                return $chA['number'] < $chB['number'] ? -1 : 1;
+            usort($chaptersArray, function ($a, $b) {
+                return $a->filter('span[itemprop=issueNumber]')->text < $b->filter('span[itemprop=issueNumber]')->text
+                    ? -1
+                    : 1;
             });
 
             $lastChapterNumber = (int) $numberCb(end($chaptersArray));
 
             $chaptersArray = PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
-            return $chaptersArray;
+            foreach ($chaptersArray as $chapterNode) {
+                $a = $chapterNode->filter('.jds a');
+                $number = $a->filter('span[itemprop=issueNumber]')->text;
+                $url = $a->getAttribute('href');
+                $val[] = [
+                    'title' => trim($a->innerText()),
+                    'number' => $number,
+                    'url' => $url,
+                    'date' => DateTime::createFromFormat('Y-m-d', trim($chapterNode->filter('.tgs')->text))->setTime(0, 0)
+                ];
+            }
+            return $val;
         });
     }
 

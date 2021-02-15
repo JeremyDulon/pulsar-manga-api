@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\MangaPlatform\Platform\MangaParkPlatform;
+use App\MangaPlatform\Platforms\MangaParkPlatform;
 use App\Service\ImportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;

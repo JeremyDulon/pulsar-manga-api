@@ -95,6 +95,7 @@ class MangaPlatform
     public function __construct()
     {
         $this->chapters = new ArrayCollection();
+        $this->userMangaPlatforms = new ArrayCollection();
     }
 
     public function __toString() {

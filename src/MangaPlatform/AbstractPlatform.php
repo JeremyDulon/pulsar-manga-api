@@ -1,8 +1,8 @@
 <?php
 
+namespace App\MangaPlatform;
 
-namespace App\MangaPlatform\Platform;
-
+use Exception;
 
 abstract class AbstractPlatform
 {
@@ -18,8 +18,10 @@ abstract class AbstractPlatform
 
     protected $mangaPath;
 
-    /** Utile ? */
+    /** @var PlatformRegex $mangaRegex */
     protected $mangaRegex;
+
+    /** Utile ? */
     protected $chapterRegex;
 
     /** @var PlatformNode $titleNode */
@@ -40,8 +42,8 @@ abstract class AbstractPlatform
     /** @var PlatformNode $viewsNode */
     protected $viewsNode;
 
-    /** @var PlatformNode $lastUpdateNode */
-    protected $lastUpdateNode;
+    /** @var PlatformNode $lastUpdatedNode */
+    protected $lastUpdatedNode;
 
     /** @var PlatformNode $descriptionNode */
     protected $descriptionNode;
@@ -52,15 +54,49 @@ abstract class AbstractPlatform
     /** @var PlatformNode $chapterPagesNode */
     protected $chapterPagesNode;
 
+    /**
+     * AbstractPlatform constructor.
+     * @throws Exception
+     */
     public function __construct() {
+        $this->mangaRegex = new PlatformRegex();
+        $this->chapterRegex = new PlatformRegex();
+
         $this->titleNode = new PlatformNode();
+        $this->authorNode = new PlatformNode();
+        $this->viewsNode = new PlatformNode();
         $this->altTitlesNode = new PlatformNode();
         $this->statusNode = new PlatformNode();
         $this->mangaImageNode = new PlatformNode();
-        $this->lastUpdateNode = new PlatformNode();
+        $this->lastUpdatedNode = new PlatformNode();
         $this->descriptionNode = new PlatformNode();
         $this->chapterDataNode = new PlatformNode();
         $this->chapterPagesNode = new PlatformNode();
+
+        $this->setMangaRegex();
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
+    }
+
+    public function getMangaRegex(): PlatformRegex
+    {
+        return $this->mangaRegex;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setMangaRegex()
+    {
+        throw new Exception('Not implemented');
     }
 
     /**
@@ -114,9 +150,9 @@ abstract class AbstractPlatform
     /**
      * @return PlatformNode
      */
-    public function getLastUpdateNode(): PlatformNode
+    public function getLastUpdatedNode(): PlatformNode
     {
-        return $this->lastUpdateNode;
+        return $this->lastUpdatedNode;
     }
 
     /**
