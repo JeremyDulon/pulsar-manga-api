@@ -49,6 +49,7 @@ class SourceController extends BaseController
 
             $cronJob = new ScheduledCommand();
             $cronJob->setName('Import ' . $url);
+            $cronJob->setCronExpression('@daily');
             $cronJob->setPriority(1);
             $cronJob->setDisabled(false);
             $cronJob->setCommand(ImportMangaCommand::$defaultName);
