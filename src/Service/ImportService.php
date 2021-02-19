@@ -315,8 +315,10 @@ class ImportService
             $this->openUrl(self::MANGA_CLIENT, $mangaPlatform->getSourceUrl());
 
             $mangaImageUrl = $this->findNode(self::MANGA_CLIENT, $platform->getMangaImageNode());
-            $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
-            $mangaPlatform->getManga()->setImage($mangaImage);
+            if ($mangaImageUrl) {
+                $mangaImage = $this->imageService->uploadMangaImage($mangaImageUrl);
+                $mangaPlatform->getManga()->setImage($mangaImage);
+            }
         }
     }
 }

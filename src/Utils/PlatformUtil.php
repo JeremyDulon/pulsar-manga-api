@@ -8,6 +8,7 @@ use App\Entity\Chapter;
 use App\Entity\Manga;
 use App\Entity\Platform;
 use App\MangaPlatform\AbstractPlatform;
+use App\MangaPlatform\Platforms\MangaFastPlatform;
 use App\MangaPlatform\Platforms\MangaParkPlatform;
 use DateTime;
 use Facebook\WebDriver\Remote\RemoteWebElement;
@@ -24,7 +25,6 @@ class PlatformUtil
     public const PLATFORM_MANGAFREAK = 'MangaFreak';
     public const PLATFORM_MANGAZUKI = 'Mangazuki';
     public const PLATFORM_MANGAFAST = 'MangaFast';
-    public const PLATFORM_MANGAPARK = 'MangaPark';
 
     public const LANGUAGE_EN = 'EN';
     public const LANGUAGE_FR = 'FR';
@@ -44,7 +44,8 @@ class PlatformUtil
 
     public static function getPlatforms() {
         return [
-            new MangaParkPlatform()
+            new MangaParkPlatform(),
+            new MangaFastPlatform()
         ];
     }
 
@@ -189,10 +190,6 @@ class PlatformUtil
                 ]
             ],
             [
-                'name' => self::PLATFORM_FOX,
-                'language' => self::LANGUAGE_EN
-            ],
-            [
                 'name' => self::PLATFORM_MANGAFAST,
                 'language' => self::LANGUAGE_EN,
                 'baseUrl' => 'https://mangafast.net',
@@ -320,18 +317,6 @@ class PlatformUtil
             ],
 
             [
-                'name' => self::PLATFORM_MANGAZUKI,
-                'language' => self::LANGUAGE_EN
-            ],
-            [
-                'name' => self::PLATFORM_LELSCAN,
-                'language' => self::LANGUAGE_FR
-            ],
-            [
-                'name' => self::PLATFORM_SCANFR,
-                'language' => self::LANGUAGE_FR
-            ],
-            [
                 'name' => self::PLATFORM_MANGAFREAK,
                 'language' => self::LANGUAGE_EN,
                 'baseUrl' => 'https://w11.mangafreak.net',
@@ -420,7 +405,7 @@ class PlatformUtil
         return null;
     }
 
-    public static function getPlatformFromBaseUrl($baseUrl): ?MangaParkPlatform
+    public static function getPlatformFromBaseUrl($baseUrl): ?AbstractPlatform
     {
         foreach (self::getPlatforms() as $platform) {
             if ($platform->getBaseUrl() === $baseUrl) {
@@ -442,13 +427,14 @@ class PlatformUtil
         $baseUrl = Functions::baseUrlInfo($urlInfo);
         $platform = self::getPlatformFromBaseUrl($baseUrl);
 
-        $regex = $platform->getMangaRegex();
-        if (preg_match($regex->getRegex(), $urlInfo['path'], $matches)) {
-            return [
-                'type' => 'manga', // todo: const
-                'manga' => $matches[$regex->getMangaPosition()]
-            ];
-        }
+        if (!empty($platform)) {
+            $regex = $platform->getMangaRegex();
+            if (preg_match($regex->getRegex(), $urlInfo['path'], $matches)) {
+                return [
+                    'type' => 'manga', // todo: const
+                    'manga' => $matches[$regex->getMangaPosition()]
+                ];
+            }
 
 //        if (preg_match($platform['chapterRegex']['regex'], $urlInfo['path'], $matches)) {
 //            return [
@@ -457,6 +443,7 @@ class PlatformUtil
 //                'chapter' => $matches[$platform['chapterRegex']['chapter']]
 //            ];
 //        }
+        }
 
         return null;
     }

@@ -30,6 +30,14 @@ class MangaFastPlatform extends AbstractPlatform
         $this->setChapterPagesNode();
     }
 
+    public function setMangaRegex()
+    {
+        $mangaRegex = $this->getMangaRegex();
+
+        $mangaRegex->setRegex('/\/read\/((?:[a-z]*-?)*)/')
+            ->setMangaPosition(1);
+    }
+
     public function setTitleNode() {
         $titleNode = $this->getTitleNode();
 
@@ -59,7 +67,7 @@ class MangaFastPlatform extends AbstractPlatform
         $mangaImageNode = $this->getMangaImageNode();
 
         $mangaImageNode->setSelector('#Thumbnail');
-        $mangaImageNode->setAttribute('data-src');
+        $mangaImageNode->setAttribute('src');
     }
 
     public function setAuthorNode() {
@@ -81,57 +89,56 @@ class MangaFastPlatform extends AbstractPlatform
 
         $chapterDataNode->setSelector('.lsch tr[itemprop=hasPart]');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
-            $chaptersArray = array_filter($el->toArray(), function ($node) {
+            $chaptersArray = $el->reduce(function ($node) {
                 $a = $node->filter('.jds a');
                 $date = $node->filter('.tgs');
-                return ctype_digit($a->find('span[itemprop=issueNumber]')->text) === true && trim($date->text) !== 'Scheduled';
+                return ctype_digit($a->filter('span[itemprop=issueNumber]')->getText()) === true && trim($date->getText()) !== 'Scheduled';
+            })->each(function (Crawler $ch) {
+                $a = $ch->filter('.jds a');
+                $number = $a->filter('span[itemprop=issueNumber]')->getText();
+                $url = $a->getAttribute('href');
+                return [
+                    'title' => trim($a->getText()),
+                    'number' => $number,
+                    'url' => $url,
+                    'date' => DateTime::createFromFormat('Y-m-d', trim($ch->filter('.tgs')->getText()))->setTime(0, 0)
+                ];
             });
             $offset = $parameters['offset'];
             $chapterNumber = $parameters['chapterNumber'];
-            $val = [];
-            $numberCb = function ($node) {
-                return $node->filter('.jds a span')->text;
+            $numberCb = function ($ch) {
+                return $ch['number'];
             };
 
-            usort($chaptersArray, function ($a, $b) {
-                return $a->filter('span[itemprop=issueNumber]')->text < $b->filter('span[itemprop=issueNumber]')->text
-                    ? -1
-                    : 1;
+            usort($chaptersArray, function ($chA, $chB) {
+                return $chA['number'] < $chB['number'] ? -1 : 1;
             });
 
             $lastChapterNumber = (int) $numberCb(end($chaptersArray));
 
             $chaptersArray = PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
-            foreach ($chaptersArray as $chapterNode) {
-                $a = $chapterNode->filter('.jds a');
-                $number = $a->filter('span[itemprop=issueNumber]')->text;
-                $url = $a->getAttribute('href');
-                $val[] = [
-                    'title' => trim($a->innerText()),
-                    'number' => $number,
-                    'url' => $url,
-                    'date' => DateTime::createFromFormat('Y-m-d', trim($chapterNode->filter('.tgs')->text))->setTime(0, 0)
-                ];
-            }
-            return $val;
+            return $chaptersArray;
         });
     }
 
     public function setChapterPagesNode() {
         $chapterPagesNode = $this->getChapterPagesNode();
 
-        $chapterPagesNode->setScript(function ($client, $parameters) {
-            $chPages = $client->executeScript('return _load_pages');
+        $chapterPagesNode->setSelector('.chp2 img');
+        $chapterPagesNode->setCallback(function (Crawler $el, $parameters) {
             /** @var Chapter|null $chapter */
             $chapter = $parameters['chapter'] ?? null;
             $val = [];
             if ($chapter) {
-                foreach ($chPages as $chPage) {
-                    $val[] = [
-                        'number' => $chPage['n'],
-                        'url' => $chPage['u']
-                    ];
-                }
+                $pageNumber = 0;
+                $val = $el->each(function (Crawler $ch) use (&$pageNumber) {
+                    $pageNumber++;
+                    $url = $ch->getAttribute('data-src') ?? $ch->getAttribute('src');
+                    return [
+                       'number' => $pageNumber,
+                       'url' => $url
+                   ];
+                });
             }
             return $val;
         });
