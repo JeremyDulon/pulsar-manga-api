@@ -33,7 +33,7 @@ class PlatformNode
     /**
      * @return string
      */
-    public function getSelector(): string
+    public function getSelector(): ?string
     {
         return $this->selector;
     }
@@ -52,7 +52,7 @@ class PlatformNode
     /**
      * @return string
      */
-    public function getAttribute(): string
+    public function getAttribute(): ?string
     {
         return $this->attribute;
     }
