@@ -60,6 +60,18 @@ class Chapter
      */
     private $chapterPages;
 
+    /**
+     * @var int
+     * @Serializer\Groups({ "chapter" })
+     */
+    private $nextChapterId;
+
+    /**
+     * @var int
+     * @Serializer\Groups({ "chapter" })
+     */
+    private $previousChapterId;
+
     public function __construct()
     {
         $this->chapterPages = new ArrayCollection();
@@ -124,11 +136,18 @@ class Chapter
         return $this;
     }
 
+    /**
+     * @return MangaPlatform|null
+     */
     public function getManga(): ?MangaPlatform
     {
         return $this->manga;
     }
 
+    /**
+     * @param MangaPlatform|null $manga
+     * @return $this
+     */
     public function setManga(?MangaPlatform $manga): self
     {
         $this->manga = $manga;
@@ -176,12 +195,44 @@ class Chapter
     }
 
     /**
+     * @param int $id
+     * @return Chapter
+     */
+    public function setNextChapterId(int $id): self
+    {
+        $this->nextChapterId = $id;
+        return $this;
+    }
+
+    /**
+     * @param int $id
+     * @return Chapter
+     */
+    public function setPreviousChapterId(int $id): self
+    {
+        $this->nextChapterId = $id;
+        return $this;
+    }
+
+    /**
      * @Serializer\VirtualProperty()
      * @Serializer\Groups({ "chapter" })
-     * @Serializer\SerializedName("manga")
+     * @Serializer\SerializedName("manga_id")
      * @Serializer\Expose
      */
-    public function getMangaSlug() {
+    public function getMangaId(): int
+    {
+        return $this->getManga()->getId();
+    }
+
+    /**
+     * @Serializer\VirtualProperty()
+     * @Serializer\Groups({ "chapter" })
+     * @Serializer\SerializedName("manga_slug")
+     * @Serializer\Expose
+     */
+    public function getMangaSlug(): string
+    {
         return $this->getManga()->getManga()->getSlug();
     }
 }

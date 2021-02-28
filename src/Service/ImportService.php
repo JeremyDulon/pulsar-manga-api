@@ -53,7 +53,7 @@ class ImportService
             'connection_timeout_in_ms' => 60000,
             'request_timeout_in_ms' => 60000,
         ];
-        $this->mangaClient = Client::createChromeClient(null, $args, ['port' => 9514]);
+        $this->mangaClient = Client::createChromeClient(null, $args, ['port' => mt_rand(9500, 9999)]);
     }
 
     /**
