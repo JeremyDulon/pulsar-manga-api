@@ -6,6 +6,7 @@ easy_admin:
         fields:
           - id
           - title
+          - altTitles
           - status
           - { property: 'image.url', type: 'image' }
           - createdAt

@@ -1,0 +1,19 @@
+easy_admin:
+  entities:
+    Job:
+      class: JMS\JobQueueBundle\Entity\Job
+      list:
+        fields:
+          - id
+          - command
+          - args
+          - state
+          - output
+          - errorOutput
+        actions: ['-new']
+#      form:
+#        fields:
+#          - id
+#          - { property: 'command', type: 'string', type_options: { empty_data: 'pm:manga:import' } }
+#          - state
+#          - args

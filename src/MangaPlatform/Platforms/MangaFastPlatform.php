@@ -57,9 +57,11 @@ class MangaFastPlatform extends AbstractPlatform
     public function setAltTitlesNode() {
         $altTitlesNode = $this->getAltTitlesNode();
 
-        $altTitlesNode->setSelector('.inftable tr:nth-child(1) td:nth-child(1)');
+        $altTitlesNode->setSelector('.inftable tr:nth-child(2) td:nth-child(2)');
         $altTitlesNode->setCallback(function (Crawler $el) {
-            return [$el->getText()];
+            return array_map(function ($v) {
+                return trim($v);
+            }, explode(';', $el->getText()));
         });
     }
 

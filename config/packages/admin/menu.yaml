@@ -12,3 +12,4 @@ easy_admin:
         icon: 'wrench'
         children:
           - { entity: 'Cron', icon: 'wrench', label: 'JMose Jobs' }
+          - { entity: 'Job', icon: 'wrench', label: 'JMS Jobs' }

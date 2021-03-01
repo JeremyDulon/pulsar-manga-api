@@ -8,7 +8,6 @@ use App\Service\ConsoleService;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use JMose\CommandSchedulerBundle\Entity\ScheduledCommand;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -47,15 +46,10 @@ class SourceController extends BaseController
                 $options[] = "--offset=$offset";
             }
 
-            $cronJob = new ScheduledCommand();
-            $cronJob->setName('Import ' . $url);
-            $cronJob->setCronExpression('@daily');
-            $cronJob->setPriority(1);
-            $cronJob->setDisabled(false);
-            $cronJob->setCommand(ImportMangaCommand::$defaultName);
-            $cronJob->setArguments(join(' ', $options));
-            $cronJob->setExecuteImmediately(true);
-            $cronJob->setLogFile('import.log');
+            $cronJob = ConsoleService::createConsoleJob(
+                ImportMangaCommand::$defaultName,
+                $options
+            );
 
             $this->em->persist($cronJob);
             $this->em->flush();
