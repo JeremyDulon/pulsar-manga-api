@@ -11,9 +11,11 @@ easy_admin:
           - output
           - errorOutput
         actions: ['-new']
-#      form:
-#        fields:
-#          - id
-#          - { property: 'command', type: 'string', type_options: { empty_data: 'pm:manga:import' } }
-#          - state
-#          - args
+      form:
+        fields:
+          - id
+          - command
+          - args
+          - state
+          - output
+          - errorOutput
