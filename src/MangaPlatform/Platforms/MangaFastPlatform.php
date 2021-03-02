@@ -48,7 +48,7 @@ class MangaFastPlatform extends AbstractPlatform
     public function setStatusNode() {
         $statusNode = $this->getStatusNode();
 
-        $statusNode->setSelector('.inftable tr:nth-child(5) td:nth-child(1)');
+        $statusNode->setSelector('.inftable tr:nth-child(6) td:nth-child(2)');
         $statusNode->setCallback(function (Crawler $el) {
             return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
         });
