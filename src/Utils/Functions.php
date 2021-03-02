@@ -38,6 +38,27 @@ class Functions
     }
 
     /**
+     * @param $input
+     * @return string
+     */
+    public static function formatMilliseconds($input): string
+    {
+        $ms = $input % 1000;
+        $input = floor($input / 1000);
+
+        $seconds = $input % 60;
+        $input = floor($input / 60);
+
+        $minutes = $input % 60;
+        $input = floor($input / 60);
+
+        $hours = $input % 24;
+        $input = floor($input / 24);
+
+        return sprintf( '%02dh %02dm %02ds %02dms', $hours, $minutes, $seconds, $ms);
+    }
+
+    /**
      * @param string $url
      * @return string
      */

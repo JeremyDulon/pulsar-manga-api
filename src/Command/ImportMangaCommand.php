@@ -86,11 +86,8 @@ class ImportMangaCommand extends BaseCommand
             if (!empty($platformUrlInfo)) {
                 $mangaPlatform = $this->importService->importManga($url, $platformUrlInfo['manga'], $offset, $chapter, $addImages);
 
-                $stopEvent = $this->stopwatch->stop('manga');
-                $eventInfo = sprintf('%.2F MiB - %d s',
-                    $stopEvent->getMemory() / 1024 / 1024,
-                    $stopEvent->getDuration() / 1000
-                );
+                $eventInfo = $this->stopEvent('manga');
+
                 $title = $mangaPlatform->getManga()->getTitle();
 
                 $this->output->writeln("Manga updated: $title - $eventInfo");

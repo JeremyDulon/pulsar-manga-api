@@ -3,6 +3,7 @@
 
 namespace App\Command;
 
+use App\Utils\Functions;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -49,5 +50,17 @@ abstract class BaseCommand extends Command
         $this->input = $input;
         $this->output = $output;
         $this->stopwatch = new Stopwatch();
+    }
+
+    /**
+     * @param $eventName
+     * @return string
+     */
+    protected function stopEvent($eventName): string
+    {
+        $stopEvent = $this->stopwatch->stop($eventName);
+
+        return sprintf('%.2F MiB', $stopEvent->getMemory() / 1024 / 1024) .
+            Functions::formatMilliseconds($stopEvent->getDuration());;
     }
 }

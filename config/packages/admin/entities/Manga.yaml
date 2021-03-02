@@ -8,12 +8,13 @@ easy_admin:
           - title
           - altTitles
           - status
-          - { property: 'image.url', type: 'image' }
+          - { property: 'image.url', label: 'Image', type: 'image' }
           - createdAt
           - platforms
       form:
         fields:
           - id
           - title
+          - altTitles
           - status
           - createdAt
