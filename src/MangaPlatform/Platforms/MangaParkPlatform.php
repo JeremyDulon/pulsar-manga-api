@@ -48,7 +48,7 @@ class MangaParkPlatform extends AbstractPlatform
     public function setStatusNode() {
         $statusNode = $this->getStatusNode();
 
-        $statusNode->setSelector('.attr tr:nth-child(8)');
+        $statusNode->setSelector('.attr tr:nth-child(8) td');
         $statusNode->setCallback(function (Crawler $el) {
             return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
         });
@@ -57,7 +57,7 @@ class MangaParkPlatform extends AbstractPlatform
     public function setAltTitlesNode() {
         $altTitlesNode = $this->getAltTitlesNode();
 
-        $altTitlesNode->setSelector('.attr tr:nth-child(4)');
+        $altTitlesNode->setSelector('.attr tr:nth-child(4) td');
         $altTitlesNode->setCallback(function (Crawler $el) {
             return array_map(function ($v) {
                 return trim($v);
@@ -75,7 +75,7 @@ class MangaParkPlatform extends AbstractPlatform
     public function setAuthorNode() {
         $authorNode = $this->getAuthorNode();
 
-        $authorNode->setSelector('.attr tr:nth-child(5)');
+        $authorNode->setSelector('.attr tr:nth-child(5) td');
         $authorNode->setText(true);
     }
 

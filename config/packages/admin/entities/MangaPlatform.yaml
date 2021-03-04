@@ -12,3 +12,11 @@ easy_admin:
           - sourceUrl
           - lastUpdated
           - chapters
+      form:
+        fields:
+          - id
+          - description
+          - author
+          - viewsCount
+          - sourceUrl
+          - lastUpdated

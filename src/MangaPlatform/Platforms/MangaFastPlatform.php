@@ -75,7 +75,7 @@ class MangaFastPlatform extends AbstractPlatform
     public function setAuthorNode() {
         $authorNode = $this->getAuthorNode();
 
-        $authorNode->setSelector('.inftable tr:nth-child(3) td:nth-child(1)');
+        $authorNode->setSelector('.inftable tr:nth-child(4) td:nth-child(2)');
         $authorNode->setText(true);
     }
 
