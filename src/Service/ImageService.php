@@ -122,7 +122,7 @@ class ImageService
      * @param array $headers
      * @return string
      */
-    public function uploadImage(string $directory, string $imageUrl, array $headers = []) {
+    public function uploadImage(string $directory, string $imageUrl, array $headers = [], array $options = []) {
         if ($this->parameterBag->get('amazon_store_files') === true) {
             $result = $this->getImage($imageUrl, $headers);
 

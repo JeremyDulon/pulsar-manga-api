@@ -61,7 +61,7 @@ abstract class BaseCommand extends Command
         $stopEvent = $this->stopwatch->stop($eventName);
 
         return join(' ', [
-            sprintf('%.2F MiB', $stopEvent->getMemory() / 1024 / 1024) .
+            sprintf('%.2F MiB', $stopEvent->getMemory() / 1024 / 1024) . ' ' .
             Functions::formatMilliseconds($stopEvent->getDuration())
         ]);
     }

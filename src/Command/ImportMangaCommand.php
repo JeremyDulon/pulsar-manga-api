@@ -92,7 +92,7 @@ class ImportMangaCommand extends BaseCommand
 
                 $this->output->writeln("Manga updated: $title - $eventInfo");
             } else {
-                $this->output->writeln('Platform not found.');
+                $this->output->writeln('Platform not supported.');
             }
         }
         return 0;

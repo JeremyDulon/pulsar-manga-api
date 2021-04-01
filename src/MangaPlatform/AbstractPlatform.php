@@ -81,6 +81,11 @@ abstract class AbstractPlatform
         return $this->name;
     }
 
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
     public function getBaseUrl(): string
     {
         return $this->baseUrl;

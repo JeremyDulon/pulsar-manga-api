@@ -8,6 +8,7 @@ use App\Entity\Chapter;
 use App\Entity\Manga;
 use App\Entity\Platform;
 use App\MangaPlatform\AbstractPlatform;
+use App\MangaPlatform\Platforms\FanFoxPlatform;
 use App\MangaPlatform\Platforms\MangaFastPlatform;
 use App\MangaPlatform\Platforms\MangaParkPlatform;
 use DateTime;
@@ -19,11 +20,7 @@ use Symfony\Component\Panther\DomCrawler\Crawler;
 class PlatformUtil
 {
     public const PLATFORM_KAKALOT = 'MangaKakalot';
-    public const PLATFORM_FOX = 'MangaFox';
-    public const PLATFORM_LELSCAN = 'Lelscan';
-    public const PLATFORM_SCANFR = 'Scan FR';
     public const PLATFORM_MANGAFREAK = 'MangaFreak';
-    public const PLATFORM_MANGAZUKI = 'Mangazuki';
     public const PLATFORM_MANGAFAST = 'MangaFast';
 
     public const LANGUAGE_EN = 'EN';
@@ -45,7 +42,8 @@ class PlatformUtil
     public static function getPlatforms() {
         return [
             new MangaParkPlatform(),
-            new MangaFastPlatform()
+            new MangaFastPlatform(),
+            new FanFoxPlatform()
         ];
     }
 

@@ -9,10 +9,12 @@ use App\Entity\ChapterPage;
 use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Entity\Platform;
+use App\MangaPlatform\AbstractPlatform;
 use App\MangaPlatform\PlatformNode;
 use App\Utils\Functions;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Utils\PlatformUtil;
+use Exception;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Panther\Client;
@@ -87,16 +89,27 @@ class ImportService
      * @param $mangaSlug
      * @return MangaPlatform
      *
+     * @throws Exception
      */
     public function createManga($mangaUrl, $mangaSlug): MangaPlatform
     {
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
 
+        /** @var AbstractPlatform $platform */
         $platform = PlatformUtil::findPlatformFromUrl($mangaUrl);
         /** @var Platform $platformEntity */
         $platformEntity = $this->em->getRepository(Platform::class)->findOneBy([
             'name' => $platform->getName()
         ]);
+
+        if (!$platformEntity) {
+            $platformEntity = new Platform();
+            $platformEntity->setName($platform->getName());
+            $platformEntity->setLanguage($platform->getLanguage());
+            $platformEntity->setBaseUrl($platform->getBaseUrl());
+
+            $this->em->persist($platformEntity);
+        }
 
         $title = $this->findNode(self::MANGA_CLIENT, $platform->getTitleNode());
 
