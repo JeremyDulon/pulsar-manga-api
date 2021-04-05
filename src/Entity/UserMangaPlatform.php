@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserMangaPlatformRepository;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=UserMangaPlatformRepository::class)
@@ -20,6 +21,7 @@ class UserMangaPlatform
     /**
      * @ORM\ManyToOne(targetEntity=MangaPlatform::class, inversedBy="userMangaPlatforms")
      * @ORM\JoinColumn(nullable=false)
+     * @Serializer\Groups({ "mangaList" })
      */
     private $mangaPlatform;
 
@@ -31,6 +33,7 @@ class UserMangaPlatform
 
     /**
      * @ORM\ManyToOne(targetEntity=Chapter::class)
+     * @Serializer\Groups({ "mangaList" })
      */
     private $lastChapter;
 
@@ -38,11 +41,13 @@ class UserMangaPlatform
      * @var int
      *
      * @ORM\Column(type="integer", nullable=true)
+     * @Serializer\Groups({ "mangaList" })
      */
     private $lastPage;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Serializer\Groups({ "mangaList" })
      */
     private $favorite = false;
 

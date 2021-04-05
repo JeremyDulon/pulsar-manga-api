@@ -19,12 +19,12 @@ class FavoriteController extends BaseController
 {
     /**
      * @Rest\Get("/favorites", name="get_favorites")
-     * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData", "chapterList"})
+     * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData"})
      *
      */
     public function getFavoritesAction(): array
     {
-        $userMangaPlatforms = $this->em->getRepository(UserMangaPlatform::class)
+        return $this->em->getRepository(UserMangaPlatform::class)
             ->createQueryBuilder('ump')
             ->select('ump', 'mp', 'm', 'mi')
             ->leftJoin('ump.mangaPlatform', 'mp')
@@ -34,10 +34,6 @@ class FavoriteController extends BaseController
             ->setParameter('user', $this->getUser())
             ->getQuery()
             ->getResult();
-
-        return array_map(function (UserMangaPlatform $um) {
-            return $um->getMangaPlatform()->getManga();
-        }, $userMangaPlatforms);
     }
 
     /**

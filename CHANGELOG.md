@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This changelog adheres to [keepAChangeLog](http://keepachangelog.com/).
 
+## [0.18.0] - 2021-04-05
+### Changed
+- Favorites list
 
 ## [0.17.0] - 2021-04-01
 ### Added
