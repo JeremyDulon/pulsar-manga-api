@@ -7,6 +7,7 @@ use App\Repository\MangaPlatformRepository;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
@@ -77,6 +78,7 @@ class MangaPlatform
 
     /**
      * @ORM\OneToMany(targetEntity=Chapter::class, mappedBy="manga", orphanRemoval=true, cascade={"remove"})
+     * @ORM\OrderBy({"number" = "ASC"})
      * @Serializer\Groups({ "chapterList" })
      */
     private $chapters;
@@ -244,5 +246,16 @@ class MangaPlatform
         $this->author = $author;
 
         return $this;
+    }
+
+    /**
+     * @Serializer\VirtualProperty()
+     * @Serializer\Groups({ "latest_chapter" })
+     * @Serializer\SerializedName("latest_chapter")
+     * @Serializer\Expose
+     */
+    public function getLatestChapter()
+    {
+        return $this->getChapters()->last();
     }
 }

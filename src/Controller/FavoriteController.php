@@ -19,7 +19,7 @@ class FavoriteController extends BaseController
 {
     /**
      * @Rest\Get("/favorites", name="get_favorites")
-     * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData"})
+     * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData", "latest_chapter"})
      *
      */
     public function getFavoritesAction(): array
