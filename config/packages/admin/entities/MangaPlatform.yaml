@@ -2,11 +2,15 @@ easy_admin:
   entities:
     MangaPlatform:
       class: App\Entity\MangaPlatform
+#      templates:
+#        list: 'admin/MangaPlatform/list.html.twig'
       list:
+        actions: ['import']
         fields:
           - id
           - { property: 'manga.title', label: 'Title' }
           - { property: 'platform.name', label: 'Platform' }
+          - autoUpdate
           - description
           - viewsCount
           - sourceUrl
@@ -16,6 +20,7 @@ easy_admin:
         fields:
           - id
           - description
+          - autoUpdate
           - author
           - viewsCount
           - sourceUrl

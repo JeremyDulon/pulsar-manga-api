@@ -90,6 +90,13 @@ class MangaPlatform
     private $author;
 
     /**
+     * @var bool
+     * @ORM\Column(type="boolean", options={"default": 0})
+     * @Serializer\Groups({ "platformData" })
+     */
+    private $autoUpdate;
+
+    /**
      * @ORM\OneToMany(targetEntity=UserMangaPlatform::class, mappedBy="mangaPlatform", cascade={"remove"}, orphanRemoval=true)
      */
     private $userMangaPlatforms;
@@ -109,12 +116,12 @@ class MangaPlatform
         return $this->id;
     }
 
-    public function getLastUpdated(): ?\DateTimeInterface
+    public function getLastUpdated(): ?DateTimeInterface
     {
         return $this->lastUpdated;
     }
 
-    public function setLastUpdated(?\DateTimeInterface $lastUpdated): self
+    public function setLastUpdated(?DateTimeInterface $lastUpdated): self
     {
         $this->lastUpdated = $lastUpdated;
 
@@ -249,12 +256,30 @@ class MangaPlatform
     }
 
     /**
+     * @return bool
+     */
+    public function isAutoUpdate(): bool
+    {
+        return $this->autoUpdate;
+    }
+
+    /**
+     * @param bool $autoUpdate
+     * @return MangaPlatform
+     */
+    public function setAutoUpdate(bool $autoUpdate): MangaPlatform
+    {
+        $this->autoUpdate = $autoUpdate;
+        return $this;
+    }
+
+    /**
      * @Serializer\VirtualProperty()
      * @Serializer\Groups({ "latest_chapter" })
      * @Serializer\SerializedName("latest_chapter")
      * @Serializer\Expose
      */
-    public function getLatestChapter()
+    public function getLatestChapter(): Chapter
     {
         return $this->getChapters()->last();
     }
