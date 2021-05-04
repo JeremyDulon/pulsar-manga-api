@@ -3,6 +3,7 @@
 
 namespace App\Entity;
 
+use App\Utils\PlatformUtil;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
@@ -31,7 +32,7 @@ class Platform
      * @ORM\Column(type="string", length=10)
      * @Serializer\Groups({ "platformData" })
      */
-    private $language;
+    private $language = PlatformUtil::LANGUAGE_EN;
 
     /**
      * @var string
@@ -46,11 +47,14 @@ class Platform
     private $mangaPath;
 
     /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @var bool
+     * @ORM\Column(type="boolean", options={'default': true})
      */
-    private $chapterPath;
+    private $active;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
@@ -117,20 +121,20 @@ class Platform
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    public function getChapterPath(): ?string
+    public function isActive(): bool
     {
-        return $this->chapterPath;
+        return $this->active;
     }
 
     /**
-     * @param string $chapterPath
+     * @param bool $active
      * @return Platform
      */
-    public function setChapterPath(string $chapterPath): Platform
+    public function setActive(bool $active): Platform
     {
-        $this->chapterPath = $chapterPath;
+        $this->active = $active;
         return $this;
     }
 }

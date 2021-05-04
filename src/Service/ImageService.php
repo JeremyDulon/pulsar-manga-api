@@ -51,34 +51,17 @@ class ImageService
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if (curl_errno($ch)) {
-            echo 'Error:' . curl_error($ch);
+            dump('Error:' . curl_error($ch));
+        }
+        if ($httpCode !== 200) {
+            dump('AIE: ' . $httpCode);
+            return null;
         }
         curl_close($ch);
 
         return $result;
-    }
-
-    /**
-     * @param string $imageUrl
-     * @param array $headers
-     * @return File
-     */
-    public function getMangaImage(string $imageUrl, array $headers = []) {
-        $result = $this->getImage($imageUrl, $headers);
-
-        return $this->getFile($result, $imageUrl, 'mangas');
-    }
-
-    /**
-     * @param string $imageUrl
-     * @param array $headers
-     * @return File
-     */
-    public function getChapterImage(string $imageUrl, array $headers = []) {
-        $result = $this->getImage($imageUrl, $headers);
-
-        return $this->getFile($result, $imageUrl, 'chapter_pages');
     }
 
     /**
@@ -120,11 +103,17 @@ class ImageService
      * @param string $directory
      * @param string $imageUrl
      * @param array $headers
-     * @return string
+     * @param array $options
+     * @return File
      */
-    public function uploadImage(string $directory, string $imageUrl, array $headers = [], array $options = []) {
+    public function uploadImage(string $directory, string $imageUrl, array $headers = [], array $options = []): ?File
+    {
         if ($this->parameterBag->get('amazon_store_files') === true) {
             $result = $this->getImage($imageUrl, $headers);
+
+            if (!$result) {
+                return null;
+            }
 
             $parsed = parse_url($imageUrl);
             unset($parsed['query'], $parsed['fragment']);

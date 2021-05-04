@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class MangaController extends BaseController
 {
+    // Remake: this
     /**
      * @Rest\Get("/mangas", name="get_mangas")
      * @Rest\View(serializerGroups={"mangaList", "image"})

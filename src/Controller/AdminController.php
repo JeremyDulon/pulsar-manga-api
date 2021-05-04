@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Command\ImportMangaCommand;
+use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Service\ConsoleService;
 use Doctrine\ORM\OptimisticLockException;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class AdminController extends EasyAdminController
 {
+    // Remake: this
     /**
      * @return RedirectResponse
      * @throws ORMException
@@ -20,8 +22,8 @@ class AdminController extends EasyAdminController
     public function importAction(): RedirectResponse
     {
         $id = $this->request->query->get('id');
-        /** @var MangaPlatform $entity */
-        $entity = $this->em->getRepository(MangaPlatform::class)->find($id);
+        /** @var Manga $entity */
+        $entity = $this->em->getRepository(MangaLanguage::class)->find($id);
 
         $options = [
             '--images',

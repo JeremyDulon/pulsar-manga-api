@@ -82,28 +82,28 @@ class MangaFastPlatform extends AbstractPlatform
     public function setDescriptionNode() {
         $descriptionNode = $this->getDescriptionNode();
 
-        $descriptionNode->setSelector('.sc p[itemprop=description]');
+        $descriptionNode->setSelector('#article-title p[itemprop=description]');
         $descriptionNode->setText(true);
     }
 
     public function setChapterDataNode() {
         $chapterDataNode = $this->getChapterDataNode();
 
-        $chapterDataNode->setSelector('.lsch tr[itemprop=hasPart]');
+        $chapterDataNode->setSelector('.chapter-link-w');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
-            $chaptersArray = $el->reduce(function ($node) {
-                $a = $node->filter('.jds a');
-                $date = $node->filter('.tgs');
-                return ctype_digit($a->filter('span[itemprop=issueNumber]')->getText()) === true && trim($date->getText()) !== 'Scheduled';
+            $chaptersArray = $el->children('.chapter-link')->reduce(function (Crawler $node) {
+                $classes = $node->filter('.chapter-w')->attr('class');
+                return strpos($classes, 'spoiler') === false;
             })->each(function (Crawler $ch) {
-                $a = $ch->filter('.jds a');
-                $number = $a->filter('span[itemprop=issueNumber]')->getText();
-                $url = $a->getAttribute('href');
+                $url = $ch->getAttribute('href');
+                $title = $ch->filter('.chapter-w .left')->getText();
+                $number = str_replace('Chapter ', '', $title);
+                $date = DateTime::createFromFormat('Y-m-d', trim($ch->filter('.chapter-w .right')->getText()));
                 return [
-                    'title' => trim($a->getText()),
-                    'number' => $number,
+                    'title' => trim($title),
+                    'number' => (int) $number,
                     'url' => $url,
-                    'date' => DateTime::createFromFormat('Y-m-d', trim($ch->filter('.tgs')->getText()))->setTime(0, 0)
+                    'date' => $date->setTime(0, 0)
                 ];
             });
             $offset = $parameters['offset'];
@@ -126,7 +126,7 @@ class MangaFastPlatform extends AbstractPlatform
     public function setChapterPagesNode() {
         $chapterPagesNode = $this->getChapterPagesNode();
 
-        $chapterPagesNode->setSelector('.chp2 img');
+        $chapterPagesNode->setSelector('.content-comic img');
         $chapterPagesNode->setCallback(function (Crawler $el, $parameters) {
             /** @var Chapter|null $chapter */
             $chapter = $parameters['chapter'] ?? null;

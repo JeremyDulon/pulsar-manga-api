@@ -13,8 +13,8 @@ easy_admin:
           - autoUpdate
           - description
           - viewsCount
-          - sourceUrl
-          - lastUpdated
+          - { property: sourceUrl, type: url }
+          - updatedAt
           - chapters
       form:
         fields:
@@ -24,4 +24,3 @@ easy_admin:
           - author
           - viewsCount
           - sourceUrl
-          - lastUpdated

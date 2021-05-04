@@ -19,6 +19,7 @@ use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class PlatformUtil
 {
+    // Remake: this
     public const PLATFORM_KAKALOT = 'MangaKakalot';
     public const PLATFORM_MANGAFREAK = 'MangaFreak';
     public const PLATFORM_MANGAFAST = 'MangaFast';

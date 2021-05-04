@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Chapter;
 use App\Entity\ChapterPage;
+use App\Entity\File;
 use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Entity\Platform;
@@ -15,13 +16,13 @@ use App\Utils\Functions;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Utils\PlatformUtil;
 use Exception;
-use Facebook\WebDriver\Chrome\ChromeOptions;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class ImportService
 {
+    // Remake: this
     /** @var Client $mangaClient */
     protected $mangaClient;
 
@@ -52,10 +53,11 @@ class ImportService
         ];
 
         $options = [
+            'port' => mt_rand(9500, 9999),
             'connection_timeout_in_ms' => 60000,
             'request_timeout_in_ms' => 60000,
         ];
-        $this->mangaClient = Client::createChromeClient(null, $args, ['port' => mt_rand(9500, 9999)]);
+        $this->mangaClient = Client::createChromeClient(null, $args, $options);
     }
 
     /**
@@ -263,14 +265,19 @@ class ImportService
 
             foreach ($chapterPagesData as $pageData) {
                 $file = $this->imageService->uploadChapterImage($pageData['url'], $pageData['imageHeaders'] ?? []);
-                $this->logger->info('[CHAPTER] Page added. ' . ($countPages - $pageData['number']) . ' to go.');
-                $chapterPage = new ChapterPage();
-                $chapterPage
-                    ->setFile($file)
-                    ->setNumber($pageData['number'])
-                    ->setChapter($chapter);
+                if ($file instanceof File) {
+                    $chapterPage = new ChapterPage();
+                    $chapterPage
+                        ->setFile($file)
+                        ->setNumber($pageData['number'])
+                        ->setChapter($chapter);
 
-                $this->em->persist($chapterPage);
+                    $this->em->persist($chapterPage);
+                } else {
+                    $this->logger->warning('Page: #' . $pageData['number'] . ' not uploaded');
+                    $chapter->removeAllChapterPages();
+                    break;
+                }
             }
         }
     }

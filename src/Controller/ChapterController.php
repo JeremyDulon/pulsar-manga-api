@@ -13,6 +13,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 
 class ChapterController extends BaseController
 {
+    // Remake: this
     /**
      * @Rest\Get("/chapter/{id}", name="get_chapter")
      * @Rest\View(serializerGroups={"chapter", "image"})

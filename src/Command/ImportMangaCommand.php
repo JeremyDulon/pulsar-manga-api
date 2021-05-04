@@ -12,6 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ImportMangaCommand extends BaseCommand
 {
+    // Remake: this
     public static $defaultName = 'pm:manga:import';
 
     /** @var ImportService $importService */

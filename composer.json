@@ -38,7 +38,7 @@
         "symfony/intl": "4.4.*",
         "symfony/mailer": "4.4.*",
         "symfony/monolog-bundle": "^3.1",
-        "symfony/panther": "^0.8.0",
+        "symfony/panther": "^1.0",
         "symfony/process": "4.4.*",
         "symfony/property-access": "4.4.*",
         "symfony/property-info": "4.4.*",
@@ -57,6 +57,7 @@
         "vich/uploader-bundle": "^1.8"
     },
     "require-dev": {
+        "dbrekelmans/bdi": "^0.3.0",
         "doctrine/doctrine-fixtures-bundle": "^3.3",
         "symfony/browser-kit": "^4.4",
         "symfony/css-selector": "^4.4",

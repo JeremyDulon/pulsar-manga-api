@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\Manga;
 use App\Entity\MangaPlatform;
 use App\Service\ImportService;
 use App\Utils\PlatformUtil;
@@ -13,6 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class AutoUpdateCommand extends BaseCommand
 {
+    // Remake: this
     public static $defaultName = 'pm:manga:autoupdate';
 
     /** @var ImportService $importService */
@@ -37,24 +39,22 @@ class AutoUpdateCommand extends BaseCommand
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return int|void|null
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
-        $this->stopwatch->start('autoimport');
-
-        $mangaPlatforms = $this->em->getRepository(MangaPlatform::class)
+        $mangas = $this->em->getRepository(Manga::class)
             ->findBy([
                 'autoUpdate' => true
             ]);
 
         /** @var MangaPlatform $mangaPlatform */
-        foreach ($mangaPlatforms as $mangaPlatform) {
+        foreach ($mangas as $manga) {
             $this->importService->importChapters(
-                $mangaPlatform,
+                $manga,
                 2,
-                $mangaPlatform->getLatestChapter()->getNumber(),
+                $manga->getLatestChapter()->getNumber(),
                 true
             );
         }

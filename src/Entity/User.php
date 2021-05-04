@@ -1,6 +1,7 @@
 <?php
 namespace App\Entity;
 
+use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use FOS\UserBundle\Model\User as BaseUser;
@@ -123,9 +124,17 @@ class User extends BaseUser
     private $deleted;
 
     /**
-     * @ORM\OneToMany(targetEntity=UserMangaPlatform::class, mappedBy="user", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=UserMangaLanguage::class, mappedBy="user", orphanRemoval=true)
      */
-    private $userMangaPlatforms;
+    private $userMangaLanguages;
+
+    /**
+     *
+     * @var array|string[]
+     * @ORM\Column(name="languages", type="simple_array", nullable=false)
+     * @Serializer\Groups({ "getUser" })
+     */
+    private $languages = [ PlatformUtil::LANGUAGE_EN ];
 
     /**
      * User constructor.
@@ -134,8 +143,9 @@ class User extends BaseUser
     {
         parent::__construct();
         $this->roles = [ self::ROLE_USER ];
+        $this->languages = [ PlatformUtil::LANGUAGE_EN ];
         $this->deleted = false;
-        $this->userMangaPlatforms = new ArrayCollection();
+        $this->userMangas = new ArrayCollection();
     }
 
     public function setFirstName(?string $firstName): self
@@ -175,29 +185,29 @@ class User extends BaseUser
     }
 
     /**
-     * @return Collection|UserMangaPlatform[]
+     * @return Collection|UserMangaLanguage[]
      */
     public function getUserMangaPlatforms(): Collection
     {
-        return $this->userMangaPlatforms;
+        return $this->userMangas;
     }
 
-    public function addUserMangaPlatform(UserMangaPlatform $userMangaPlatform): self
+    public function addUserManga(UserManga $userManga): self
     {
-        if (!$this->userMangaPlatforms->contains($userMangaPlatform)) {
-            $this->userMangaPlatforms[] = $userMangaPlatform;
-            $userMangaPlatform->setUser($this);
+        if (!$this->userMangas->contains($userManga)) {
+            $this->userMangas[] = $userManga;
+            $userManga->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeUserMangaPlatform(UserMangaPlatform $userMangaPlatform): self
+    public function removeUserManga(UserManga $userManga): self
     {
-        if ($this->userMangaPlatforms->removeElement($userMangaPlatform)) {
+        if ($this->userMangas->removeElement($userManga)) {
             // set the owning side to null (unless already changed)
-            if ($userMangaPlatform->getUser() === $this) {
-                $userMangaPlatform->setUser(null);
+            if ($userManga->getUser() === $this) {
+                $userManga->setUser(null);
             }
         }
 
@@ -226,7 +236,7 @@ class User extends BaseUser
      */
     public function getFavorites(): array
     {
-        return array_map(function (UserMangaPlatform $userMangaPlatform) {
+        return array_map(function (UserMangaLanguage $userMangaPlatform) {
             $manga = $userMangaPlatform->getMangaPlatform()->getManga();
             return [
                 'chapter' => $userMangaPlatform->getLastChapter()->getId(),

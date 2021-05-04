@@ -17,6 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateMangaCommand extends BaseCommand
 {
+    // TODO: Remake this
     public static $defaultName = 'pm:manga:update';
 
     /** @var ImportService $importService */

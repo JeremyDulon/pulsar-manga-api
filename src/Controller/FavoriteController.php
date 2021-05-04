@@ -17,6 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class FavoriteController extends BaseController
 {
+    // Remake: this
     /**
      * @Rest\Get("/favorites", name="get_favorites")
      * @Rest\View(serializerGroups={"mangaList", "image", "mangaData", "platformData", "latest_chapter"})

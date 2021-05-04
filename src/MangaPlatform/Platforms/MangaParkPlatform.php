@@ -118,8 +118,7 @@ class MangaParkPlatform extends AbstractPlatform
 
             $lastChapterNumber = (int) $numberCb(end($chaptersArray));
 
-            $chaptersArray = PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
-            return $chaptersArray;
+            return PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
         });
     }
 

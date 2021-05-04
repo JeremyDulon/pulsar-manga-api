@@ -19,6 +19,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class ReadController extends BaseController
 {
+    // Remake: this
     /**
      * @Rest\Put("/read/chapter/{chapterId}/page/{page}", name="read_chapter_chapter")
      * @Rest\View(serializerGroups={ "getUser", "getUserManga", "mangaSlug" })
