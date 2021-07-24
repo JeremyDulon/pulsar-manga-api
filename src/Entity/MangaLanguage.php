@@ -34,18 +34,16 @@ class MangaLanguage
     private $language = PlatformUtil::LANGUAGE_EN;
 
     /**
-     * TODO: V2 Utile ? A part pour la recherche je vois pas..
-     * @var array
-     * @ORM\Column(type="simple_array")
-     */
-    private $altTitles;
-
-    /**
      * @var string
      * @ORM\Column(type="text", nullable=true)
      * @Serializer\Groups({ "mangaList" })
      */
     private $description;
+
+    /**
+     * @var bool
+     */
+    private $autoUpdate;
 
     /**
      * @var Manga
@@ -55,12 +53,20 @@ class MangaLanguage
     private $manga;
 
     /**
-     * @var MangaLanguagePlatform
-     * @ORM\OneToMany(targetEntity=MangaLanguagePlatform::class, mappedBy="mangaLanguage")
+     * @var MangaPlatform
+     * @ORM\OneToMany(targetEntity=MangaPlatform::class, mappedBy="mangaLanguage")
      * @ORM\JoinColumn(nullable=false)
      * @Serializer\Groups({ "platformData" })
      */
     private $platforms;
+
+    /**
+     * @var Chapter
+     * @ORM\OneToMany(targetEntity=Chapter::class, mappedBy="mangaLanguage")
+     * @ORM\JoinColumn(nullable=false)
+     * @Serializer\Groups({ "platformData" })
+     */
+    private $chapters;
 
     /**
      * @return int|null
@@ -68,42 +74,6 @@ class MangaLanguage
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLanguage(): string
-    {
-        return $this->language;
-    }
-
-    /**
-     * @param string $language
-     * @return MangaLanguage
-     */
-    public function setLanguage(string $language): MangaLanguage
-    {
-        $this->language = $language;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAltTitles(): array
-    {
-        return $this->altTitles;
-    }
-
-    /**
-     * @param array $altTitles
-     * @return MangaLanguage
-     */
-    public function setAltTitles(array $altTitles): self
-    {
-        $this->altTitles = $altTitles;
-        return $this;
     }
 
     /**

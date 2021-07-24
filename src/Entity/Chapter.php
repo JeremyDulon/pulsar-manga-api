@@ -43,13 +43,7 @@ class Chapter
     private $date;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Serializer\Groups({ }) TODO: Groupes
-     */
-    private $sourceUrl;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=MangaPlatform::class, inversedBy="chapters")
+     * @ORM\ManyToOne(targetEntity=MangaLanguage::class, inversedBy="chapters")
      * @ORM\JoinColumn(nullable=false)
      */
     private $manga;
@@ -119,27 +113,9 @@ class Chapter
     }
 
     /**
-     * @return string
+     * @return MangaLanguage
      */
-    public function getSourceUrl()
-    {
-        return $this->sourceUrl;
-    }
-
-    /**
-     * @param string $sourceUrl
-     * @return Chapter
-     */
-    public function setSourceUrl(string $sourceUrl)
-    {
-        $this->sourceUrl = $sourceUrl;
-        return $this;
-    }
-
-    /**
-     * @return MangaPlatform|null
-     */
-    public function getManga(): ?MangaPlatform
+    public function getManga(): MangaLanguage
     {
         return $this->manga;
     }

@@ -29,13 +29,6 @@ class Platform
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=10)
-     * @Serializer\Groups({ "platformData" })
-     */
-    private $language = PlatformUtil::LANGUAGE_EN;
-
-    /**
-     * @var string
      * @ORM\Column(type="string", length=255)
      */
     private $baseUrl;
@@ -43,6 +36,7 @@ class Platform
     /**
      * @var string
      * @ORM\Column(type="string", length=255, nullable=true)
+     * TODO: Pas forcément utile
      */
     private $mangaPath;
 
