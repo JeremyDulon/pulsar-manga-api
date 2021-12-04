@@ -18,3 +18,7 @@
 
 # OTHERS
 .idea
+
+###> mariadb ###
+/mysql/
+###< mariadb ###

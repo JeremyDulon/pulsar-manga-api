@@ -1,6 +1,10 @@
 # Pulsar Manga
 
 ## ROADMAP
+
+### Infra
+- [ ] Docker 
+
 ### Chapters
 - [ ] Next chapter
 - [ ] No update read mode
