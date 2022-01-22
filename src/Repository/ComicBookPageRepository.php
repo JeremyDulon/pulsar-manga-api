@@ -12,7 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method ChapterPage[]    findAll()
  * @method ChapterPage[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ChapterPageRepository extends ServiceEntityRepository
+class ComicPageRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

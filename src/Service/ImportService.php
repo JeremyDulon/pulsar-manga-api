@@ -8,7 +8,7 @@ use App\Entity\Chapter;
 use App\Entity\ChapterPage;
 use App\Entity\File;
 use App\Entity\Manga;
-use App\Entity\MangaPlatform;
+use App\Entity\ComicPlatform;
 use App\Entity\Platform;
 use App\MangaPlatform\AbstractPlatform;
 use App\MangaPlatform\PlatformNode;
@@ -66,12 +66,12 @@ class ImportService
      * @param int $offset
      * @param int|null $chapter
      * @param bool $addImages
-     * @return MangaPlatform|null
+     * @return ComicPlatform|null
      */
-    public function importManga(string $url, string $mangaSlug, int $offset = 0, int $chapter = null, bool $addImages = false): ?MangaPlatform
+    public function importManga(string $url, string $mangaSlug, int $offset = 0, int $chapter = null, bool $addImages = false): ?ComicPlatform
     {
-        /** @var MangaPlatform|null $mangaPlatform */
-        $mangaPlatform = $this->em->getRepository(MangaPlatform::class)->findOneBy([
+        /** @var ComicPlatform|null $mangaPlatform */
+        $mangaPlatform = $this->em->getRepository(ComicPlatform::class)->findOneBy([
             'sourceUrl' => $url
         ]);
 
@@ -89,11 +89,11 @@ class ImportService
     /**
      * @param $mangaUrl
      * @param $mangaSlug
-     * @return MangaPlatform
+     * @return ComicPlatform
      *
      * @throws Exception
      */
-    public function createManga($mangaUrl, $mangaSlug): MangaPlatform
+    public function createManga($mangaUrl, $mangaSlug): ComicPlatform
     {
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
 
@@ -140,7 +140,7 @@ class ImportService
             $manga->setAltTitles(array_merge($manga->getAltTitles() ?? [], $altTitles ?? []));
         }
 
-        $mangaPlatform = new MangaPlatform();
+        $mangaPlatform = new ComicPlatform();
         $mangaPlatform->setPlatform($platformEntity)
             ->setManga($manga)
             ->setSourceSlug($mangaSlug)
@@ -156,9 +156,9 @@ class ImportService
     }
 
     /**
-     * @param MangaPlatform|null $mangaPlatform
+     * @param ComicPlatform|null $mangaPlatform
      */
-    public function fillManga(?MangaPlatform $mangaPlatform) {
+    public function fillManga(?ComicPlatform $mangaPlatform) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
@@ -195,13 +195,13 @@ class ImportService
     }
 
     /**
-     * @param MangaPlatform $mangaPlatform
+     * @param ComicPlatform $mangaPlatform
      * @param int $offset
      * @param int|null $chapterNumber
      * @param bool $addImages
      *
      */
-    public function importChapters(MangaPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
+    public function importChapters(ComicPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
@@ -329,7 +329,7 @@ class ImportService
         }
     }
 
-    public function addMangaImage(MangaPlatform $mangaPlatform) {
+    public function addMangaImage(ComicPlatform $mangaPlatform) {
         if (empty($mangaPlatform->getManga()->getImage())) {
             $platform = PlatformUtil::findPlatformFromUrl($mangaPlatform->getSourceUrl());
             $this->openUrl(self::MANGA_CLIENT, $mangaPlatform->getSourceUrl());

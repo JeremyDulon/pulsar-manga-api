@@ -5,7 +5,7 @@ namespace App\Controller;
 
 
 use App\Entity\Manga;
-use App\Entity\MangaPlatform;
+use App\Entity\ComicPlatform;
 use App\Entity\User;
 use App\Entity\UserMangaPlatform;
 use Doctrine\ORM\ORMException;
@@ -45,11 +45,11 @@ class FavoriteController extends BaseController
      *     "mangaPlatform",
      *     options={"mapping": {"mangaPlatformId": "id" }}
      * )
-     * @param MangaPlatform $mangaPlatform
+     * @param ComicPlatform $mangaPlatform
      * @return User|UserInterface|void|null
      * @throws ORMException
      */
-    public function addFavoriteAction(MangaPlatform $mangaPlatform) {
+    public function addFavoriteAction(ComicPlatform $mangaPlatform) {
         $user = $this->getUser();
         $userMangaPlatform = $user->isFavorite($mangaPlatform);
         if ($userMangaPlatform === false) {

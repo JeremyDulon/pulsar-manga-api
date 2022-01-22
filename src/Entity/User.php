@@ -124,9 +124,9 @@ class User extends BaseUser
     private $deleted;
 
     /**
-     * @ORM\OneToMany(targetEntity=UserMangaLanguage::class, mappedBy="user", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=UserComicLanguage::class, mappedBy="user", orphanRemoval=true)
      */
-    private $userMangaLanguages;
+    private $userComicLanguages;
 
     /**
      *
@@ -134,7 +134,7 @@ class User extends BaseUser
      * @ORM\Column(name="languages", type="simple_array", nullable=false)
      * @Serializer\Groups({ "getUser" })
      */
-    private $languages = [ PlatformUtil::LANGUAGE_EN ];
+    private $languages;
 
     /**
      * User constructor.
@@ -143,9 +143,9 @@ class User extends BaseUser
     {
         parent::__construct();
         $this->roles = [ self::ROLE_USER ];
-        $this->languages = [ PlatformUtil::LANGUAGE_EN ];
+        $this->languages = [ PlatformUtil::LANGUAGE_EN, PlatformUtil::LANGUAGE_FR ];
         $this->deleted = false;
-        $this->userMangas = new ArrayCollection();
+        $this->userComicLanguages = new ArrayCollection();
     }
 
     public function setFirstName(?string $firstName): self
@@ -185,44 +185,75 @@ class User extends BaseUser
     }
 
     /**
-     * @return Collection|UserMangaLanguage[]
+     * @return Collection|UserComicLanguage[]
      */
-    public function getUserMangaPlatforms(): Collection
+    public function getUserComicLanguages(): Collection
     {
-        return $this->userMangas;
+        return $this->userComicLanguages;
     }
 
-    public function addUserManga(UserManga $userManga): self
+    /**
+     * @param UserComicLanguage $userComicLanguage
+     * @return User
+     */
+    public function addUserComicLanguages(UserComicLanguage $userComicLanguage): User
     {
-        if (!$this->userMangas->contains($userManga)) {
-            $this->userMangas[] = $userManga;
-            $userManga->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUserManga(UserManga $userManga): self
-    {
-        if ($this->userMangas->removeElement($userManga)) {
-            // set the owning side to null (unless already changed)
-            if ($userManga->getUser() === $this) {
-                $userManga->setUser(null);
-            }
+        if ($this->userComicLanguages->contains($userComicLanguage)) {
+            $this->userComicLanguages[] = $userComicLanguage;
+            $userComicLanguage->setUser($this);
         }
 
         return $this;
     }
 
     /**
-     * @param MangaPlatform $mangaPlatform
-     * @return UserMangaPlatform|bool
+     * @param UserComicLanguage $userComicLanguage
+     * @return User
      */
-    public function isFavorite(MangaPlatform $mangaPlatform) {
-        /** @var UserMangaPlatform $userMangaPlatform */
-        foreach ($this->userMangaPlatforms as $userMangaPlatform) {
-            if ($userMangaPlatform->getMangaPlatform() === $mangaPlatform) {
-                return $userMangaPlatform;
+    public function removeUserComicLanguages(UserComicLanguage $userComicLanguage): User
+    {
+        if ($this->userComicLanguages->contains($userComicLanguage)) {
+            $this->userComicLanguages->removeElement($userComicLanguage);
+            // set the owning side to null (unless already changed)
+            if ($userComicLanguage->getUser() === $this) {
+                $userComicLanguage->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public function getLanguages(): array
+    {
+        return $this->languages;
+    }
+
+    /**
+     * @param array|string[] $languages
+     * @return User
+     */
+    public function setLanguages(array $languages): User
+    {
+        $this->languages = $languages;
+        return $this;
+    }
+
+
+
+//    TODO: isFavorite
+//    TODO: getFavorites
+
+    /**
+     * @param ComicLanguage $ComicLanguage
+     * @return UserComicLanguage|bool
+     */
+    public function isFavorite(ComicLanguage $ComicLanguage) {
+        /** @var UserComicLanguage $userComicLanguage */
+        foreach ($this->userComicLanguages as $userComicLanguage) {
+            if ($userComicLanguage->getComicLanguge() === $ComicLanguage) {
+                return $userComicLanguage;
             }
         }
         return false;
@@ -236,15 +267,15 @@ class User extends BaseUser
      */
     public function getFavorites(): array
     {
-        return array_map(function (UserMangaLanguage $userMangaPlatform) {
-            $manga = $userMangaPlatform->getMangaPlatform()->getManga();
+        return array_map(function (UserComicLanguage $userComicPlatform) {
+            $Comic = $userComicPlatform->getComicPlatform()->getComic();
             return [
-                'chapter' => $userMangaPlatform->getLastChapter()->getId(),
-                'page' => $userMangaPlatform->getLastPage(),
-                'slug' => $manga->getSlug(),
-                'favorite' => $userMangaPlatform->getFavorite(),
-                'id' => $userMangaPlatform->getMangaPlatform()->getId()
+                'chapter' => $userComicPlatform->getLastChapter()->getId(),
+                'page' => $userComicPlatform->getLastPage(),
+                'slug' => $Comic->getSlug(),
+                'favorite' => $userComicPlatform->getFavorite(),
+                'id' => $userComicPlatform->getComicPlatform()->getId()
             ];
-        }, $this->userMangaPlatforms->toArray());
+        }, $this->userComicPlatforms->toArray());
     }
 }

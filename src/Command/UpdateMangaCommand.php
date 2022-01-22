@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\MangaPlatform;
+use App\Entity\ComicPlatform;
 use App\Service\ImportService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPHtmlParser\Exceptions\ChildNotFoundException;
@@ -55,18 +55,18 @@ class UpdateMangaCommand extends BaseCommand
 
         $url = $this->input->getOption('url');
 
-        $mangaRepository = $this->em->getRepository(MangaPlatform::class);
+        $mangaRepository = $this->em->getRepository(ComicPlatform::class);
 
         if ($url) {
             $mangaPlatform = $mangaRepository->findOneBy(['sourceUrl' => $url]);
             if ($mangaPlatform !== null) {
-                /** @var MangaPlatform $mangaPlatform */
+                /** @var ComicPlatform $mangaPlatform */
                 $this->updateManga($mangaPlatform);
             }
         } else {
             $mangaPlatforms = $mangaRepository->findAll();
             foreach ($mangaPlatforms as $mangaPlatform) {
-                /** @var MangaPlatform $mangaPlatform */
+                /** @var ComicPlatform $mangaPlatform */
                 $this->updateManga($mangaPlatform);
             }
         }
@@ -75,9 +75,9 @@ class UpdateMangaCommand extends BaseCommand
     }
 
     /**
-     * @param MangaPlatform $mangaPlatform
+     * @param ComicPlatform $mangaPlatform
      */
-    protected function updateManga(MangaPlatform $mangaPlatform) {
+    protected function updateManga(ComicPlatform $mangaPlatform) {
         $this->importService->addMangaImage($mangaPlatform);
         $this->importService->fillManga($mangaPlatform);
         $title = $mangaPlatform->getManga()->getTitle();

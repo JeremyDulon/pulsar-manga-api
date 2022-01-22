@@ -3,6 +3,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Macro\Timestamps;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
@@ -12,6 +13,12 @@ use JMS\Serializer\Annotation as Serializer;
  */
 class Platform
 {
+    use Timestamps;
+
+    const STATUS_ENABLED = 100;
+    const STATUS_SUSPENDED = 200;
+    const STATUS_DISABLED = 300;
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -22,29 +29,22 @@ class Platform
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=false)
      * @Serializer\Groups({ "platformData" })
      */
     private $name;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=false)
      */
     private $baseUrl;
 
     /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * TODO: Pas forcément utile
+     * @var int
+     * @ORM\Column(type="integer", nullable=false)
      */
-    private $mangaPath;
-
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean", options={'default': true})
-     */
-    private $active;
+    private $status;
 
     /**
      * @return int|null
@@ -54,11 +54,18 @@ class Platform
         return $this->id;
     }
 
-    public function getName(): ?string
+    /**
+     * @return string
+     */
+    public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -66,22 +73,10 @@ class Platform
         return $this;
     }
 
-    public function getLanguage(): ?string
-    {
-        return $this->language;
-    }
-
-    public function setLanguage(string $language): self
-    {
-        $this->language = $language;
-
-        return $this;
-    }
-
     /**
      * @return string
      */
-    public function getBaseUrl(): ?string
+    public function getBaseUrl(): string
     {
         return $this->baseUrl;
     }
@@ -97,38 +92,20 @@ class Platform
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getMangaPath(): ?string
+    public function isStatus(): int
     {
-        return $this->mangaPath;
+        return $this->status;
     }
 
     /**
-     * @param string $mangaPath
+     * @param int $status
      * @return Platform
      */
-    public function setMangaPath(string $mangaPath): Platform
+    public function setStatus(int $status): Platform
     {
-        $this->mangaPath = $mangaPath;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isActive(): bool
-    {
-        return $this->active;
-    }
-
-    /**
-     * @param bool $active
-     * @return Platform
-     */
-    public function setActive(bool $active): Platform
-    {
-        $this->active = $active;
+        $this->status = $status;
         return $this;
     }
 }

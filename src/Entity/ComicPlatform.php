@@ -10,9 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
- * @ORM\Entity(repositoryClass=App\Repository\MangaPlatformRepository::class)
+ * @ORM\Entity(repositoryClass=App\Repository\ComicPlatformRepository::class)
  */
-class MangaPlatform
+class ComicPlatform
 {
     /**
      * @var int
@@ -42,6 +42,30 @@ class MangaPlatform
      */
     private $platform;
 
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+    /**
+     * @return string
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param string $url
+     * @return ComicPlatform
+     */
+    public function setUrl(string $url): ComicPlatform
+    {
+        $this->url = $url;
+        return $this;
+    }
 
     /**
      * @return Platform
@@ -53,9 +77,9 @@ class MangaPlatform
 
     /**
      * @param Platform $platform
-     * @return MangaPlatform
+     * @return ComicPlatform
      */
-    public function setPlatform(Platform $platform): MangaPlatform
+    public function setPlatform(Platform $platform): ComicPlatform
     {
         $this->platform = $platform;
         return $this;
@@ -71,9 +95,9 @@ class MangaPlatform
 
     /**
      * @param int $weight
-     * @return MangaPlatform
+     * @return ComicPlatform
      */
-    public function setWeight(int $weight): MangaPlatform
+    public function setWeight(int $weight): ComicPlatform
     {
         $this->weight = $weight;
         return $this;

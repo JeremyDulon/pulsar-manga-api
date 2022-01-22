@@ -2,14 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\UserMangaRepository;
+use App\Repository\UserComicRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
- * @ORM\Entity(repositoryClass=UserMangaLanguageRepository::class)
+ * @ORM\Entity(repositoryClass=UserComicLanguageRepository::class)
  */
-class UserMangaLanguage
+class UserComicLanguage
 {
     /**
      * @ORM\Id
@@ -19,35 +19,37 @@ class UserMangaLanguage
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="userMangaLanguages")
+     * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="userComicLanguages")
      * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({ "mangaList" })
+     * @Serializer\Groups({ "comicList" })
      */
-    private $manga;
+    private $comic;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="userMangaLanguages")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="userComicLanguages")
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Chapter::class)
-     * @Serializer\Groups({ "mangaList" })
+     * @ORM\ManyToOne(targetEntity=ComicIssue::class)
+     * @Serializer\Groups({ "comicList" })
      */
-    private $lastChapter;
+    private $lastComicIssue;
 
     /**
      * @var int
      *
      * @ORM\Column(type="integer", nullable=true)
-     * @Serializer\Groups({ "mangaList" })
+     * @Serializer\Groups({ "comicList" })
      */
     private $lastPage;
 
     /**
+     * @var bool
+     *
      * @ORM\Column(type="boolean")
-     * @Serializer\Groups({ "mangaList" })
+     * @Serializer\Groups({ "comicList" })
      */
     private $favorite = false;
 
@@ -57,20 +59,20 @@ class UserMangaLanguage
     }
 
     /**
-     * @return Manga
+     * @return ComicLanguage
      */
-    public function getManga()
+    public function getComic(): ComicLanguage
     {
-        return $this->manga;
+        return $this->comic;
     }
 
     /**
-     * @param mixed $manga
-     * @return UserMangaLanguage
+     * @param ComicLanguage $comic
+     * @return UserComicLanguage
      */
-    public function setManga($manga): self
+    public function setComic(ComicLanguage $comic): self
     {
-        $this->manga = $manga;
+        $this->comic = $comic;
         return $this;
     }
 
@@ -83,8 +85,8 @@ class UserMangaLanguage
     }
 
     /**
-     * @param mixed $user
-     * @return UserMangaLanguage
+     * @param User $user
+     * @return UserComicLanguage
      */
     public function setUser(User $user): self
     {
@@ -93,20 +95,20 @@ class UserMangaLanguage
     }
 
     /**
-     * @return Chapter
+     * @return ComicIssue
      */
-    public function getLastChapter(): Chapter
+    public function getLastChapter(): ComicIssue
     {
-        return $this->lastChapter;
+        return $this->lastComicIssue;
     }
 
     /**
-     * @param Chapter $lastChapter
-     * @return UserMangaLanguage
+     * @param ComicIssue $lastComicIssue
+     * @return UserComicLanguage
      */
-    public function setLastChapter(Chapter $lastChapter): self
+    public function setLastComicIssue(ComicIssue $lastComicIssue): self
     {
-        $this->lastChapter = $lastChapter;
+        $this->lastComicIssue = $lastComicIssue;
         return $this;
     }
 
@@ -120,7 +122,7 @@ class UserMangaLanguage
 
     /**
      * @param int $lastPage
-     * @return UserMangaLanguage
+     * @return UserComicLanguage
      */
     public function setLastPage(int $lastPage): self
     {
@@ -138,9 +140,9 @@ class UserMangaLanguage
 
     /**
      * @param bool $favorite
-     * @return UserManga
+     * @return UserComicLanguage
      */
-    public function setFavorite(bool $favorite): UserManga
+    public function setFavorite(bool $favorite): UserComicLanguage
     {
         $this->favorite = $favorite;
         return $this;

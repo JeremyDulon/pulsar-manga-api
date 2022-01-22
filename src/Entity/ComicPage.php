@@ -3,14 +3,14 @@
 namespace App\Entity;
 
 use App\Entity\Macro\Timestamps;
-use App\Repository\ChapterPageRepository;
+use App\Repository\ComicPageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
- * @ORM\Entity(repositoryClass=ChapterPageRepository::class)
+ * @ORM\Entity(repositoryClass=ComicPageRepository::class)
  */
-class ChapterPage
+class ComicPage
 {
     use Timestamps;
 
@@ -22,21 +22,21 @@ class ChapterPage
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Chapter::class, inversedBy="chapterPages")
+     * @ORM\ManyToOne(targetEntity=ComicIssue::class, inversedBy="comicPages")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $chapter;
+    private $comicIssue;
 
     /**
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "chapter" })
+     * @Serializer\Groups({ "comicIssue" })
      */
     private $number;
 
     /**
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({ "chapter" })
+     * @Serializer\Groups({ "comicIssue" })
      */
     private $file;
 
@@ -45,14 +45,14 @@ class ChapterPage
         return $this->id;
     }
 
-    public function getChapter(): ?Chapter
+    public function getComicIssue(): ?ComicIssue
     {
-        return $this->chapter;
+        return $this->comicIssue;
     }
 
-    public function setChapter(?Chapter $chapter): self
+    public function setComicIssue(?ComicIssue $comicIssue): self
     {
-        $this->chapter = $chapter;
+        $this->comicIssue = $comicIssue;
 
         return $this;
     }

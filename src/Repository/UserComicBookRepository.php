@@ -12,7 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method UserManga[]    findAll()
  * @method UserManga[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserMangaRepository extends ServiceEntityRepository
+class UserComicRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

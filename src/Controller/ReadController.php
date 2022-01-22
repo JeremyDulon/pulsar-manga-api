@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Chapter;
 use App\Entity\Manga;
-use App\Entity\MangaPlatform;
+use App\Entity\ComicPlatform;
 use App\Entity\User;
 use App\Entity\UserMangaPlatform;
 use Doctrine\ORM\OptimisticLockException;

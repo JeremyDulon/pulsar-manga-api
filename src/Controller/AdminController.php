@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Command\ImportMangaCommand;
 use App\Entity\Manga;
-use App\Entity\MangaPlatform;
+use App\Entity\ComicPlatform;
 use App\Service\ConsoleService;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;

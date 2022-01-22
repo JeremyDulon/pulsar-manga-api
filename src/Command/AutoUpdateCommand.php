@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Manga;
-use App\Entity\MangaPlatform;
+use App\Entity\ComicPlatform;
 use App\Service\ImportService;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,7 +49,7 @@ class AutoUpdateCommand extends BaseCommand
                 'autoUpdate' => true
             ]);
 
-        /** @var MangaPlatform $mangaPlatform */
+        /** @var ComicPlatform $mangaPlatform */
         foreach ($mangas as $manga) {
             $this->importService->importChapters(
                 $manga,
