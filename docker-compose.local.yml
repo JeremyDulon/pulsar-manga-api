@@ -10,6 +10,9 @@ services:
       - .:/var/www/pulsar
     depends_on:
       - mariadb
+    links:
+      - mariadb
+    user: 1000:1000
 
   nginx:
     image: nginx:stable-alpine
@@ -23,7 +26,7 @@ services:
       - mariadb
 
   mariadb:
-    image: mariadb:10.3
+    image: mysql:5.7
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: Lyk4w0lf13Mysql
@@ -34,3 +37,11 @@ services:
       - '4306:3306'
     volumes:
       - ./mysql:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 9999:80
+    environment:
+      - PMA_ARBITRARY=1

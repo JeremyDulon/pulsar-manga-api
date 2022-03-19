@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
@@ -37,18 +38,19 @@ class Comic
      * @ORM\Column(type="string", length=255)
      * @Serializer\Groups({ "comicList" })
      */
-    private $title;
+    private $title = '';
 
     /**
      * @var array
-     * @ORM\Column(type="simple_array")
+     * @ORM\Column(type="simple_array", nullable=true)
      */
-    private $altTitles;
+    private $altTitles = [];
 
     /**
      * @var string
      *
      * @ORM\Column(type="string", length=255)
+     * @Gedmo\Slug(fields={"title"})
      * @Serializer\Groups({ "comicList", "comicSlug" })
      */
     private $slug;
@@ -67,7 +69,7 @@ class Comic
      * @ORM\Column(type="integer")
      * @Serializer\Groups({ "comicList" })
      */
-    private $type;
+    private $type = self::TYPE_MANGA;
 
     /**
      * @var int
@@ -75,7 +77,7 @@ class Comic
      * @ORM\Column(type="integer")
      * @Serializer\Groups({ "comicList" })
      */
-    private $status;
+    private $status = self::STATUS_ONGOING;
 
     /**
      * @var string
@@ -83,7 +85,7 @@ class Comic
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Serializer\Groups({ "platformData" })
      */
-    private $author;
+    private $author = '';
 
     /**
      * @var Collection
@@ -112,7 +114,7 @@ class Comic
     /**
      * @return int
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -192,7 +194,7 @@ class Comic
     /**
      * @return File
      */
-    public function getImage(): File
+    public function getImage(): ?File
     {
         return $this->image;
     }
@@ -253,9 +255,10 @@ class Comic
 
     /**
      * @param ComicLanguage $comicLanguage
-     * @return $this
+     * @return self
      */
-    public function addComicLanguage(ComicLanguage $comicLanguage) {
+    public function addComicLanguage(ComicLanguage $comicLanguage): self
+    {
         if (!$this->comicLanguages->contains($comicLanguage)) {
             $this->comicLanguages[] = $comicLanguage;
         }
@@ -264,7 +267,7 @@ class Comic
 
     /**
      * @param ComicLanguage $comicLanguage
-     * @return $this
+     * @return self
      */
     public function removeComicLanguage(ComicLanguage $comicLanguage): self
     {

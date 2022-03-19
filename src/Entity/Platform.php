@@ -32,19 +32,19 @@ class Platform
      * @ORM\Column(type="string", length=255, nullable=false)
      * @Serializer\Groups({ "platformData" })
      */
-    private $name;
+    private $name = '';
 
     /**
      * @var string
      * @ORM\Column(type="string", length=255, nullable=false)
      */
-    private $baseUrl;
+    private $baseUrl = '';
 
     /**
      * @var int
      * @ORM\Column(type="integer", nullable=false)
      */
-    private $status;
+    private $status = self::STATUS_ENABLED;
 
     /**
      * @return int|null

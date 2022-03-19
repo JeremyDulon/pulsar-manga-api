@@ -61,3 +61,13 @@ services:
                     secret: '%env(resolve:AWS_S3_SECRET)%'
 
     Gaufrette\Filesystem: '@gaufrette.file_storage_filesystem'
+
+    gedmo.listener.sluggable:
+        class: Gedmo\Sluggable\SluggableListener
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+        calls:
+            - [ setAnnotationReader, [ "@annotation_reader" ] ]
+
+    jms_job_queue.twig.extension:
+        class: App\Twig\JobQueueExtension

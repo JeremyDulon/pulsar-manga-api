@@ -12,8 +12,8 @@ nelmio_cors:
             allow_headers: ['*']
             allow_methods: ['OPTIONS', 'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'LOCK', 'UNLOCK']
             max_age: 3600
-        '^/oauth/v2':
-            allow_origin: ['*']
-            allow_headers: ['*']
-            allow_methods: ['OPTIONS', 'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'LOCK', 'UNLOCK']
-            max_age: 3600
+#        '^/oauth/v2':
+#            allow_origin: ['*']
+#            allow_headers: ['*']
+#            allow_methods: ['OPTIONS', 'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'LOCK', 'UNLOCK']
+#            max_age: 3600

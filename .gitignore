@@ -8,6 +8,7 @@
 /public/uploads/
 /var/
 /vendor/
+/drivers/
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###

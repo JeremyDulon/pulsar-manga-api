@@ -38,14 +38,14 @@ class ComicPlatform
      * @var Platform
      * @ORM\ManyToOne(targetEntity=Platform::class)
      * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups()
+     * @Serializer\Groups({"comicPlatform"})
      */
     private $platform;
 
     /**
      * @return int
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

@@ -1,14 +1,16 @@
 <?php
+
 namespace App\Entity;
 
+use App\Repository\UserBisRepository;
 use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use FOS\UserBundle\Model\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Validator\Constraints as Assert;
 use JMS\Serializer\Annotation as Serializer;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * User
@@ -23,7 +25,7 @@ use JMS\Serializer\Annotation as Serializer;
  * @UniqueEntity(fields={"username"}, errorPath="username", message="USERNAME_IS_ALREADY_IN_USE")
  *
  */
-class User extends BaseUser
+class User implements UserInterface
 {
     const ROLE_ADMIN = "ROLE_ADMIN";
     const ROLE_USER = "ROLE_USER";
@@ -34,82 +36,44 @@ class User extends BaseUser
      * @var array
      */
     static public $ROLES_SUPPORTED = array(
-        self::ROLE_SUPER_ADMIN => self::ROLE_SUPER_ADMIN,
         self::ROLE_ADMIN => self::ROLE_ADMIN,
         self::ROLE_USER => self::ROLE_USER,
     );
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
      */
-    protected $id;
+    private $id;
+
+    /**
+     * @ORM\Column(type="string", length=180, unique=true, nullable=false)
+     */
+    private $username;
 
     /**
      * @var string
      *
+     * @ORM\Column(name="email", type="string", length=100, unique=true, nullable=false)
      * @Assert\NotBlank(message="FIELD_CAN_NOT_BE_EMPTY")
      * @Assert\Email(
      *     message = "INCORRECT_EMAIL_ADDRESS",
      *     checkMX = true
      * )
-     * @Serializer\Groups({ "postUser", "getUser" })
      */
     protected $email;
 
     /**
-     * @var string
-     * @Serializer\Groups({
-     *     "postManager", "putUser", "postUser", "postAgent"
-     * })
-     * @Serializer\Accessor(setter="setPlainPassword", getter="getPassword")
+     * @ORM\Column(type="json")
      */
-    protected $password;
+    private $roles = [];
 
     /**
-     * @var string
-     *
-     * @Serializer\Groups({ "postUser", "getUser" })
+     * @var string The hashed password
+     * @ORM\Column(type="string")
      */
-    protected $username;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="first_name", type="string", length=100, nullable=true)
-     *
-     * @Assert\Length(
-     *      min = 1,
-     *      max = 100,
-     *      minMessage = "FIELD_LENGTH_TOO_SHORT",
-     *      maxMessage = "FIELD_LENGTH_TOO_LONG"
-     * )
-     */
-    private $firstName;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="last_name", type="string", length=100, nullable=true)
-     *
-     * @Assert\Length(
-     *      min = 1,
-     *      max = 100,
-     *      minMessage = "FIELD_LENGTH_TOO_SHORT",
-     *      maxMessage = "FIELD_LENGTH_TOO_LONG"
-     * )
-     */
-    private $lastName;
-
-    /**
-     *
-     * @var array|string[]
-     * @Serializer\Groups({ "getUser" })
-     */
-    protected $roles = [self::ROLE_DEFAULT];
+    private $password;
 
     /**
      * @var boolean
@@ -124,6 +88,18 @@ class User extends BaseUser
     private $deleted;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="enabled", type="boolean")
+     *
+     * @Assert\Type(
+     *     type="bool",
+     *     message="FIELD_MUST_BE_BOOLEAN_TYPE"
+     * )
+     */
+    protected $enabled;
+
+    /**
      * @ORM\OneToMany(targetEntity=UserComicLanguage::class, mappedBy="user", orphanRemoval=true)
      */
     private $userComicLanguages;
@@ -132,7 +108,6 @@ class User extends BaseUser
      *
      * @var array|string[]
      * @ORM\Column(name="languages", type="simple_array", nullable=false)
-     * @Serializer\Groups({ "getUser" })
      */
     private $languages;
 
@@ -141,35 +116,85 @@ class User extends BaseUser
      */
     public function __construct()
     {
-        parent::__construct();
-        $this->roles = [ self::ROLE_USER ];
         $this->languages = [ PlatformUtil::LANGUAGE_EN, PlatformUtil::LANGUAGE_FR ];
         $this->deleted = false;
         $this->userComicLanguages = new ArrayCollection();
     }
 
-    public function setFirstName(?string $firstName): self
+    public function getId(): ?int
     {
-        $this->firstName = $firstName;
+        return $this->id;
+    }
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
+    {
+        return (string) $this->username;
+    }
+
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
 
         return $this;
     }
 
-    public function getFirstName(): ?string
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        return $this->firstName;
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = self::ROLE_USER;
+
+        return array_unique($roles);
     }
 
-    public function setLastName(?string $lastName): self
+    public function setRoles(array $roles): self
     {
-        $this->lastName = $lastName;
+        $this->roles = $roles;
 
         return $this;
     }
 
-    public function getLastName(): ?string
+    /**
+     * @see UserInterface
+     */
+    public function getPassword(): string
     {
-        return $this->lastName;
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * Returning a salt is only needed, if you are not using a modern
+     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
+     *
+     * @see UserInterface
+     */
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     public function setDeleted(bool $deleted): self
@@ -182,6 +207,42 @@ class User extends BaseUser
     public function getDeleted(): ?bool
     {
         return $this->deleted;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
+     * @return User
+     */
+    public function setEmail(string $email): User
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    /**
+     * @param bool $enabled
+     * @return User
+     */
+    public function setEnabled(bool $enabled): User
+    {
+        $this->enabled = $enabled;
+        return $this;
     }
 
     /**

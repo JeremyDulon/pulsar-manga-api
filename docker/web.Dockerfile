@@ -16,3 +16,9 @@ RUN curl -sS https://get.symfony.com/cli/installer | bash
 RUN mv /root/.symfony/bin/symfony /usr/local/bin/symfony
 RUN git config --global user.email "jeremy.dulon@live.fr" \
     && git config --global user.name "JeremyDulon"
+
+## Chromium and ChromeDriver
+#ENV PANTHER_NO_SANDBOX 1
+## Not mandatory, but recommended
+#ENV PANTHER_CHROME_ARGUMENTS='--disable-dev-shm-usage'
+#RUN apk add --no-cache chromium chromium-chromedriver

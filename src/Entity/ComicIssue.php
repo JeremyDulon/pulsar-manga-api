@@ -44,7 +44,7 @@ class ComicIssue
 
     /**
      * @var int
-     * @ORM\Column(type="int", nullable=false)
+     * @ORM\Column(type="integer", nullable=false)
      * @Serializer\Groups({ "comicList", "comicIssue" })
      */
     private $type;
