@@ -32,7 +32,7 @@ class ComicPlatform
      * @var int
      * @ORM\Column(name="weight", type="integer", nullable=false)
      */
-    private $weight;
+    private $weight = 0;
 
     /**
      * @var Platform
@@ -41,6 +41,11 @@ class ComicPlatform
      * @Serializer\Groups({"comicPlatform"})
      */
     private $platform;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="comicPlatforms")
+     */
+    private $comicLanguage;
 
     /**
      * @return int
@@ -70,7 +75,7 @@ class ComicPlatform
     /**
      * @return Platform
      */
-    public function getPlatform(): Platform
+    public function getPlatform(): ?Platform
     {
         return $this->platform;
     }
@@ -100,6 +105,18 @@ class ComicPlatform
     public function setWeight(int $weight): ComicPlatform
     {
         $this->weight = $weight;
+        return $this;
+    }
+
+    public function getComicLanguage(): ?ComicLanguage
+    {
+        return $this->comicLanguage;
+    }
+
+    public function setComicLanguage(?ComicLanguage $comicLanguage): self
+    {
+        $this->comicLanguage = $comicLanguage;
+
         return $this;
     }
 }

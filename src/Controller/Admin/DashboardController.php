@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Comic;
 use App\Entity\ComicIssue;
+use App\Entity\ComicLanguage;
 use App\Entity\ComicPlatform;
 use App\Entity\Platform;
 use App\Entity\User;
@@ -34,21 +35,17 @@ class DashboardController extends AbstractDashboardController
     {
         $submenu1 = [
             MenuItem::linkToCrud('Comics', 'fas fa-book', Comic::class),
+            MenuItem::linkToCrud('Comic Languages', 'fas fa-book', ComicLanguage::class),
             MenuItem::linkToCrud('Comic Platforms', 'fas fa-book', ComicPlatform::class),
             MenuItem::linkToCrud('Comic Issues', 'fas fa-book-open', ComicIssue::class),
             MenuItem::linkToCrud('Platforms', 'fas fa-server', Platform::class),
         ];
 
         $submenu2 = [
-            MenuItem::linkToCrud('JMS Jobs', 'fas fa-wrench', Job::class),
-        ];
-
-        $submenu3 = [
             MenuItem::linkToCrud('User', 'fas fa-wrench', User::class),
         ];
 
         yield MenuItem::subMenu('Comic', 'fas fa-book')->setSubItems($submenu1);
-        yield MenuItem::subMenu('Jobs', 'fas fa-wrench')->setSubItems($submenu2);
-        yield MenuItem::subMenu('User', 'fas fa-user')->setSubItems($submenu3);
+        yield MenuItem::subMenu('User', 'fas fa-user')->setSubItems($submenu2);
     }
 }

@@ -10,10 +10,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ImportMangaCommand extends BaseCommand
+class OldImportMangaCommand extends BaseCommand
 {
     // Remake: this
-    public static $defaultName = 'pm:manga:import';
+    public static $defaultName = 'pm:manga:oldimport';
 
     /** @var ImportService $importService */
     protected $importService;

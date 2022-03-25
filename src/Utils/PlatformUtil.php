@@ -393,7 +393,8 @@ class PlatformUtil
         ];
     }
 
-    public static function getPlatform(Platform $platformEntity) {
+    public static function getPlatform(Platform $platformEntity): ?AbstractPlatform
+    {
         foreach (self::getPlatforms() as $platform) {
             /** @var AbstractPlatform $platform */
             if ($platformEntity->getName() === $platform->getName()) {

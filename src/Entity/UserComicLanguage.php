@@ -19,11 +19,11 @@ class UserComicLanguage
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="userComicLanguages")
+     * @ORM\ManyToOne(targetEntity=ComicLanguage::class)
      * @ORM\JoinColumn(nullable=false)
      * @Serializer\Groups({ "comicList" })
      */
-    private $comic;
+    private $comicLanguage;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="userComicLanguages")
@@ -61,18 +61,18 @@ class UserComicLanguage
     /**
      * @return ComicLanguage
      */
-    public function getComic(): ComicLanguage
+    public function getComicLanguage(): ComicLanguage
     {
-        return $this->comic;
+        return $this->comicLanguage;
     }
 
     /**
-     * @param ComicLanguage $comic
+     * @param ComicLanguage $comicLanguage
      * @return UserComicLanguage
      */
-    public function setComic(ComicLanguage $comic): self
+    public function setComicLanguage(ComicLanguage $comicLanguage): self
     {
-        $this->comic = $comic;
+        $this->comicLanguage = $comicLanguage;
         return $this;
     }
 

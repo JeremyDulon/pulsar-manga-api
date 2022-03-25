@@ -62,16 +62,16 @@ abstract class AbstractPlatform
         $this->mangaRegex = new PlatformRegex();
         $this->chapterRegex = new PlatformRegex();
 
-        $this->titleNode = new PlatformNode();
-        $this->authorNode = new PlatformNode();
-        $this->viewsNode = new PlatformNode();
-        $this->altTitlesNode = new PlatformNode();
-        $this->statusNode = new PlatformNode();
-        $this->mangaImageNode = new PlatformNode();
-        $this->lastUpdatedNode = new PlatformNode();
-        $this->descriptionNode = new PlatformNode();
-        $this->chapterDataNode = new PlatformNode();
-        $this->chapterPagesNode = new PlatformNode();
+        $this->titleNode = new PlatformNode('title');
+        $this->authorNode = new PlatformNode('author');
+        $this->viewsNode = new PlatformNode('views');
+        $this->altTitlesNode = new PlatformNode('altTitles');
+        $this->statusNode = new PlatformNode('status');
+        $this->mangaImageNode = new PlatformNode('image');
+        $this->lastUpdatedNode = new PlatformNode('lastUpdated');
+        $this->descriptionNode = new PlatformNode('description');
+        $this->chapterDataNode = new PlatformNode('chapterData');
+        $this->chapterPagesNode = new PlatformNode('chapterPages');
 
         $this->setMangaRegex();
     }

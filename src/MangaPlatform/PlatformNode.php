@@ -8,22 +8,34 @@ use Symfony\Component\DomCrawler\Crawler;
 class PlatformNode
 {
     /** @var $selector string */
-    protected $selector;
+    private $selector;
 
     /** @var $text boolean */
-    protected $text;
+    private $text;
 
     /** @var $attribute string */
-    protected $attribute;
+    private $attribute;
 
     /** @var Closure $callback */
-    protected $callback;
+    private $callback;
 
     /** @var Closure $script */
-    protected $script;
+    private $script;
 
     /** @var bool $init */
-    protected $init = false;
+    private $init = false;
+
+    /** @var string $name */
+    private $name = '';
+
+    public function __construct(string $name) {
+        $this->name = $name;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
     public function isInit(): bool
     {

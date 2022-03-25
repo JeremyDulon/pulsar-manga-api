@@ -3,17 +3,16 @@
 namespace App\Entity;
 
 use App\Entity\Macro\Timestamps;
-use App\Repository\ComicPlatformRepository;
 use App\Utils\PlatformUtil;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicLanguageRepository::class)
+ * @ORM\Table(uniqueConstraints={@UniqueConstraint(name="search_idx", columns={"language", "comic_id"})})
  */
 class ComicLanguage
 {
@@ -44,10 +43,10 @@ class ComicLanguage
     /**
      * @var bool
      *
-     * @ORM\Column(type="text", nullable=false)
+     * @ORM\Column(type="boolean", nullable=false)
      * @Serializer\Groups({ "comicList" })
      */
-    private $autoUpdate;
+    private $autoUpdate = false;
 
     /**
      * @var Comic
@@ -64,7 +63,7 @@ class ComicLanguage
      * @ORM\JoinColumn(nullable=false)
      * @Serializer\Groups({ "platformData" })
      */
-    private $platforms;
+    private $comicPlatforms;
 
     /**
      * @var Collection
@@ -74,6 +73,16 @@ class ComicLanguage
      * @Serializer\Groups({ "platformData" })
      */
     private $comicIssues;
+
+    public function __toString(): string
+    {
+        return $this->comic->getTitle() . ' - ' . $this->language;
+    }
+
+    public function __construct()
+    {
+        $this->comicPlatforms = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -140,7 +149,7 @@ class ComicLanguage
     /**
      * @return Comic
      */
-    public function getComic(): Comic
+    public function getComic(): ?Comic
     {
         return $this->comic;
     }
@@ -152,27 +161,6 @@ class ComicLanguage
     public function setComic(Comic $comic): ComicLanguage
     {
         $this->comic = $comic;
-        return $this;
-    }
-
-    /**
-     * @return Collection
-     */
-    public function getPlatforms(): Collection
-    {
-        return $this->platforms;
-    }
-
-    /**
-     * @param Platform $platform
-     * @return self
-     */
-    public function addPlatform(Platform $platform): self
-    {
-        if (!$this->platforms->contains($platform)) {
-            $this->platforms[] = $platform;
-        }
-
         return $this;
     }
 
@@ -220,6 +208,36 @@ class ComicLanguage
             // set the owning side to null (unless already changed)
             if ($comicIssue->getComic() === $this) {
                 $comicIssue->setComic(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ComicPlatform>
+     */
+    public function getComicPlatforms(): Collection
+    {
+        return $this->comicPlatforms;
+    }
+
+    public function addComicPlatform(ComicPlatform $comicPlatform): self
+    {
+        if (!$this->comicPlatforms->contains($comicPlatform)) {
+            $this->comicPlatforms[] = $comicPlatform;
+            $comicPlatform->setComicLanguage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComicPlatform(ComicPlatform $comicPlatform): self
+    {
+        if ($this->comicPlatforms->removeElement($comicPlatform)) {
+            // set the owning side to null (unless already changed)
+            if ($comicPlatform->getComicLanguage() === $this) {
+                $comicPlatform->setComicLanguage(null);
             }
         }
 

@@ -58,8 +58,7 @@ class User implements UserInterface
      * @ORM\Column(name="email", type="string", length=100, unique=true, nullable=false)
      * @Assert\NotBlank(message="FIELD_CAN_NOT_BE_EMPTY")
      * @Assert\Email(
-     *     message = "INCORRECT_EMAIL_ADDRESS",
-     *     checkMX = true
+     *     message = "INCORRECT_EMAIL_ADDRESS"
      * )
      */
     protected $email;

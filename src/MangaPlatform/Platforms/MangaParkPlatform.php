@@ -3,6 +3,8 @@
 namespace App\MangaPlatform\Platforms;
 
 use App\Entity\Chapter;
+use App\Entity\Comic;
+use App\Entity\ComicIssue;
 use App\Entity\Manga;
 use App\Utils\PlatformUtil;
 use DateTime;
@@ -41,8 +43,8 @@ class MangaParkPlatform extends AbstractPlatform
     public function setTitleNode() {
         $titleNode = $this->getTitleNode();
 
-        $titleNode->setSelector('.cover img');
-        $titleNode->setAttribute('title');
+        $titleNode->setSelector('.item-title a');
+        $titleNode->setText(true);
     }
 
     public function setStatusNode() {
@@ -50,7 +52,7 @@ class MangaParkPlatform extends AbstractPlatform
 
         $statusNode->setSelector('.attr tr:nth-child(8) td');
         $statusNode->setCallback(function (Crawler $el) {
-            return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
+            return $el->getText() === 'Ongoing' ? Comic::STATUS_ONGOING : Comic::STATUS_ENDED;
         });
     }
 
@@ -127,7 +129,7 @@ class MangaParkPlatform extends AbstractPlatform
 
         $chapterPagesNode->setScript(function ($client, $parameters) {
             $chPages = $client->executeScript('return _load_pages');
-            /** @var Chapter|null $chapter */
+            /** @var ComicIssue|null $chapter */
             $chapter = $parameters['chapter'] ?? null;
             $val = [];
             if ($chapter) {

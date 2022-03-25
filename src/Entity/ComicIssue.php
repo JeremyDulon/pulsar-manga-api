@@ -61,7 +61,7 @@ class ComicIssue
      * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="comicIssues")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $comic;
+    private $comicLanguage;
 
     /**
      * @var Collection
@@ -132,18 +132,18 @@ class ComicIssue
     /**
      * @return ComicLanguage
      */
-    public function getComic(): ComicLanguage
+    public function getComicLanguage(): ComicLanguage
     {
-        return $this->comic;
+        return $this->comicLanguage;
     }
 
     /**
-     * @param ComicPlatform|null $comic
+     * @param ComicLanguage|null $comicLanguage
      * @return $this
      */
-    public function setComic(?ComicPlatform $comic): self
+    public function setComicLanguage(?ComicLanguage $comicLanguage): self
     {
-        $this->comic = $comic;
+        $this->comicLanguage = $comicLanguage;
 
         return $this;
     }
@@ -227,7 +227,7 @@ class ComicIssue
      */
     public function getComicId(): int
     {
-        return $this->getComic()->getId();
+        return $this->getComicLanguage()->getId();
     }
 
     /**
@@ -238,6 +238,6 @@ class ComicIssue
      */
     public function getComicSlug(): string
     {
-        return $this->getComic()->getComic()->getSlug();
+        return $this->getComicLanguage()->getComic()->getSlug();
     }
 }

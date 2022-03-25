@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Platform;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -30,19 +31,25 @@ class PlatformCrudController extends AbstractCrudController
         $id = IntegerField::new('id', 'ID');
         $name = TextField::new('name');
         $baseUrl = TextField::new('baseUrl');
-        $status = IntegerField::new('status');
+        $status = ChoiceField::new('status');
         $createdAt = DateTimeField::new('createdAt');
         $updatedAt = DateTimeField::new('updatedAt');
         $language = TextareaField::new('language');
         $mangaPath = TextareaField::new('mangaPath');
         $chapterPath = TextareaField::new('chapterPath');
 
+        $status->setChoices([
+            'Actif' => Platform::STATUS_ENABLED,
+            'En suspens' => Platform::STATUS_SUSPENDED,
+            'Fermée' => Platform::STATUS_DISABLED
+        ]);
+
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $name, $language, $baseUrl, $mangaPath, $chapterPath];
+            return [$id, $name, $language, $baseUrl, $status];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $name, $baseUrl, $status, $createdAt, $updatedAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$id, $name, $baseUrl, $status];
+            return [$name, $baseUrl, $status];
         } elseif (Crud::PAGE_EDIT === $pageName) {
             return [$id, $name, $baseUrl, $status];
         }

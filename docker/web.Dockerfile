@@ -1,12 +1,11 @@
-FROM php:7.4-fpm
+FROM php:7.4-fpm-alpine
 
-RUN apt update \
-    && apt install -y zlib1g-dev g++ git libicu-dev zip libzip-dev zip \
-    && docker-php-ext-install intl opcache pdo pdo_mysql \
-    && pecl install apcu \
-    && docker-php-ext-enable apcu \
-    && docker-php-ext-configure zip \
-    && docker-php-ext-install zip
+RUN apk add --update --no-cache bash chromium chromium-chromedriver
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions pdo_mysql && \
+    install-php-extensions zip && \
+    install-php-extensions intl
 
 WORKDIR /var/www/pulsar
 
@@ -14,11 +13,3 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN curl -sS https://get.symfony.com/cli/installer | bash
 RUN mv /root/.symfony/bin/symfony /usr/local/bin/symfony
-RUN git config --global user.email "jeremy.dulon@live.fr" \
-    && git config --global user.name "JeremyDulon"
-
-## Chromium and ChromeDriver
-#ENV PANTHER_NO_SANDBOX 1
-## Not mandatory, but recommended
-#ENV PANTHER_CHROME_ARGUMENTS='--disable-dev-shm-usage'
-#RUN apk add --no-cache chromium chromium-chromedriver

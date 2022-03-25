@@ -22,7 +22,7 @@ class ComicPlatformCrudController extends AbstractCrudController
         return $crud
             ->setEntityLabelInSingular('ComicPlatform')
             ->setEntityLabelInPlural('ComicPlatform')
-            ->setSearchFields(['id', 'url', 'weight']);
+            ->setSearchFields(['id', 'url']);
     }
 
     public function configureFields(string $pageName): iterable
@@ -31,19 +31,22 @@ class ComicPlatformCrudController extends AbstractCrudController
         $weight = IntegerField::new('weight');
         $url = UrlField::new('url');
         $platform = AssociationField::new('platform');
-        $comicTitle = TextareaField::new('comic.title');
-        $platformName = TextareaField::new('platform.name');
+        $platformName = TextareaField::new('platform.name', 'Platform');
         $updatedAt = TextareaField::new('updatedAt');
         $chapters = TextareaField::new('chapters');
+        $comicLanguage = AssociationField::new('comicLanguage');
+        $comicTitle = TextareaField::new('comicLanguage.comic.title', 'Title');
+
+        $newEdit = [$url, $comicLanguage, $platform];
 
         if (Crud::PAGE_INDEX === $pageName) {
             return [$id, $comicTitle, $platformName, $url, $updatedAt, $chapters];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$id, $url, $weight, $platform];
-        } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$id, $weight, $url];
+            return [$id, $url, $platform];
+        } elseif (Crud::PAGE_NEW  === $pageName) {
+            return $newEdit;
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$id, $weight, $url];
+            return $newEdit;
         }
     }
 }
