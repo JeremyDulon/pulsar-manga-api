@@ -20,10 +20,6 @@ security:
             pattern: ^/admin
             lazy: true
 
-        refresh:
-            pattern: ^/api/token/refresh
-            stateless: true
-
         api_login:
             pattern: ^/api/login
             stateless: true
@@ -36,6 +32,9 @@ security:
             pattern: ^/api
             stateless: true
             jwt: ~
+            entry_point: jwt
+            refresh_jwt:
+                check_path: /api/token/refresh
 
         main:
             guard:
