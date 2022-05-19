@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserBisRepository;
 use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -24,6 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @UniqueEntity(fields={"email"}, errorPath="email", message="EMAIL_IS_ALREADY_IN_USE")
  * @UniqueEntity(fields={"username"}, errorPath="username", message="USERNAME_IS_ALREADY_IN_USE")
  *
+ * @ApiResource
  */
 class User implements UserInterface
 {
@@ -44,11 +47,13 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read:User"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true, nullable=false)
+     * @Groups({"read:User"})
      */
     private $username;
 
@@ -60,11 +65,13 @@ class User implements UserInterface
      * @Assert\Email(
      *     message = "INCORRECT_EMAIL_ADDRESS"
      * )
+     * @Groups({"read:User"})
      */
     protected $email;
 
     /**
      * @ORM\Column(type="json")
+     * @Groups({"read:User"})
      */
     private $roles = [];
 
@@ -107,6 +114,7 @@ class User implements UserInterface
      *
      * @var array|string[]
      * @ORM\Column(name="languages", type="simple_array", nullable=false)
+     * @Groups({"read:User"})
      */
     private $languages;
 
@@ -306,36 +314,36 @@ class User implements UserInterface
 //    TODO: getFavorites
 
     /**
-     * @param ComicLanguage $ComicLanguage
-     * @return UserComicLanguage|bool
-     */
-    public function isFavorite(ComicLanguage $ComicLanguage) {
-        /** @var UserComicLanguage $userComicLanguage */
-        foreach ($this->userComicLanguages as $userComicLanguage) {
-            if ($userComicLanguage->getComicLanguge() === $ComicLanguage) {
-                return $userComicLanguage;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @Serializer\VirtualProperty()
-     * @Serializer\Groups({ "getUser" })
-     * @Serializer\SerializedName("favorites")
-     * @Serializer\Expose
-     */
-    public function getFavorites(): array
-    {
-        return array_map(function (UserComicLanguage $userComicPlatform) {
-            $Comic = $userComicPlatform->getComicPlatform()->getComic();
-            return [
-                'chapter' => $userComicPlatform->getLastChapter()->getId(),
-                'page' => $userComicPlatform->getLastPage(),
-                'slug' => $Comic->getSlug(),
-                'favorite' => $userComicPlatform->getFavorite(),
-                'id' => $userComicPlatform->getComicPlatform()->getId()
-            ];
-        }, $this->userComicPlatforms->toArray());
-    }
+//     * @param ComicLanguage $ComicLanguage
+//     * @return UserComicLanguage|bool
+//     */
+//    public function isFavorite(ComicLanguage $ComicLanguage) {
+//        /** @var UserComicLanguage $userComicLanguage */
+//        foreach ($this->userComicLanguages as $userComicLanguage) {
+//            if ($userComicLanguage->getComicLanguge() === $ComicLanguage) {
+//                return $userComicLanguage;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    /**
+//     * @Serializer\VirtualProperty()
+//     * @Serializer\Groups({ "getUser" })
+//     * @Serializer\SerializedName("favorites")
+//     * @Serializer\Expose
+//     */
+//    public function getFavorites(): array
+//    {
+//        return array_map(function (UserComicLanguage $userComicPlatform) {
+//            $Comic = $userComicPlatform->getComicPlatform()->getComic();
+//            return [
+//                'chapter' => $userComicPlatform->getLastChapter()->getId(),
+//                'page' => $userComicPlatform->getLastPage(),
+//                'slug' => $Comic->getSlug(),
+//                'favorite' => $userComicPlatform->getFavorite(),
+//                'id' => $userComicPlatform->getComicPlatform()->getId()
+//            ];
+//        }, $this->userComicPlatforms->toArray());
+//    }
 }

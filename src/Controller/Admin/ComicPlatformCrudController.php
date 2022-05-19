@@ -6,6 +6,7 @@ use App\Entity\ComicPlatform;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
@@ -29,20 +30,25 @@ class ComicPlatformCrudController extends AbstractCrudController
     {
         $id = IntegerField::new('id', 'ID');
         $weight = IntegerField::new('weight');
+        $status = ChoiceField::new('status');
         $url = UrlField::new('url');
         $platform = AssociationField::new('platform');
         $platformName = TextareaField::new('platform.name', 'Platform');
-        $updatedAt = TextareaField::new('updatedAt');
-        $chapters = TextareaField::new('chapters');
         $comicLanguage = AssociationField::new('comicLanguage');
         $comicTitle = TextareaField::new('comicLanguage.comic.title', 'Title');
 
-        $newEdit = [$url, $comicLanguage, $platform];
+        $status->setChoices([
+            'Actif' => ComicPlatform::STATUS_ENABLED,
+            'En suspens' => ComicPlatform::STATUS_SUSPENDED,
+            'Fermée' => ComicPlatform::STATUS_DISABLED
+        ]);
+
+        $newEdit = [$url, $comicLanguage, $platform, $status];
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $comicTitle, $platformName, $url, $updatedAt, $chapters];
+            return [$id, $comicTitle, $platformName, $url, $weight, $status];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$id, $url, $platform];
+            return [$id, $url, $platform, $status];
         } elseif (Crud::PAGE_NEW  === $pageName) {
             return $newEdit;
         } elseif (Crud::PAGE_EDIT === $pageName) {

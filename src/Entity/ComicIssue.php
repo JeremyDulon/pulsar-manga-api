@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\Macro\Timestamps;
 use App\Repository\ComicIssueRepository;
 use DateTimeInterface;
@@ -12,6 +13,7 @@ use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=ComicIssueRepository::class)
+ * @ApiResource
  */
 class ComicIssue
 {
@@ -114,6 +116,24 @@ class ComicIssue
     {
         $this->number = $number;
 
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getType(): int
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param int $type
+     * @return ComicIssue
+     */
+    public function setType(int $type): self
+    {
+        $this->type = $type;
         return $this;
     }
 

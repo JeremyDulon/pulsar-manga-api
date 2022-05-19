@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\UserComicRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=UserComicLanguageRepository::class)
+ *
+ * @ApiResource
  */
 class UserComicLanguage
 {

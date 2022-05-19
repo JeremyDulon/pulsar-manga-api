@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Comic;
 use App\Entity\ComicIssue;
 use App\Entity\ComicLanguage;
+use App\Entity\ComicPage;
 use App\Entity\ComicPlatform;
 use App\Entity\Platform;
 use App\Entity\User;
@@ -38,6 +39,7 @@ class DashboardController extends AbstractDashboardController
             MenuItem::linkToCrud('Comic Languages', 'fas fa-book', ComicLanguage::class),
             MenuItem::linkToCrud('Comic Platforms', 'fas fa-book', ComicPlatform::class),
             MenuItem::linkToCrud('Comic Issues', 'fas fa-book-open', ComicIssue::class),
+            MenuItem::linkToCrud('Comic Pages', 'fas fa-book', ComicPage::class),
             MenuItem::linkToCrud('Platforms', 'fas fa-server', Platform::class),
         ];
 

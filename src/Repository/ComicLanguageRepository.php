@@ -24,7 +24,7 @@ class ComicLanguageRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      */
-    public function findBySlugAndLanguage(string $slug, string $language): ?ComicLanguage
+    public function findOneBySlugAndLanguage(string $slug, string $language): ?ComicLanguage
     {
         return $this->createQueryBuilder('cl')
             ->innerJoin('cl.comic', 'c')

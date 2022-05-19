@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\Macro\Timestamps;
 use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -13,6 +14,7 @@ use JMS\Serializer\Annotation as Serializer;
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicLanguageRepository::class)
  * @ORM\Table(uniqueConstraints={@UniqueConstraint(name="search_idx", columns={"language", "comic_id"})})
+ * @ApiResource
  */
 class ComicLanguage
 {
@@ -95,7 +97,7 @@ class ComicLanguage
     /**
      * @return string
      */
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -165,19 +167,6 @@ class ComicLanguage
     }
 
     /**
-     * @param Platform $platform
-     * @return self
-     */
-    public function removeComicPage(Platform $platform): self
-    {
-        if ($this->platforms->contains($platform)) {
-            $this->platforms->removeElement($platform);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection
      */
     public function getComicIssues(): Collection
@@ -206,8 +195,8 @@ class ComicLanguage
         if ($this->comicIssues->contains($comicIssue)) {
             $this->comicIssues->removeElement($comicIssue);
             // set the owning side to null (unless already changed)
-            if ($comicIssue->getComic() === $this) {
-                $comicIssue->setComic(null);
+            if ($comicIssue->getComicLanguage() === $this) {
+                $comicIssue->setComicLanguage(null);
             }
         }
 
@@ -219,7 +208,9 @@ class ComicLanguage
      */
     public function getComicPlatforms(): Collection
     {
-        return $this->comicPlatforms;
+        return $this->comicPlatforms->filter(function (ComicPlatform $comicPlatform) {
+            return $comicPlatform->getStatus() === ComicPlatform::STATUS_ENABLED;
+        });
     }
 
     public function addComicPlatform(ComicPlatform $comicPlatform): self

@@ -1,4 +1,18 @@
 {
+    "api-platform/core": {
+        "version": "2.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.5",
+            "ref": "05b57782a78c21a664a42055dc11cf1954ca36bb"
+        },
+        "files": [
+            "config/packages/api_platform.yaml",
+            "config/routes/api_platform.yaml",
+            "src/Entity/.gitignore"
+        ]
+    },
     "aws/aws-crt-php": {
         "version": "v1.0.2"
     },
@@ -127,11 +141,17 @@
     "exsyst/swagger": {
         "version": "v0.4.1"
     },
+    "fig/link-util": {
+        "version": "1.1.2"
+    },
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.3"
     },
     "gedmo/doctrine-extensions": {
         "version": "v2.4.41"
+    },
+    "gesdinet/jwt-refresh-token-bundle": {
+        "version": "v1.1.1"
     },
     "guzzlehttp/guzzle": {
         "version": "6.5.5"
@@ -171,11 +191,32 @@
     "laminas/laminas-code": {
         "version": "3.4.1"
     },
+    "lcobucci/clock": {
+        "version": "2.0.0"
+    },
+    "lcobucci/jwt": {
+        "version": "4.1.5"
+    },
+    "lexik/jwt-authentication-bundle": {
+        "version": "2.15",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.5",
+            "ref": "5b2157bcd5778166a5696e42f552ad36529a07a6"
+        },
+        "files": [
+            "config/packages/lexik_jwt_authentication.yaml"
+        ]
+    },
     "monolog/monolog": {
         "version": "1.25.5"
     },
     "mtdowling/jmespath.php": {
         "version": "2.6.0"
+    },
+    "namshi/jose": {
+        "version": "7.2.3"
     },
     "nelmio/api-doc-bundle": {
         "version": "3.0",
@@ -502,6 +543,9 @@
     "symfony/property-info": {
         "version": "v4.4.11"
     },
+    "symfony/proxy-manager-bridge": {
+        "version": "v5.4.6"
+    },
     "symfony/routing": {
         "version": "4.2",
         "recipe": {
@@ -647,6 +691,9 @@
     },
     "webmozart/assert": {
         "version": "1.9.1"
+    },
+    "willdurand/negotiation": {
+        "version": "3.1.0"
     },
     "zircote/swagger-php": {
         "version": "2.0.16"

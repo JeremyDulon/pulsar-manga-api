@@ -3,6 +3,7 @@
 namespace App\MangaPlatform\Platforms;
 
 use App\Entity\Chapter;
+use App\Entity\Comic;
 use App\Entity\Manga;
 use App\MangaPlatform\AbstractPlatform;
 use App\Utils\PlatformUtil;
@@ -15,7 +16,7 @@ class FanFoxPlatform extends AbstractPlatform
 {
     protected $name = 'FanFox';
 
-    protected $baseUrl = 'https://fanfox.net';
+    protected $baseUrl = 'http://fanfox.net';
 
     protected $mangaPath = '/manga/' . self::MANGA_SLUG;
 
@@ -24,11 +25,18 @@ class FanFoxPlatform extends AbstractPlatform
 
         $this->setTitleNode();
         $this->setStatusNode();
-        $this->setMangaImageNode();
+        $this->setMainImageNode();
         $this->setAuthorNode();
         $this->setDescriptionNode();
-        $this->setChapterDataNode();
-        $this->setChapterPagesNode();
+        $this->setComicIssuesDataNode();
+        $this->setComicPagesNode();
+    }
+
+    public function getHeaders()
+    {
+        return [
+            'Referer: ' . $this->getBaseUrl()
+        ];
     }
 
     public function setMangaRegex()
@@ -51,13 +59,13 @@ class FanFoxPlatform extends AbstractPlatform
 
         $statusNode->setSelector('.detail-info-right-title-tip');
         $statusNode->setCallback(function (Crawler $el) {
-            return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
+            return $el->getText() === 'Ongoing' ? Comic::STATUS_ONGOING : Comic::STATUS_ENDED;
         });
     }
 
     // Checkme: Is url accessible with params ?
-    public function setMangaImageNode() {
-        $mangaImageNode = $this->getMangaImageNode();
+    public function setMainImageNode() {
+        $mangaImageNode = $this->getMainImageNode();
 
         $mangaImageNode->setSelector('.detail-info-cover-img');
         $mangaImageNode->setAttribute('src');
@@ -77,22 +85,22 @@ class FanFoxPlatform extends AbstractPlatform
         $descriptionNode->setText(true);
     }
 
-    public function setChapterDataNode() {
-        $chapterDataNode = $this->getChapterDataNode();
+    public function setComicIssuesDataNode() {
+        $chapterDataNode = $this->getComicIssuesDataNode();
 
         $chapterDataNode->setSelector('#chapterlist .detail-main-list');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
-            $chaptersArray = $el->children('li')->reduce(function ($node) {
-                $title = $node->filter('.title3')->getAttribute('innerText');
-                preg_match('/Ch\.([0-9]*)/', $title, $matches);
+            $chaptersArray = $el->children('li')->reduce(function (Crawler $node) {
+                $title = $node->filterXpath('.//p[@class="title3"]')->getElement(0)->getDOMProperty('innerText');
+                preg_match('/Ch\.([0-9]+(?:\.[0-9]+)?)/', $title, $matches);
                 return !empty($matches) && ctype_digit($matches[1]) === true;
-            })->each(function (Crawler $ch) {
-                $a = $ch->filter('a');
+            })->each(function (Crawler $issue) {
+                $a = $issue->filter('a');
                 $url = $a->getAttribute('href');
 
-                $title = $a->filter('.title3')->getAttribute('innerText');
+                $title = $issue->filterXpath('.//p[@class="title3"]')->getElement(0)->getDOMProperty('innerText');
                 preg_match('/Ch\.([0-9]*)/', $title, $matches);
-                $date = $a->filter('.title2')->getAttribute('innerText');
+                $date = $a->filterXpath('.//p[@class="title2"]')->getElement(0)->getDOMProperty('innerText');
                 return [
                     'title' => $title,
                     'number' => $matches[1],
@@ -100,62 +108,66 @@ class FanFoxPlatform extends AbstractPlatform
                     'date' => new DateTime(trim($date))
                 ];
             });
-            // Todo: refacto
-            $offset = $parameters['offset'];
-            $chapterNumber = $parameters['chapterNumber'];
-            $numberCb = function ($ch) {
-                return $ch['number'];
-            };
-
-            usort($chaptersArray, function ($chA, $chB) {
-                return $chA['number'] < $chB['number'] ? -1 : 1;
-            });
-
-            $lastChapterNumber = (int) $numberCb(end($chaptersArray));
-
-            $chaptersArray = PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
-            return $chaptersArray;
+            return PlatformUtil::filterChapters(
+                $chaptersArray,
+                $parameters
+            );
         });
     }
 
-    public function setChapterPagesNode() {
-        $chapterPagesNode = $this->getChapterPagesNode();
+    public function setComicPagesNode() {
+        $chapterPagesNode = $this->getComicPagesNode();
 
         $chapterPagesNode->setScript(function (Client $client, $parameters) {
             $key = $client->executeScript("
+                window.ajaxDone = [];
                 var mkey = '';
                 if ($('#dm5_key').length > 0) {
                     mkey = $('#dm5_key').val();
                 }
                 return mkey;
             ");
-           $pages = $this->scriptAjaxChapterPages($client, 1);
-           $pages = array_merge($pages, $this->scriptAjaxChapterPages($client, 3));
 
-           $val = [];
+            $pagesCount = $client->executeScript("return imagecount");
 
-           foreach (array_values(array_unique($pages)) as $i => $page) {
-               $val[] = [
-                   'number' => $i+1,
-                   'url' => 'https:' . $page
+            $pages = [];
+            $currentPage = 1;
+            while ($pagesCount > count($pages)) {
+                $pagesToAdd = $this->scriptAjaxChapterPages($client, $currentPage);
+                $currentPage++;
+
+                foreach ($pagesToAdd as $page) {
+                    if (!in_array($page, $pages)) {
+                        $pages[] = $page;
+                    }
+                }
+            }
+
+            $val = [];
+
+            foreach (array_values(array_unique($pages)) as $i => $page) {
+                $val[] = [
+                    'number' => $i+1,
+                    'url' => 'https:' . $page
                ];
            }
+
            return $val;
         });
     }
 
-    private function waitAjaxChapter(): Closure
+    private function waitAjaxChapter(int $page): Closure
     {
-        return static function ($driver): bool {
-            return $driver->executeScript('return window.ajaxDone === true');
+        return static function ($driver) use ($page): bool {
+            return $driver->executeScript("return window.ajaxDone[$page] === true");
         };
     }
 
     private function scriptAjaxChapterPages($client, $page, $key = '""') {
 
-        $sent = $client->executeScript("
+        $client->executeScript("
             window.pages = [];
-            window.ajaxDone = false;
+            window.ajaxDone[$page] = false;
             $.ajax({
                 url: 'chapterfun.ashx',
                 data: { cid: chapterid, page: $page, key: $key },
@@ -166,17 +178,12 @@ class FanFoxPlatform extends AbstractPlatform
                         var arr;
                         eval(msg);
                         window.pages = d;
-                        window.ajaxDone = true;
+                        window.ajaxDone[$page] = true;
                     }
                 }
             });
-            
-            return 'ajaxSent';
         ");
-        dump($sent);
-        $client->getWebDriver()->wait()->until($this->waitAjaxChapter());
-        $pages = $client->executeScript("return window.pages;");
-
-        return $pages;
+        $client->getWebDriver()->wait()->until($this->waitAjaxChapter($page));
+        return $client->executeScript("return window.pages;");
     }
 }

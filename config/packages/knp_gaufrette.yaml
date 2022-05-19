@@ -1,13 +1,20 @@
 knp_gaufrette:
   adapters:
-    file_storage:
+    aws_file_storage:
       aws_s3:
         service_id: 'storage.aws_s3.client'
         bucket_name: '%env(resolve:AWS_S3_BUCKET)%'
         options:
           create: true
           acl: 'public-read'
+    pulsar_local_storage:
+      local:
+        directory: 'public/uploads'
+        create: true
   filesystems:
-    file_storage:
-      adapter:    file_storage
-      alias:      file_storage_filesystem
+    aws_file_storage:
+      adapter:    aws_file_storage
+      alias:      aws_file_storage_filesystem
+    pulsar_local_storage:
+      adapter:    pulsar_local_storage
+      alias:      pulsar_local_storage_filesystem

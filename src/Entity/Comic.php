@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\Macro\Timestamps;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -12,6 +13,7 @@ use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicRepository::class)
+ * @ApiResource
  */
 class Comic
 {
@@ -283,9 +285,9 @@ class Comic
     }
 
     /**
-     * @return DateTimeInterface
+     * @return DateTimeInterface|null
      */
-    public function getLastUpdated(): DateTimeInterface
+    public function getLastUpdated(): ?DateTimeInterface
     {
         return $this->lastUpdated;
     }

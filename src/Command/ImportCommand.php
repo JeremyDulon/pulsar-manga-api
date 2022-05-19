@@ -44,13 +44,20 @@ class ImportCommand extends BaseCommand
             InputArgument::REQUIRED,
             'The slug of the comic'
         );
+        $this->addArgument(
+            'language',
+            InputArgument::OPTIONAL,
+            'The language of the comic',
+            PlatformUtil::LANGUAGE_EN
+        );
     }
 
 
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return int|void|null
+     * @return int
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -58,10 +65,13 @@ class ImportCommand extends BaseCommand
         $this->stopwatch->start('manga');
 
         $comicSlug = $this->input->getArgument('slug');
+        $language = $this->input->getArgument('language');
 
-        $this->importService->importComic($comicSlug);
+        $this->importService->importComic($comicSlug, $language);
 
         $eventInfo = $this->stopEvent('manga');
+
+        $this->output->writeln("Manga updated: $comicSlug ($language) - $eventInfo");
 
         return 0;
     }

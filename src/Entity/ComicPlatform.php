@@ -14,6 +14,10 @@ use JMS\Serializer\Annotation as Serializer;
  */
 class ComicPlatform
 {
+    const STATUS_ENABLED = 100;
+    const STATUS_SUSPENDED = 200;
+    const STATUS_DISABLED = 300;
+
     /**
      * @var int
      * @ORM\Id()
@@ -46,6 +50,12 @@ class ComicPlatform
      * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="comicPlatforms")
      */
     private $comicLanguage;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", nullable=false)
+     */
+    private $status = self::STATUS_ENABLED;
 
     /**
      * @return int
@@ -117,6 +127,24 @@ class ComicPlatform
     {
         $this->comicLanguage = $comicLanguage;
 
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param int $status
+     * @return ComicPlatform
+     */
+    public function setStatus(int $status): ComicPlatform
+    {
+        $this->status = $status;
         return $this;
     }
 }

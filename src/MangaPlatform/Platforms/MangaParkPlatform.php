@@ -25,8 +25,7 @@ class MangaParkPlatform extends AbstractPlatform
         $this->setTitleNode();
         $this->setStatusNode();
         $this->setAltTitlesNode();
-        $this->setMangaImageNode();
-        $this->setAuthorNode();
+        $this->setMainImageNode();
         $this->setDescriptionNode();
         $this->setChapterDataNode();
         $this->setChapterPagesNode();
@@ -50,7 +49,7 @@ class MangaParkPlatform extends AbstractPlatform
     public function setStatusNode() {
         $statusNode = $this->getStatusNode();
 
-        $statusNode->setSelector('.attr tr:nth-child(8) td');
+        $statusNode->setSelector('.attr-main .attr-item:nth-child(6) span');
         $statusNode->setCallback(function (Crawler $el) {
             return $el->getText() === 'Ongoing' ? Comic::STATUS_ONGOING : Comic::STATUS_ENDED;
         });
@@ -59,37 +58,38 @@ class MangaParkPlatform extends AbstractPlatform
     public function setAltTitlesNode() {
         $altTitlesNode = $this->getAltTitlesNode();
 
-        $altTitlesNode->setSelector('.attr tr:nth-child(4) td');
+        $altTitlesNode->setSelector('.alias-set');
         $altTitlesNode->setCallback(function (Crawler $el) {
             return array_map(function ($v) {
                 return trim($v);
-            }, explode(';', $el->getText()));
+            }, explode('―', $el->getText()));
         });
     }
 
-    public function setMangaImageNode() {
-        $mangaImageNode = $this->getMangaImageNode();
+    public function setMainImageNode() {
+        $mangaImageNode = $this->getMainImageNode();
 
-        $mangaImageNode->setSelector('.cover img');
+        $mangaImageNode->setSelector('.attr-cover img');
         $mangaImageNode->setAttribute('src');
     }
 
+    /** Pas d'auteur sur la page */
     public function setAuthorNode() {
         $authorNode = $this->getAuthorNode();
 
-        $authorNode->setSelector('.attr tr:nth-child(5) td');
+        $authorNode->setSelector('.attr-main .attr-item:nth-child(6) span');
         $authorNode->setText(true);
     }
 
     public function setDescriptionNode() {
         $descriptionNode = $this->getDescriptionNode();
 
-        $descriptionNode->setSelector('.summary');
+        $descriptionNode->setSelector('#limit-height-body-descr');
         $descriptionNode->setText(true);
     }
 
-    public function setChapterDataNode() {
-        $chapterDataNode = $this->getChapterDataNode();
+    public function setComicIssuesDataNode() {
+        $chapterDataNode = $this->getComicIssuesDataNode();
 
         $chapterDataNode->setSelector('.book-list-1 #stream_1 .chapter');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
@@ -108,24 +108,17 @@ class MangaParkPlatform extends AbstractPlatform
                 ];
             });
 
-            $offset = $parameters['offset'];
-            $chapterNumber = $parameters['chapterNumber'];
-            $numberCb = function ($ch) {
-                return $ch['number'];
-            };
+            $chaptersArray = PlatformUtil::filterChapters(
+                $chaptersArray,
+                $parameters
+            );
 
-            usort($chaptersArray, function ($chA, $chB) {
-                return $chA['number'] < $chB['number'] ? -1 : 1;
-            });
-
-            $lastChapterNumber = (int) $numberCb(end($chaptersArray));
-
-            return PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
+            return PlatformUtil::filterChapters($chaptersArray, $parameters);
         });
     }
 
-    public function setChapterPagesNode() {
-        $chapterPagesNode = $this->getChapterPagesNode();
+    public function setComicPagesNode() {
+        $chapterPagesNode = $this->getComicPagesNode();
 
         $chapterPagesNode->setScript(function ($client, $parameters) {
             $chPages = $client->executeScript('return _load_pages');

@@ -484,17 +484,29 @@ class PlatformUtil
         ];
     }
 
-    public static function filterChapters($chapters, $chapterNumberCb, $lastChapterNumber, $offset = 0, $chapterNumber = null): array
+    public static function filterChapters(
+        array $chapters,
+        array $parameters
+    ): array
     {
+        $offset = $parameters['offset'];
+        $chapterNumber = $parameters['chapterNumber'];
+
+        usort($chapters, function ($chA, $chB) {
+            return $chA['number'] < $chB['number'] ? -1 : 1;
+        });
+
+        $lastChapterNumber = (int) end($chapters)['number'];
+
         [
             'min' => $min,
             'max' => $max
         ] = self::getMinMaxChapter($lastChapterNumber, $offset, $chapterNumber);
 
-        $chapters = array_filter(
+        return array_filter(
             $chapters,
-            function ($val) use ($lastChapterNumber, $chapterNumberCb, $min, $max) {
-                $chNumber = (int) $chapterNumberCb($val);
+            function ($chapter) use ($lastChapterNumber, $min, $max) {
+                $chNumber = (int) $chapter['number'];
                 return Functions::in_range(
                     $chNumber,
                     $min,
@@ -502,7 +514,5 @@ class PlatformUtil
                 );
             }
         );
-
-        return $chapters;
     }
 }

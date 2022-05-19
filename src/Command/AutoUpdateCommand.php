@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class AutoUpdateCommand extends BaseCommand
 {
-    // Remake: this
+    // TODO: Remake this
     public static $defaultName = 'pm:manga:autoupdate';
 
     /** @var ImportService $importService */

@@ -56,4 +56,19 @@ class ComicIssueRepository extends ServiceEntityRepository
             ->getQuery()
             ->getArrayResult();
     }
+
+    public function getComicIssuesBySlugAndLanguage(string $slug, string $language)
+    {
+        return $this->createQueryBuilder('ci')
+            ->innerJoin('ci.comicLanguage', 'cl')
+            ->innerJoin('cl.comic', 'c')
+            ->where('cl.language = :language')
+            ->andWhere('c.slug = :slug')
+            ->setParameters([
+                'language' => $language,
+                'slug' => $slug
+            ])
+            ->getQuery()
+            ->getResult();
+    }
 }

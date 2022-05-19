@@ -3,6 +3,7 @@
 namespace App\MangaPlatform\Platforms;
 
 use App\Entity\Chapter;
+use App\Entity\Comic;
 use App\Entity\Manga;
 use App\MangaPlatform\AbstractPlatform;
 use App\Utils\PlatformUtil;
@@ -23,11 +24,11 @@ class MangaFastPlatform extends AbstractPlatform
         $this->setTitleNode();
         $this->setStatusNode();
         $this->setAltTitlesNode();
-        $this->setMangaImageNode();
+        $this->setMainImageNode();
         $this->setAuthorNode();
         $this->setDescriptionNode();
-        $this->setChapterDataNode();
-        $this->setChapterPagesNode();
+        $this->setComicIssuesDataNode();
+        $this->setComicPagesNode();
     }
 
     public function setMangaRegex()
@@ -50,7 +51,7 @@ class MangaFastPlatform extends AbstractPlatform
 
         $statusNode->setSelector('.inftable tr:nth-child(6) td:nth-child(2)');
         $statusNode->setCallback(function (Crawler $el) {
-            return $el->getText() === 'Ongoing' ? Manga::STATUS_ONGOING : Manga::STATUS_ENDED;
+            return $el->getText() === 'Ongoing' ? Comic::STATUS_ONGOING : Comic::STATUS_ENDED;
         });
     }
 
@@ -65,8 +66,8 @@ class MangaFastPlatform extends AbstractPlatform
         });
     }
 
-    public function setMangaImageNode() {
-        $mangaImageNode = $this->getMangaImageNode();
+    public function setMainImageNode() {
+        $mangaImageNode = $this->getMainImageNode();
 
         $mangaImageNode->setSelector('#Thumbnail');
         $mangaImageNode->setAttribute('src');
@@ -86,8 +87,8 @@ class MangaFastPlatform extends AbstractPlatform
         $descriptionNode->setText(true);
     }
 
-    public function setChapterDataNode() {
-        $chapterDataNode = $this->getChapterDataNode();
+    public function setComicIssuesDataNode() {
+        $chapterDataNode = $this->getComicIssuesDataNode();
 
         $chapterDataNode->setSelector('.chapter-link-w');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
@@ -106,25 +107,17 @@ class MangaFastPlatform extends AbstractPlatform
                     'date' => $date->setTime(0, 0)
                 ];
             });
-            $offset = $parameters['offset'];
-            $chapterNumber = $parameters['chapterNumber'];
-            $numberCb = function ($ch) {
-                return $ch['number'];
-            };
 
-            usort($chaptersArray, function ($chA, $chB) {
-                return $chA['number'] < $chB['number'] ? -1 : 1;
-            });
-
-            $lastChapterNumber = (int) $numberCb(end($chaptersArray));
-
-            $chaptersArray = PlatformUtil::filterChapters($chaptersArray, $numberCb, $lastChapterNumber, $offset, $chapterNumber);
+            $chaptersArray = PlatformUtil::filterChapters(
+                $chaptersArray,
+                $parameters
+            );
             return $chaptersArray;
         });
     }
 
-    public function setChapterPagesNode() {
-        $chapterPagesNode = $this->getChapterPagesNode();
+    public function setComicPagesNode() {
+        $chapterPagesNode = $this->getComicPagesNode();
 
         $chapterPagesNode->setSelector('.content-comic img');
         $chapterPagesNode->setCallback(function (Crawler $el, $parameters) {

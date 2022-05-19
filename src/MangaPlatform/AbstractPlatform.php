@@ -4,19 +4,22 @@ namespace App\MangaPlatform;
 
 use Exception;
 
-abstract class AbstractPlatform
+abstract class AbstractPlatform implements PlatformInterface
 {
     public const LANGUAGE_EN = 'EN';
     public const LANGUAGE_FR = 'FR';
     public const MANGA_SLUG = 'manga_slug';
 
-    protected $name;
-
     protected $language = self::LANGUAGE_EN;
+
+    protected $name;
 
     protected $baseUrl;
 
     protected $mangaPath;
+
+    /** @var array $headers */
+    protected $headers;
 
     /** @var PlatformRegex $mangaRegex */
     protected $mangaRegex;
@@ -48,11 +51,11 @@ abstract class AbstractPlatform
     /** @var PlatformNode $descriptionNode */
     protected $descriptionNode;
 
-    /** @var PlatformNode $chapterDataNode */
-    protected $chapterDataNode;
+    /** @var PlatformNode $comicIssuesDataNode */
+    protected $comicIssuesDataNode;
 
-    /** @var PlatformNode $chapterPagesNode */
-    protected $chapterPagesNode;
+    /** @var PlatformNode $comicPageNode */
+    protected $comicPagesNode;
 
     /**
      * AbstractPlatform constructor.
@@ -70,8 +73,8 @@ abstract class AbstractPlatform
         $this->mangaImageNode = new PlatformNode('image');
         $this->lastUpdatedNode = new PlatformNode('lastUpdated');
         $this->descriptionNode = new PlatformNode('description');
-        $this->chapterDataNode = new PlatformNode('chapterData');
-        $this->chapterPagesNode = new PlatformNode('chapterPages');
+        $this->comicIssuesDataNode = new PlatformNode('comicIssuesData');
+        $this->comicPagesNode = new PlatformNode('comicPages');
 
         $this->setMangaRegex();
     }
@@ -89,6 +92,14 @@ abstract class AbstractPlatform
     public function getBaseUrl(): string
     {
         return $this->baseUrl;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getHeaders()
+    {
+        throw new Exception('Not implemented');
     }
 
     public function getMangaRegex(): PlatformRegex
@@ -131,7 +142,7 @@ abstract class AbstractPlatform
     /**
      * @return PlatformNode
      */
-    public function getMangaImageNode(): PlatformNode
+    public function getMainImageNode(): PlatformNode
     {
         return $this->mangaImageNode;
     }
@@ -171,16 +182,16 @@ abstract class AbstractPlatform
     /**
      * @return PlatformNode
      */
-    public function getChapterDataNode(): PlatformNode
+    public function getComicIssuesDataNode(): PlatformNode
     {
-        return $this->chapterDataNode;
+        return $this->comicIssuesDataNode;
     }
 
     /**
      * @return PlatformNode
      */
-    public function getChapterPagesNode(): PlatformNode
+    public function getComicPagesNode(): PlatformNode
     {
-        return $this->chapterPagesNode;
+        return $this->comicPagesNode;
     }
 }

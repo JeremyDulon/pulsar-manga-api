@@ -5,16 +5,27 @@ namespace App\Service;
 
 
 use App\Entity\File;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ImageService
 {
-    protected $parameterBag;
+    /** @var ParameterBagInterface $parameterBag */
+    private $parameterBag;
 
-    protected $uploaderService;
+    /** @var UploaderService $uploaderService */
+    private $uploaderService;
 
-    public function __construct(ParameterBagInterface $parameterBag, UploaderService $uploaderService)
+    /** @var LoggerInterface $logger */
+    private $logger;
+
+    public function __construct(
+        ParameterBagInterface $parameterBag,
+        UploaderService $uploaderService,
+        LoggerInterface $logger
+    )
     {
+        $this->logger = $logger;
         $this->parameterBag = $parameterBag;
         $this->uploaderService = $uploaderService;
     }
@@ -44,19 +55,19 @@ class ImageService
 
         curl_setopt($ch, CURLOPT_URL, $imageUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, 1);
 
         $headers = array_merge($headers, [
-            'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'
+            'User-Agent: ' . $this->parameterBag->get('user_agent'),
+//            'Upgrade-Insecure-Requests: 1', // specs Fanfox ? visiblement pas utile
+//            'Connection: keep-alive', // specs Fanfox ? visiblement pas utile
         ]);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if (curl_errno($ch)) {
-            dump('Error:' . curl_error($ch));
-        }
         if ($httpCode !== 200) {
-            dump('AIE: ' . $httpCode);
+            $this->logger->error($httpCode);
             return null;
         }
         curl_close($ch);
@@ -91,11 +102,13 @@ class ImageService
         return $this->parameterBag->get('host_url') . 'uploads/' . $file->getPath() . '/' . $file->getName();
     }
 
-    public function uploadChapterImage(string $imageUrl, array $headers = []) {
+    public function uploadChapterImage(string $imageUrl, array $headers = []): ?File
+    {
         return $this->uploadImage('chapters', $imageUrl, $headers);
     }
 
-    public function uploadMangaImage(string $imageUrl, array $headers = []) {
+    public function uploadMangaImage(string $imageUrl, array $headers = []): ?File
+    {
         return $this->uploadImage('mangas', $imageUrl, $headers);
     }
 
@@ -108,10 +121,10 @@ class ImageService
      */
     public function uploadImage(string $directory, string $imageUrl, array $headers = [], array $options = []): ?File
     {
-        if ($this->parameterBag->get('amazon_store_files') === true) {
+        if ($this->parameterBag->get('save_on_filesystem') === true) {
             $result = $this->getImage($imageUrl, $headers);
 
-            if (!$result) {
+            if (empty($result)) {
                 return null;
             }
 
@@ -120,7 +133,7 @@ class ImageService
             $imageUrl = $this->unparse_url($parsed);
             $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
 
-            $url = $this->parameterBag->get('aws_s3_url') . $this->uploaderService->upload($result, $directory, $extension);
+            $url = $this->uploaderService->upload($result, $directory, $extension);
         } else {
             $url = $imageUrl;
         }

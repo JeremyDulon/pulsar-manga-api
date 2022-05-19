@@ -13,6 +13,8 @@ services:
     links:
       - mariadb
     user: 1000:1000
+    env_file:
+      - .env.local
 
   nginx:
     image: nginx:stable-alpine
