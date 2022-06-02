@@ -1,0 +1,7 @@
+App\Entity\ComicIssue:
+  collectionOperations:
+    get:
+      method: GET
+  itemOperations:
+    get:
+      method: GET

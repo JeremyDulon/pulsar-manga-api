@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicLanguageRepository::class)
@@ -31,6 +32,7 @@ class ComicLanguage
     /**
      * @var string
      * @ORM\Column(type="string", length=5, nullable=false)
+     * @Groups({ "list:Comic" })
      */
     private $language = PlatformUtil::LANGUAGE_EN;
 

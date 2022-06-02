@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicRepository::class)
@@ -38,13 +39,14 @@ class Comic
      * @var string
      *
      * @ORM\Column(type="string", length=255)
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "list:Comic" })
      */
     private $title = '';
 
     /**
      * @var array
      * @ORM\Column(type="simple_array", nullable=true)
+     * @Groups({ "list:Comic" })
      */
     private $altTitles = [];
 
@@ -53,7 +55,7 @@ class Comic
      *
      * @ORM\Column(type="string", length=255)
      * @Gedmo\Slug(fields={"title"})
-     * @Serializer\Groups({ "comicList", "comicSlug" })
+     * @Groups({ "list:Comic", "comicSlug" })
      */
     private $slug;
 
@@ -61,7 +63,7 @@ class Comic
      * @var File
      *
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "list:Comic" })
      */
     private $image;
 
@@ -69,7 +71,7 @@ class Comic
      * @var int
      *
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "list:Comic" })
      */
     private $type = self::TYPE_MANGA;
 
@@ -77,7 +79,7 @@ class Comic
      * @var int
      *
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "list:Comic" })
      */
     private $status = self::STATUS_ONGOING;
 
@@ -85,14 +87,14 @@ class Comic
      * @var string
      *
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Serializer\Groups({ "platformData" })
+     * @Groups({ "platformData" })
      */
     private $author = '';
 
     /**
      * @var Collection
      * @ORM\OneToMany(targetEntity=ComicLanguage::class, mappedBy="comic", orphanRemoval=true)
-     * @Serializer\Groups({ "comicData" })
+     * @Groups({ "list:Comic" })
      */
     private $comicLanguages;
 
@@ -100,7 +102,7 @@ class Comic
      * @var DateTimeInterface
      *
      * @ORM\Column(type="datetime", nullable=true)
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "comicList" })
      */
     private $lastUpdated;
 
