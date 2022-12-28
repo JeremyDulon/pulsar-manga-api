@@ -1,9 +1,20 @@
 # Pulsar Manga
 
+## INSTALL
+
+### Local
+- Setup your .env.local file
+- Add local.pulsar.fr to /etc/hosts
+- Connect to the web container
+- Run `composer install`
+- Run `php bin/console doctrine:schema:update --force`
+
+### Prod
+
 ## ROADMAP
 
 ### Infra
-- [ ] Docker 
+- [X] Docker 
 
 ### Chapters
 - [ ] Next chapter
