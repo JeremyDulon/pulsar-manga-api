@@ -27,8 +27,8 @@ class MangaParkPlatform extends AbstractPlatform
         $this->setAltTitlesNode();
         $this->setMainImageNode();
         $this->setDescriptionNode();
-        $this->setChapterDataNode();
-        $this->setChapterPagesNode();
+        $this->setComicIssuesDataNode();
+        $this->setComicPagesNode();
     }
 
     public function setMangaRegex()

@@ -2,9 +2,13 @@
 
 namespace App\Command;
 
+use App\Entity\Platform;
+use App\MangaPlatform\Platforms\FanFoxPlatform;
 use App\MangaPlatform\Platforms\MangaParkPlatform;
+use App\Service\CrawlService;
 use App\Service\ImageService;
 use App\Service\ImportService;
+use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\Exception\TimeoutException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,20 +17,19 @@ use Symfony\Component\Panther\Client;
 
 class ControlCrawlCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:crawl:demo';
+    public static $defaultName = 'pm:crawl:control';
 
-    /** @var ImportService $importService */
-    protected $importService;
+    /** @var CrawlService $crawlService */
+    protected $crawlService;
 
-    /** @var ImageService $imageService */
-    protected $imageService;
-
-    public function __construct(EntityManagerInterface $em, ImportService $importService, ImageService $imageService)
+    public function __construct(
+        EntityManagerInterface $em,
+        CrawlService $crawlService
+    )
     {
         parent::__construct($em);
 
-        $this->importService = $importService;
-        $this->imageService = $imageService;
+        $this->crawlService = $crawlService;
     }
 
     protected function configure()
@@ -44,62 +47,32 @@ class ControlCrawlCommand extends BaseCommand
     {
         parent::execute($input, $output);
 
-        $this->testMangaPark();
-        $this->testFanFox();
+        $this->controlFindNode();
         return 0;
     }
 
-    protected function testMangaPark() {
-        $args = [
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox",
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36', // Avoir obligatoirement un user agent !!!
-        ];
+    private function controlFindNode() {
+        // MANGA PARK
+        $this->crawlService->openUrl('https://mangapark.net/comic/10016/naruto');
 
-        $options = [
-            'connection_timeout_in_ms' => 60000,
-            'request_timeout_in_ms' => 60000,
-        ];
+        $platform = new MangaParkPlatform();
+        dump([
+            'title' => $this->crawlService->findNode($platform->getTitleNode()),
+            'altTitles' => $this->crawlService->findNode($platform->getAltTitlesNode()),
+            'status' => $this->crawlService->findNode($platform->getStatusNode()),
+        ]);
+        $this->crawlService->closeClient();
 
-        $client = Client::createChromeClient(null, $args, $options);
-        dump('beforeRequest');
 
-        $client->request('GET', 'https://mangapark.net/comic/10016/naruto');
-        try {
-            $client->waitFor('#mainer');
-            $text = $client->getCrawler()->filter('#mainer > div > div.pb-2.alias-set.line-b-f')->getText();
-            dump($text);
-        } catch (TimeoutException $e) {
-            dump($e->getMessage());
-            dump($client->getCrawler()->text());
-        }
+        // FANFOX
+        $this->crawlService->openUrl('https://fanfox.net/manga/boku_no_hero_academia/');
 
-    }
-
-    protected function testFanFox() {
-        $args = [
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox"
-        ];
-
-        $options = [
-            'connection_timeout_in_ms' => 60000,
-            'request_timeout_in_ms' => 60000,
-        ];
-
-        $client = Client::createChromeClient(null, $args, $options);
-        $client->request('GET', 'https://fanfox.net/manga/boku_no_hero_academia/');
-
-        try {
-            $client->waitFor('.detail-info-right-title-font');
-            $text = $client->getCrawler()->filter('.detail-info-right-title-font')->getText();
-            dump($text);
-        } catch (TimeoutException $e) {
-            dump($e->getMessage());
-            dump($client->getCrawler()->text());
-        }
-
+        $platform = new FanFoxPlatform();
+        dump([
+            'title' => $this->crawlService->findNode($platform->getTitleNode()),
+            'author' => $this->crawlService->findNode($platform->getAuthorNode()),
+            'status' => $this->crawlService->findNode($platform->getStatusNode()),
+        ]);
+        $this->crawlService->closeClient();
     }
 }

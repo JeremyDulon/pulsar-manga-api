@@ -2,36 +2,29 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\User;
+use App\Entity\Platform;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class PlatformFixtures extends Fixture
 {
-    private $passwordEncoder;
-
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
-    {
-        $this->passwordEncoder = $passwordEncoder;
-    }
-
     public function load(ObjectManager $manager): void
     {
-        $user = new User();
+        $platforms = [
+            [ 'name' => 'MangaPark', 'baseUrl' => 'https://mangapark.net', 'status' => Platform::STATUS_ENABLED ],
+            [ 'name' => 'MangaFast', 'baseUrl' => 'https://mangafast.net', 'status' => Platform::STATUS_DISABLED ],
+            [ 'name' => 'FanFox', 'baseUrl' => 'http://fanfox.net', 'status' => Platform::STATUS_ENABLED ],
+        ];
 
-        $user
-            ->setEmail('jeremy.dulon@live.fr')
-            ->setUsername('jeremy')
-            ->setEnabled(true)
-            ->setRoles(['ROLE_ADMIN']);
+        foreach ($platforms as $platform) {
+            $platformEntity = new Platform();
 
-        $user->setPassword($this->passwordEncoder->encodePassword(
-            $user,
-            'jeremy'
-        ));
+            $platformEntity->setName($platform['name'])
+                ->setBaseUrl($platform['baseUrl'])
+                ->setStatus($platform['status']);
 
-        $manager->persist($user);
+            $manager->persist($platformEntity);
+        }
 
         $manager->flush();
     }

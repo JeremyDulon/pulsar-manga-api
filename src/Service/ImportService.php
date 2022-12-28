@@ -9,25 +9,13 @@ use App\Entity\ComicPage;
 use App\Entity\ComicPlatform;
 use App\Entity\File;
 use App\MangaPlatform\PlatformInterface;
-use App\MangaPlatform\PlatformNode;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Facebook\WebDriver\Chrome\ChromeOptions;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Panther\Client;
-use Symfony\Component\Panther\DomCrawler\Crawler;
-use Symfony\Component\Panther\ProcessManager\ChromeManager;
 
 class ImportService
 {
-    /** @var Client $comicClient */
-    private $comicClient;
-
-    /** @var Client $comicIssueClient */
-    private $comicIssueClient;
-
     /** @var EntityManagerInterface $em */
     private $em;
 
@@ -37,12 +25,8 @@ class ImportService
     /** @var ImageService $imageService */
     private $imageService;
 
-    /** @var ParameterBagInterface $parameterBag */
-    private $parameterBag;
-
-    private const COMIC_CLIENT = 'comicClient';
-
-    private const COMIC_ISSUE_CLIENT = 'comicIssueClient';
+    /** @var CrawlService $crawlService */
+    private $crawlService;
 
     /** @var array $comicIssues */
     private $comicIssues = [];
@@ -50,37 +34,14 @@ class ImportService
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
-        ImageService $imageService,
-        ParameterBagInterface $parameterBag
+        CrawlService $crawlService,
+        ImageService $imageService
     )
     {
         $this->em = $em;
         $this->logger = $logger;
+        $this->crawlService = $crawlService;
         $this->imageService = $imageService;
-        $this->parameterBag = $parameterBag;
-
-        $args = [
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox",
-            '--disable-dev-shm-usage',
-            '--user-agent=' . $this->parameterBag->get('user_agent'), // Avoir obligatoirement un user agent !!!
-        ];
-
-//        $chromeOptions = new ChromeOptions();
-//        $chromeOptions->setExperimentalOption('w3c', false);
-
-        $options = [
-            'port' => mt_rand(9500, 9600),
-            'connection_timeout_in_ms' => 60000,
-            'request_timeout_in_ms' => 60000,
-//            'capabilities' => [
-//                ChromeOptions::CAPABILITY => $chromeOptions
-//            ]
-        ];
-
-        $this->comicClient = Client::createChromeClient(null, $args, $options);
-        $this->comicIssueClient = Client::createChromeClient(null, $args, $options);
     }
 
     /**
@@ -102,8 +63,6 @@ class ImportService
             $this->importComicPlatform($comicPlatform);
         }
 
-        $this->logger->info('Client closed');
-
         return $comicLanguage->getComic();
     }
 
@@ -114,7 +73,7 @@ class ImportService
         ComicPlatform $comicPlatform
     ): void
     {
-        $this->openUrl(self::COMIC_CLIENT, $comicPlatform->getUrl());
+        $this->crawlService->openUrl($comicPlatform->getUrl());
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
         if ($platform === null) {
@@ -126,21 +85,21 @@ class ImportService
             $comic = $comicLanguage->getComic();
 
             if (empty($comic->getTitle())) {
-                $title = $this->findNode(self::COMIC_CLIENT, $platform->getTitleNode());
+                $title = $this->crawlService->findNode($platform->getTitleNode());
                 if (!empty($title)) {
                     $comic->setTitle($title);
                 }
             }
 
             if (empty($comic->getAuthor())) {
-                $author = $this->findNode(self::COMIC_CLIENT, $platform->getAuthorNode());
+                $author = $this->crawlService->findNode($platform->getAuthorNode());
                 if (!empty($author)) {
                     $comic->setAuthor($author);
                 }
             }
 
             if ($comic->getImage() === null) {
-                $imageUrl = $this->findNode(self::COMIC_CLIENT, $platform->getMainImageNode());
+                $imageUrl = $this->crawlService->findNode($platform->getMainImageNode());
                 if (!empty($imageUrl)) {
                     $imageEntity = $this->imageService->uploadMangaImage($imageUrl, [ 'Referer: ' . $platform->getBaseUrl() ]);
                     $comic->setImage($imageEntity);
@@ -148,13 +107,13 @@ class ImportService
             }
 
             if (empty($comicLanguage->getDescription())) {
-                $description = $this->findNode(self::COMIC_CLIENT, $platform->getDescriptionNode());
+                $description = $this->crawlService->findNode($platform->getDescriptionNode());
                 if (!empty($description)) {
                     $comicLanguage->setDescription($description);
                 }
             }
 
-            $status = $this->findNode(self::COMIC_CLIENT, $platform->getStatusNode());
+            $status = $this->crawlService->findNode($platform->getStatusNode());
             if (!empty($status)) {
                 $comic->setStatus($status);
             }
@@ -164,7 +123,7 @@ class ImportService
             $this->logger->error($e->getMessage());
         }
 
-        $this->comicClient->quit();
+        $this->crawlService->closeClient();
 
         $this->importComicIssues($comicPlatform);
     }
@@ -174,20 +133,20 @@ class ImportService
      */
     public function importComicIssues(ComicPlatform $comicPlatform, int $offset = 0, int $chapterNumber = null)
     {
-        $this->openUrl(self::COMIC_CLIENT, $comicPlatform->getUrl());
+        $this->crawlService->openUrl($comicPlatform->getUrl());
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
         if ($platform === null) {
             return null;
         }
 
-        $issues = $this->findNode(self::COMIC_CLIENT, $platform->getComicIssuesDataNode(), ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+        $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
         if (empty($issues)) {
             $this->logger->error('No comic issues');
             return;
         }
         $this->logger->info('Issues fetched.');
-        $this->comicClient->quit();
+        $this->crawlService->closeClient();
 
         foreach ($issues as $issueData) {
             $this->logger->info('Issue: ' . $issueData['number']);
@@ -230,14 +189,14 @@ class ImportService
      */
     public function importComicIssueImages(ComicIssue $comicIssue, PlatformInterface $platform, $issueUrl)
     {
-        $this->openUrl(self::COMIC_ISSUE_CLIENT, $platform->getBaseUrl() . $issueUrl);
-        $issuePages = $this->findNode(self::COMIC_ISSUE_CLIENT, $platform->getComicIssuesDataNode());
+        $this->crawlService->openUrl($platform->getBaseUrl() . $issueUrl);
+        $issuePages = $this->crawlService->findNode($platform->getComicIssuesDataNode());
 
         $this->logger->info(count($issuePages) . ' pages fetched');
         if (empty($issuePages)) {
             $this->logger->error('No pages');
         }
-        $this->comicIssueClient->quit();
+        $this->crawlService->closeClient();
 
         foreach ($issuePages as $issuePageData) {
             $file = $this->imageService->uploadChapterImage($issuePageData['url'], $platform->getHeaders());
@@ -288,53 +247,5 @@ class ImportService
 
         $this->logger->info('[COMIC-ISSUE]: Missing chapters for ' . $comicSlug . ': ' . (count($missingChapters) ? implode(',', $missingChapters) : 'None'));
         return $missingChapters;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function openUrl(string $client, string $url): void
-    {
-        /** @var Client $client */
-        $client = $this->$client;
-
-        if ($client instanceof Client && $client->getCurrentURL() !== $url) {
-            $this->logger->info("[URL] opening $url");
-            $client->request('GET', $url);
-            $this->logger->info("[URL] $url opened.");
-        }
-    }
-
-    /** Todo: Est-ce que j'ai besoin de retourner $node ? */
-    public function findNode(string $client, PlatformNode $platformNode, array $callbackParameters = [])
-    {
-        $returnValue = null;
-        $this->logger->info("[$client]: " . $platformNode->getName());
-        if (!empty($selector = $platformNode->getSelector())) {
-            /** @var Crawler $crawler */
-            $crawler = $this->$client->getCrawler();
-
-            $node = $crawler->filter($selector);
-
-            if ($platformNode->hasCallback()) {
-                $returnValue = $platformNode->executeCallback($node, $callbackParameters);
-            }
-
-            if ($platformNode->isText()) {
-                $returnValue = $node->getText();
-            }
-
-            if (!empty($attribute = $platformNode->getAttribute())) {
-                $returnValue = $node->getAttribute($attribute);
-            }
-        }
-
-        if ($platformNode->hasScript()) {
-            $returnValue = $platformNode->executeScript($this->$client, $callbackParameters);
-        }
-
-        $this->logger->debug("[{$platformNode->getName()}]: " . (is_array($returnValue) ? count($returnValue) . ' values' : $returnValue) );
-
-        return $returnValue;
     }
 }
