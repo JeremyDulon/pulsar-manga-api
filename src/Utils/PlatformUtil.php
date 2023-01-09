@@ -496,6 +496,10 @@ class PlatformUtil
             return $chA['number'] < $chB['number'] ? -1 : 1;
         });
 
+        if ($chapters === []) {
+            return $chapters;
+        }
+
         $lastChapterNumber = (int) end($chapters)['number'];
 
         [

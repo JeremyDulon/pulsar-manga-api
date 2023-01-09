@@ -40,7 +40,7 @@ class ComicPlatformCrudController extends AbstractCrudController
         $status->setChoices([
             'Actif' => ComicPlatform::STATUS_ENABLED,
             'En suspens' => ComicPlatform::STATUS_SUSPENDED,
-            'Fermée' => ComicPlatform::STATUS_DISABLED
+            'Inactif' => ComicPlatform::STATUS_DISABLED
         ]);
 
         $newEdit = [$url, $comicLanguage, $platform, $status];
@@ -48,7 +48,7 @@ class ComicPlatformCrudController extends AbstractCrudController
         if (Crud::PAGE_INDEX === $pageName) {
             return [$id, $comicTitle, $platformName, $url, $weight, $status];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$id, $url, $platform, $status];
+            return [$id, $url, $platformName, $status];
         } elseif (Crud::PAGE_NEW  === $pageName) {
             return $newEdit;
         } elseif (Crud::PAGE_EDIT === $pageName) {

@@ -88,7 +88,7 @@ class FanFoxPlatform extends AbstractPlatform
     public function setComicIssuesDataNode() {
         $chapterDataNode = $this->getComicIssuesDataNode();
 
-        $chapterDataNode->setSelector('#chapterlist .detail-main-list');
+        $chapterDataNode->setSelector('#chapterlist #list-2 .detail-main-list');
         $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
             $chaptersArray = $el->children('li')->reduce(function (Crawler $node) {
                 $title = $node->filterXpath('.//p[@class="title3"]')->getElement(0)->getDOMProperty('innerText');

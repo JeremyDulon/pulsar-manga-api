@@ -31,7 +31,6 @@ class ComicIssueCrudController extends AbstractCrudController
     {
         $title = TextField::new('title');
         $number = NumberField::new('number');
-        $sourceUrl = TextareaField::new('sourceUrl');
         $date = DateTimeField::new('date');
         $id = IntegerField::new('id', 'ID');
         $type = IntegerField::new('type');
@@ -41,13 +40,13 @@ class ComicIssueCrudController extends AbstractCrudController
         $comicTitle = TextareaField::new('comicLanguage.comic.title', 'Title');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $comicTitle, $title, $number, $sourceUrl, $date];
+            return [$id, $comicTitle, $title, $number, $date];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $title, $number, $type, $date, $createdAt, $updatedAt, $comic];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$title, $number, $sourceUrl, $date];
+            return [$title, $number, $date];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$title, $number, $sourceUrl, $date];
+            return [$title, $number, $date];
         }
     }
 }

@@ -1,0 +1,2 @@
+services:
+    Gaufrette\Filesystem: '@gaufrette.pulsar_local_storage_filesystem'

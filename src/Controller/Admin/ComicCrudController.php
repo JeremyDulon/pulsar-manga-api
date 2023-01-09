@@ -3,11 +3,13 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Comic;
+use App\Form\ComicLanguageType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -44,26 +46,36 @@ class ComicCrudController extends AbstractCrudController
         $image = AssociationField::new('image');
         $comicLanguages = AssociationField::new('comicLanguages');
         $imageUrl = ImageField::new('image.url', 'Image');
-        $platforms = TextareaField::new('platforms');
+
+        $comicLanguagesForm = CollectionField::new('comicLanguages')
+            ->allowAdd()
+            ->setEntryIsComplex(true)
+            ->setEntryType(ComicLanguageType::class)
+            ->setCustomOption(AssociationField::OPTION_DOCTRINE_ASSOCIATION_TYPE, 'one-to-many')
+            ->setFormTypeOptions([
+                'by_reference' => 'false'
+            ]);
 
         $status->setChoices([
-           'En cours' => Comic::STATUS_ONGOING,
-           'Terminé' => Comic::STATUS_ENDED,
+            'En cours' => Comic::STATUS_ONGOING,
+            'Terminé' => Comic::STATUS_ENDED,
         ]);
 
         $type->setChoices([
-           'Comic' => Comic::TYPE_COMIC,
-           'Manga' => Comic::TYPE_MANGA
+            'Comic' => Comic::TYPE_COMIC,
+            'Manga' => Comic::TYPE_MANGA
         ]);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $title, $altTitles, $type, $status, $imageUrl, $createdAt];
+            return [$id, $title, $altTitles, $slug, $type, $status, $imageUrl, $createdAt];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $title, $altTitles, $slug, $type, $status, $author, $lastUpdated, $createdAt, $updatedAt, $image, $comicLanguages];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$title, $altTitles, $status, $type];
+            return [$title, $altTitles, $status, $type, $comicLanguagesForm];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$title, $altTitles, $status, $type];
+            return [$title, $altTitles, $status, $type, $comicLanguagesForm];
         }
+
+        return [];
     }
 }

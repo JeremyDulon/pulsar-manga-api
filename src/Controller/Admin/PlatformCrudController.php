@@ -34,10 +34,6 @@ class PlatformCrudController extends AbstractCrudController
         $status = ChoiceField::new('status');
         $createdAt = DateTimeField::new('createdAt');
         $updatedAt = DateTimeField::new('updatedAt');
-        $language = TextareaField::new('language');
-        $mangaPath = TextareaField::new('mangaPath');
-        $chapterPath = TextareaField::new('chapterPath');
-
         $status->setChoices([
             'Actif' => Platform::STATUS_ENABLED,
             'En suspens' => Platform::STATUS_SUSPENDED,
@@ -45,7 +41,7 @@ class PlatformCrudController extends AbstractCrudController
         ]);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $name, $language, $baseUrl, $status];
+            return [$id, $name, $baseUrl, $status];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $name, $baseUrl, $status, $createdAt, $updatedAt];
         } elseif (Crud::PAGE_NEW === $pageName) {

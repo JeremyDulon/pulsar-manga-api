@@ -93,7 +93,7 @@ class Comic
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity=ComicLanguage::class, mappedBy="comic", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ComicLanguage::class, mappedBy="comic", orphanRemoval=true, cascade={"persist", "remove"})
      * @Groups({ "list:Comic" })
      */
     private $comicLanguages;

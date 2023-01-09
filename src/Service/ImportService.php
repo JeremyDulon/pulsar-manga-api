@@ -12,6 +12,7 @@ use App\MangaPlatform\PlatformInterface;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Facebook\WebDriver\Exception\WebDriverCurlException;
 use Psr\Log\LoggerInterface;
 
 class ImportService
@@ -28,8 +29,19 @@ class ImportService
     /** @var CrawlService $crawlService */
     private $crawlService;
 
-    /** @var array $comicIssues */
-    private $comicIssues = [];
+    private $executionDetail = [
+        'comic' => [
+            'id' => null,
+            'title' => '',
+            'issues' => [
+                'detected' => 0,
+                'existing' => 0,
+                'added' => 0,
+                'updated' => 0
+            ]
+        ],
+        'errors' => []
+    ];
 
     public function __construct(
         EntityManagerInterface $em,
@@ -49,28 +61,36 @@ class ImportService
      */
     public function importComic(
         string $slug,
-        string $language = PlatformUtil::LANGUAGE_EN
-    ): ?Comic
+        string $language = PlatformUtil::LANGUAGE_EN,
+        int $offset = 0,
+        int $issueNumber = null
+    ): array
     {
         /** @var ComicLanguage|null $comicLanguage */
         $comicLanguage = $this->em->getRepository(ComicLanguage::class)->findOneBySlugAndLanguage($slug, $language);
 
         if ($comicLanguage === null) {
-            return null;
+            $this->executionDetail['errors'][] = ['no_comic_language'];
+            return $this->executionDetail;
         }
+
+        $this->executionDetail['comic']['id'] = $comicLanguage->getComic()->getId();
+        $this->executionDetail['comic']['title'] = $comicLanguage->getComic()->getTitle();
 
         foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
-            $this->importComicPlatform($comicPlatform);
+            $this->importComicPlatform($comicPlatform, $offset, $issueNumber);
         }
 
-        return $comicLanguage->getComic();
+        return $this->executionDetail;
     }
 
     /**
      * @throws Exception
      */
     public function importComicPlatform(
-        ComicPlatform $comicPlatform
+        ComicPlatform $comicPlatform,
+        int $offset = 0,
+        int $issueNumber = null
     ): void
     {
         $this->crawlService->openUrl($comicPlatform->getUrl());
@@ -100,6 +120,7 @@ class ImportService
 
             if ($comic->getImage() === null) {
                 $imageUrl = $this->crawlService->findNode($platform->getMainImageNode());
+                $this->logger->info('[Comic] Getting image from url: ' . $imageUrl);
                 if (!empty($imageUrl)) {
                     $imageEntity = $this->imageService->uploadMangaImage($imageUrl, [ 'Referer: ' . $platform->getBaseUrl() ]);
                     $comic->setImage($imageEntity);
@@ -125,24 +146,37 @@ class ImportService
 
         $this->crawlService->closeClient();
 
-        $this->importComicIssues($comicPlatform);
+        $this->importComicIssues($comicPlatform, $offset, $issueNumber);
     }
 
     /**
      * @throws Exception
      */
-    public function importComicIssues(ComicPlatform $comicPlatform, int $offset = 0, int $chapterNumber = null)
+    public function importComicIssues(ComicPlatform $comicPlatform, int $offset = 0, int $chapterNumber = null): void
     {
-        $this->crawlService->openUrl($comicPlatform->getUrl());
+        try {
+            $this->crawlService->openUrl($comicPlatform->getUrl());
+        } catch (WebDriverCurlException $e) {
+            $this->errors['comic'][] = ['comicIssues' => $comicPlatform->getUrl()];
+            $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
+            return;
+        } catch (Exception $e) {
+            $this->errors['comic'][] = ['comicIssues' => $comicPlatform->getUrl()];
+            $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
+            return;
+        }
+
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
         if ($platform === null) {
-            return null;
+            $this->logger->error('ComicPlatform ' . $comicPlatform->getPlatform()->getName() . ' not found !');
+            return;
         }
 
         $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+
         if (empty($issues)) {
-            $this->logger->error('No comic issues');
+            $this->logger->error('No comic issues.');
             return;
         }
         $this->logger->info('Issues fetched.');
@@ -169,6 +203,7 @@ class ImportService
                 $new = true;
             }
 
+            // TODO: Add force argument to reupload images
             if ($comicIssue->getComicPages()->isEmpty()) {
                 $this->importComicIssueImages($comicIssue, $platform, $issueData['url']);
             }
@@ -189,14 +224,28 @@ class ImportService
      */
     public function importComicIssueImages(ComicIssue $comicIssue, PlatformInterface $platform, $issueUrl)
     {
-        $this->crawlService->openUrl($platform->getBaseUrl() . $issueUrl);
-        $issuePages = $this->crawlService->findNode($platform->getComicIssuesDataNode());
+        $issueAbsoluteUrl = $platform->getBaseUrl() . $issueUrl;
+        try {
+            $this->crawlService->openUrl($issueAbsoluteUrl);
+        } catch (WebDriverCurlException $e) {
+            $this->errors['comicIssue'][] = ['url' => $issueAbsoluteUrl, 'comicIssue' => $comicIssue->getId()];
+            $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
+            return;
+        } catch (Exception $e) {
+            $this->errors['comicIssue'][] = ['url' => $issueAbsoluteUrl, 'comicIssue' => $comicIssue->getId()];
+            $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
+            return;
+        }
+
+        $issuePages = $this->crawlService->findNode($platform->getComicPagesNode());
 
         $this->logger->info(count($issuePages) . ' pages fetched');
         if (empty($issuePages)) {
             $this->logger->error('No pages');
         }
         $this->crawlService->closeClient();
+
+        $this->logger->info('[Comic] Getting comic issue images');
 
         foreach ($issuePages as $issuePageData) {
             $file = $this->imageService->uploadChapterImage($issuePageData['url'], $platform->getHeaders());

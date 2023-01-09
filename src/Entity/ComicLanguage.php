@@ -63,7 +63,7 @@ class ComicLanguage
     /**
      * @var Collection
      *
-     * @ORM\OneToMany(targetEntity=ComicPlatform::class, mappedBy="comicLanguage")
+     * @ORM\OneToMany(targetEntity=ComicPlatform::class, mappedBy="comicLanguage", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
      * @Serializer\Groups({ "platformData" })
      */
@@ -80,6 +80,10 @@ class ComicLanguage
 
     public function __toString(): string
     {
+        if ($this->comic === null) {
+            return 'New comic ' . ' - ' . $this->language;
+        }
+
         return $this->comic->getTitle() . ' - ' . $this->language;
     }
 

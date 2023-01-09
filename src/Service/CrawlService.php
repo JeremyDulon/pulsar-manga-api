@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Platform;
 use App\MangaPlatform\PlatformNode;
+use Facebook\WebDriver\Exception\WebDriverCurlException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Panther\Client;
@@ -17,20 +18,25 @@ class CrawlService
     /** @var LoggerInterface $logger */
     private $logger;
 
+    private $clientOptions = [];
+
+    private $clientArgs = [];
+
     public function __construct(
         LoggerInterface $logger
     ) {
-        $args = [
+        $this->clientArgs = [
             "--headless",
             "--disable-gpu",
             "--no-sandbox",
+            "--disable-dev-shm-usage",
             '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36', // Avoir obligatoirement un user agent !!!
         ];
 
 //        $chromeOptions = new ChromeOptions();
 //        $chromeOptions->setExperimentalOption('w3c', false);
 
-        $options = [
+        $this->clientOptions = [
             'port' => mt_rand(9500, 9600),
             'connection_timeout_in_ms' => 60000,
             'request_timeout_in_ms' => 60000,
@@ -39,11 +45,20 @@ class CrawlService
 //            ]
         ];
 
-        $this->client = Client::createChromeClient(null, $args, $options);
         $this->logger = $logger;
     }
 
-    public function openUrl(string $url) {
+    public function initClient(): void
+    {
+        $this->client = Client::createChromeClient(null, $this->clientArgs, $this->clientOptions);
+    }
+
+    public function openUrl(string $url): void
+    {
+        if (!$this->client) {
+            $this->initClient();
+        }
+
         if ($this->client instanceof Client && $this->client->getCurrentURL() !== $url) {
             $this->logger->info("[URL] opening $url");
             $this->client->request('GET', $url);
@@ -58,7 +73,7 @@ class CrawlService
         $returnValue = null;
         $nodeName = $platformNode->getName();
         if (!empty($selector = $platformNode->getSelector())) {
-            $this->logger->info("[CRAWL]: " . $nodeName . ' - selector: ' . $selector);
+            $this->logger->debug("[CRAWL]: " . $nodeName . ' - selector: ' . $selector);
             $crawler = $this->client->getCrawler();
 
 //            $this->client->waitFor($selector);
@@ -68,7 +83,12 @@ class CrawlService
                 try {
                     $returnValue = $platformNode->executeCallback($node, $callbackParameters);
                 } catch (\Exception $e) {
-                    $this->logger->error($e->getMessage(), ['node' => $nodeName]);
+                    $this->logger->error($e->getMessage(), [
+                        'line' => $e->getLine(),
+                        'file' => $e->getFile(),
+                        'node' => $nodeName,
+                        'parameters' => $callbackParameters
+                    ]);
                 }
             }
 
@@ -86,7 +106,7 @@ class CrawlService
         }
 
         if ($platformNode->hasScript()) {
-            $this->logger->info("[CRAWL]: " . $nodeName . ' - script');
+            $this->logger->debug("[CRAWL]: " . $nodeName . ' - script');
             $returnValue = $platformNode->executeScript($this->client, $callbackParameters);
         }
 

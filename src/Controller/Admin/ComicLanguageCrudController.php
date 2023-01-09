@@ -35,6 +35,7 @@ class ComicLanguageCrudController extends AbstractCrudController
         $autoUpdate = BooleanField::new('autoUpdate');
         $comic = AssociationField::new('comic');
         $comicName = TextareaField::new('comic.title');
+        $comicIssues = AssociationField::new('comicIssues');
 
         $language->setChoices([
             'FR' => PlatformUtil::LANGUAGE_FR,
@@ -42,9 +43,9 @@ class ComicLanguageCrudController extends AbstractCrudController
         ]);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $comicName, $language, $autoUpdate];
+            return [$id, $comicName, $language, $comicIssues, $autoUpdate];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$id, $comicName, $description, $language, $autoUpdate];
+            return [$id, $comicName, $description, $language, $comicIssues, $autoUpdate];
         } elseif (Crud::PAGE_NEW  === $pageName) {
             return [$comic, $description, $language, $autoUpdate];
         } elseif (Crud::PAGE_EDIT === $pageName) {

@@ -57,6 +57,11 @@ class ComicPlatform
      */
     private $status = self::STATUS_ENABLED;
 
+    public function __toString()
+    {
+        return $this->platform->getName() . ' - ' . $this->url;
+    }
+
     /**
      * @return int
      */
