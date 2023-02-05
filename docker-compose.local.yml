@@ -42,7 +42,6 @@ services:
 
   phpmyadmin:
     image: phpmyadmin
-    restart: always
     ports:
       - 9999:80
     environment:
