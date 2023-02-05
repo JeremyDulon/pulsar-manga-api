@@ -14,8 +14,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicRepository::class)
- * @ApiResource
  */
+
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['list:Comic', 'read:File']],
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['read:Comic', 'read:File']]
+        ]
+    ]
+)]
 class Comic
 {
     use Timestamps;
@@ -32,6 +44,7 @@ class Comic
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({ "list:Comic", "read:Comic" })
      */
     private $id;
 
@@ -39,14 +52,14 @@ class Comic
      * @var string
      *
      * @ORM\Column(type="string", length=255)
-     * @Groups({ "list:Comic" })
+     * @Groups({ "list:Comic", "read:Comic" })
      */
     private $title = '';
 
     /**
      * @var array
      * @ORM\Column(type="simple_array", nullable=true)
-     * @Groups({ "list:Comic" })
+     * @Groups({ "read:Comic" })
      */
     private $altTitles = [];
 
@@ -55,7 +68,7 @@ class Comic
      *
      * @ORM\Column(type="string", length=255)
      * @Gedmo\Slug(fields={"title"})
-     * @Groups({ "list:Comic", "comicSlug" })
+     * @Groups({ "list:Comic", "read:Comic" })
      */
     private $slug;
 
@@ -63,7 +76,7 @@ class Comic
      * @var File
      *
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
-     * @Groups({ "list:Comic" })
+     * @Groups({ "list:Comic", "read:Comic" })
      */
     private $image;
 
@@ -71,7 +84,7 @@ class Comic
      * @var int
      *
      * @ORM\Column(type="integer")
-     * @Groups({ "list:Comic" })
+     * @Groups({ "list:Comic", "read:Comic" })
      */
     private $type = self::TYPE_MANGA;
 
@@ -79,7 +92,7 @@ class Comic
      * @var int
      *
      * @ORM\Column(type="integer")
-     * @Groups({ "list:Comic" })
+     * @Groups({ "list:Comic", "read:Comic" })
      */
     private $status = self::STATUS_ONGOING;
 
@@ -87,14 +100,15 @@ class Comic
      * @var string
      *
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({ "platformData" })
+     * @Groups({ "read:Comic" })
      */
     private $author = '';
 
     /**
      * @var Collection
      * @ORM\OneToMany(targetEntity=ComicLanguage::class, mappedBy="comic", orphanRemoval=true, cascade={"persist", "remove"})
-     * @Groups({ "list:Comic" })
+     *
+     * @Groups({ "read:Comic" })
      */
     private $comicLanguages;
 
@@ -102,7 +116,7 @@ class Comic
      * @var DateTimeInterface
      *
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({ "comicList" })
+     * @Groups({ "read:Comic" })
      */
     private $lastUpdated;
 

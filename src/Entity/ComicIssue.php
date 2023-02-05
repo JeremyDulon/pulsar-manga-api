@@ -2,14 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Entity\Macro\Timestamps;
 use App\Repository\ComicIssueRepository;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=ComicIssueRepository::class)
@@ -26,13 +28,13 @@ class ComicIssue
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "comicList", "comicIssue" })
+     * @Groups({ "list:ComicIssue" })
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Serializer\Groups({ "comicList", "comicIssue" })
+     * @Groups({ "list:ComicIssue" })
      */
     private $title;
 
@@ -40,20 +42,20 @@ class ComicIssue
      * @var float
      *
      * @ORM\Column(type="float", nullable=false)
-     * @Serializer\Groups({ "comicList", "comicIssue" })
+     * @Groups({ "list:ComicIssues" })
      */
     private $number;
 
     /**
      * @var int
      * @ORM\Column(type="integer", nullable=false)
-     * @Serializer\Groups({ "comicList", "comicIssue" })
+     * @Groups({ "comicList", "comicIssue" })
      */
     private $type;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Serializer\Groups({ "comicList", "comicIssue" })
+     * @Groups({ "list:ComicIssues" })
      */
     private $date;
 
@@ -62,6 +64,7 @@ class ComicIssue
      *
      * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="comicIssues")
      * @ORM\JoinColumn(nullable=false)
+     * @ApiFilter(SearchFilter::class, properties={"comicLanguage": "exact"})
      */
     private $comicLanguage;
 
@@ -69,19 +72,19 @@ class ComicIssue
      * @var Collection
      *
      * @ORM\OneToMany(targetEntity=ComicPage::class, mappedBy="comicIssue", orphanRemoval=true, cascade={"remove"})
-     * @Serializer\Groups({ "comicIssue" })
+     * @Groups({ "comicIssue" })
      */
     private $comicPages;
 
     /**
      * @var int
-     * @Serializer\Groups({ "chapter" })
+     * @Groups({ "chapter" })
      */
     private $nextComicIssueId;
 
     /**
      * @var int
-     * @Serializer\Groups({ "chapter" })
+     * @Groups({ "chapter" })
      */
     private $previousComicIssueId;
 
@@ -240,10 +243,6 @@ class ComicIssue
     }
 
     /**
-     * @Serializer\VirtualProperty()
-     * @Serializer\Groups({ "chapter" })
-     * @Serializer\SerializedName("comic_id")
-     * @Serializer\Expose
      */
     public function getComicId(): int
     {
@@ -251,10 +250,6 @@ class ComicIssue
     }
 
     /**
-     * @Serializer\VirtualProperty()
-     * @Serializer\Groups({ "chapter" })
-     * @Serializer\SerializedName("comic_slug")
-     * @Serializer\Expose
      */
     public function getComicSlug(): string
     {

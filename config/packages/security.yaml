@@ -17,7 +17,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api_login:
-            pattern: ^/api/login
+            pattern: ^/api/login$
             stateless: true
             json_login:
                 check_path: api_login
@@ -28,9 +28,6 @@ security:
             pattern: ^/api
             stateless: true
             jwt: ~
-            entry_point: jwt
-            refresh_jwt:
-                check_path: /api/token/refresh
 
         main:
             guard:

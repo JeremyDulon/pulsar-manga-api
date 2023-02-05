@@ -2,17 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\UserBisRepository;
+use App\Controller\MeController;
 use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as Serializer;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Annotation\ApiResource;
 
 /**
  * User
@@ -25,9 +24,22 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @UniqueEntity(fields={"email"}, errorPath="email", message="EMAIL_IS_ALREADY_IN_USE")
  * @UniqueEntity(fields={"username"}, errorPath="username", message="USERNAME_IS_ALREADY_IN_USE")
- *
- * @ApiResource
  */
+
+#[ApiResource(
+    collectionOperations: [],
+    itemOperations: [
+        'get',
+        'me' => [
+            'path' => '/me',
+            'method' => 'GET',
+            'controller' => MeController::class,
+            'security' => 'is_granted("ROLE_USER")',
+            'identifiers' => []
+        ]
+    ],
+    normalizationContext: [ 'groups' => [ 'read:User' ]]
+)]
 class User implements UserInterface
 {
     const ROLE_ADMIN = "ROLE_ADMIN";

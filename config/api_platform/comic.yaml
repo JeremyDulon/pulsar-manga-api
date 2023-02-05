@@ -7,4 +7,4 @@ App\Entity\Comic:
       method: GET
   attributes:
     normalization_context:
-      groups: [ "list:Comic", "read:File" ]
+      groups: [ "list:Comic" ]

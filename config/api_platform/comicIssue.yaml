@@ -5,3 +5,5 @@ App\Entity\ComicIssue:
   itemOperations:
     get:
       method: GET
+  normalizationContext:
+    groups: ['get']

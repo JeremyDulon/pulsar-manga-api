@@ -14,7 +14,7 @@
 ## ROADMAP
 
 ### Infra
-- [X] Docker 
+- [X] Docker local
 
 ### Chapters
 - [ ] Next chapter
