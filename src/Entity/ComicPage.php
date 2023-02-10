@@ -6,7 +6,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\Macro\Timestamps;
 use App\Repository\ComicPageRepository;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 /**
  * @ORM\Entity(repositoryClass=ComicPageRepository::class)
@@ -31,14 +32,14 @@ class ComicPage
 
     /**
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "comicIssue" })
+     * @Groups({ "list:ComicPage" })
      */
     private $number;
 
     /**
      * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({ "comicIssue" })
+     * @Groups({ "read:File" })
      */
     private $file;
 

@@ -35,9 +35,10 @@ class ComicPageCrudController extends AbstractCrudController
         $id = IntegerField::new('id', 'ID');
         $image = ImageField::new('file.url', 'Image');
         $comicIssueTitle = TextField::new('comicIssue.title');
+        $comicIssue = AssociationField::new('comicIssue');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $number, $comicIssueTitle, $image];
+            return [$id, $comicIssue, $number, $comicIssueTitle, $image];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $number];
         } elseif (Crud::PAGE_NEW === $pageName) {

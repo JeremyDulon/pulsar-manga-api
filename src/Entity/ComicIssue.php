@@ -15,8 +15,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=ComicIssueRepository::class)
- * @ApiResource
  */
+
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['list:ComicLanguage']],
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['read:ComicIssue', 'list:ComicPage', 'read:File']]
+        ]
+    ]
+)]
 class ComicIssue
 {
     use Timestamps;
@@ -28,13 +40,13 @@ class ComicIssue
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({ "list:ComicIssue" })
+     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({ "list:ComicIssue" })
+     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
      */
     private $title;
 
@@ -42,7 +54,7 @@ class ComicIssue
      * @var float
      *
      * @ORM\Column(type="float", nullable=false)
-     * @Groups({ "list:ComicIssues" })
+     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
      */
     private $number;
 
@@ -55,7 +67,7 @@ class ComicIssue
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({ "list:ComicIssues" })
+     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
      */
     private $date;
 
@@ -72,7 +84,7 @@ class ComicIssue
      * @var Collection
      *
      * @ORM\OneToMany(targetEntity=ComicPage::class, mappedBy="comicIssue", orphanRemoval=true, cascade={"remove"})
-     * @Groups({ "comicIssue" })
+     * @Groups({ "list:ComicPage" })
      */
     private $comicPages;
 

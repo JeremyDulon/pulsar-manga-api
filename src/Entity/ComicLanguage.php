@@ -9,14 +9,24 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
-use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=App\Repository\ComicLanguageRepository::class)
  * @ORM\Table(uniqueConstraints={@UniqueConstraint(name="search_idx", columns={"language", "comic_id"})})
- * @ApiResource
- */
+*/
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['list:ComicLanguage']],
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['read:ComicLanguage', 'list:ComicIssue']]
+        ]
+    ]
+)]
 class ComicLanguage
 {
     use Timestamps;
@@ -25,14 +35,14 @@ class ComicLanguage
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "comicList", "addFavorite" })
+     * @Groups({ "read:ComicLanguage" })
      */
     private $id;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=5, nullable=false)
-     * @Groups({ "list:Comic" })
+     * @Groups({ "read:Comic", "list:Comic", "read:ComicLanguage" })
      */
     private $language = PlatformUtil::LANGUAGE_EN;
 
@@ -40,7 +50,7 @@ class ComicLanguage
      * @var string
      *
      * @ORM\Column(type="text", nullable=true)
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "read:ComicLanguage" })
      */
     private $description;
 
@@ -48,7 +58,7 @@ class ComicLanguage
      * @var bool
      *
      * @ORM\Column(type="boolean", nullable=false)
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "comicList" })
      */
     private $autoUpdate = false;
 
@@ -56,7 +66,7 @@ class ComicLanguage
      * @var Comic
      *
      * @ORM\ManyToOne(targetEntity=Comic::class, inversedBy="comicLanguages")
-     * @Serializer\Groups({ "comicList" })
+     * @Groups({ "comicList" })
      */
     private $comic;
 
@@ -65,7 +75,6 @@ class ComicLanguage
      *
      * @ORM\OneToMany(targetEntity=ComicPlatform::class, mappedBy="comicLanguage", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({ "platformData" })
      */
     private $comicPlatforms;
 
@@ -74,7 +83,7 @@ class ComicLanguage
      *
      * @ORM\OneToMany(targetEntity=ComicIssue::class, mappedBy="comicLanguage")
      * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({ "platformData" })
+     * @Groups({ "list:ComicIssue" })
      */
     private $comicIssues;
 
