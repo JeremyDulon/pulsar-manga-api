@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Controller\MeController;
 use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -13,19 +15,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Core\Annotation\ApiResource;
 
-/**
- * User
- *
- * @ORM\Table(name="user", indexes={
- *     @ORM\Index(name="search_idx_username", columns={"username"}),
- *     @ORM\Index(name="search_idx_email", columns={"email"}),
- * })
- * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- *
- * @UniqueEntity(fields={"email"}, errorPath="email", message="EMAIL_IS_ALREADY_IN_USE")
- * @UniqueEntity(fields={"username"}, errorPath="username", message="USERNAME_IS_ALREADY_IN_USE")
- */
-
+#[ORM\Entity]
+#[ORM\Table(name: 'user')]
+#[ORM\Index(columns: ['username'], name: 'search_idx_username')]
+#[ORM\Index(columns: ['email'], name: 'search_idx_email')]
+#[UniqueEntity(fields: ['email'], message: 'EMAIL_IS_ALREADY_IN_USE', errorPath: 'email')]
+#[UniqueEntity(fields: ['username'], message: 'USERNAME_IS_ALREADY_IN_USE', errorPath: 'username')]
 #[ApiResource(
     collectionOperations: [],
     itemOperations: [
@@ -35,7 +30,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
             'method' => 'GET',
             'controller' => MeController::class,
             'security' => 'is_granted("ROLE_USER")',
-            'identifiers' => []
+            'identifiers' => [],
+            'read' => false
         ]
     ],
     normalizationContext: [ 'groups' => [ 'read:User' ]]
@@ -55,84 +51,44 @@ class User implements UserInterface
         self::ROLE_USER => self::ROLE_USER,
     );
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"read:User"})
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'read:User' ])]
+    private int $id;
 
-    /**
-     * @ORM\Column(type="string", length=180, unique=true, nullable=false)
-     * @Groups({"read:User"})
-     */
-    private $username;
+    #[ORM\Column(type: 'string', length: 180, unique: true, nullable: false)]
+    #[Groups([ 'read:User' ])]
+    private string $username;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="email", type="string", length=100, unique=true, nullable=false)
-     * @Assert\NotBlank(message="FIELD_CAN_NOT_BE_EMPTY")
-     * @Assert\Email(
-     *     message = "INCORRECT_EMAIL_ADDRESS"
-     * )
-     * @Groups({"read:User"})
-     */
-    protected $email;
+    #[ORM\Column(type: 'string', length: 100, unique: true, nullable: false)]
+    #[Assert\NotBlank(message: 'FIELD_CAN_NOT_BE_EMPTY')]
+    #[Assert\Email(message: 'INCORRECT_EMAIL_ADDRESS')]
+    #[Groups([ 'read:User' ])]
+    protected string $email;
 
-    /**
-     * @ORM\Column(type="json")
-     * @Groups({"read:User"})
-     */
-    private $roles = [];
+    #[ORM\Column(type: 'json')]
+    #[Groups([ 'read:User' ])]
+    private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     * @ORM\Column(type="string")
-     */
-    private $password;
+    #[ORM\Column(type: 'string')]
+    private string $password;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="deleted", type="boolean")
-     *
-     * @Assert\Type(
-     *     type="bool",
-     *     message="FIELD_MUST_BE_BOOLEAN_TYPE"
-     * )
-     */
-    private $deleted;
+    #[Assert\Type(type: 'bool', message: 'FIELD_MUST_BE_BOOLEAN_TYPE')]
+    #[ORM\Column(type: 'boolean')]
+    private bool $deleted;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="enabled", type="boolean")
-     *
-     * @Assert\Type(
-     *     type="bool",
-     *     message="FIELD_MUST_BE_BOOLEAN_TYPE"
-     * )
-     */
-    protected $enabled;
+    #[Assert\Type(type: 'bool', message: 'FIELD_MUST_BE_BOOLEAN_TYPE')]
+    #[ORM\Column(type: 'boolean')]
+    protected bool $enabled;
 
-    /**
-     * @ORM\OneToMany(targetEntity=UserComicLanguage::class, mappedBy="user", orphanRemoval=true)
-     */
-    private $userComicLanguages;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserComicLanguage::class, orphanRemoval: true)]
+    private Collection $userComicLanguages;
 
-    /**
-     *
-     * @var array|string[]
-     * @ORM\Column(name="languages", type="simple_array", nullable=false)
-     * @Groups({"read:User"})
-     */
-    private $languages;
+    #[ORM\Column(type: 'simple_array', nullable: false)]
+    #[Groups([ 'read:User' ])]
+    private array $languages;
 
-    /**
-     * User constructor.
-     */
     public function __construct()
     {
         $this->languages = [ PlatformUtil::LANGUAGE_EN, PlatformUtil::LANGUAGE_FR ];
@@ -152,7 +108,7 @@ class User implements UserInterface
      */
     public function getUsername(): string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     public function setUsername(string $username): self
@@ -162,9 +118,6 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -207,9 +160,6 @@ class User implements UserInterface
         return null;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here

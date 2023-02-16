@@ -8,30 +8,14 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 trait Timestamps
 {
+    #[ORM\Column(name: 'created_at', type: 'datetime', nullable: false)]
+    #[Gedmo\Timestampable(on: 'create')]
+    protected ?DateTime $createdAt;
 
-    /**
-     * @var DateTime $createdAt
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
-     * @Gedmo\Timestampable(on="create")
-     */
-    protected $createdAt;
+    #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
+    #[Gedmo\Timestampable(on: 'update')]
+    protected DateTime $updatedAt;
 
-    /**
-     * @var DateTime $updatedAt
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     * @Gedmo\Timestampable(on="update")
-     */
-    protected $updatedAt;
-
-    /**
-     * Set createdAt
-     *
-     * @param DateTime $createdAt
-     *
-     * @return self
-     */
     public function setCreatedAt(DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
@@ -39,23 +23,11 @@ trait Timestamps
         return $this;
     }
 
-    /**
-     * Get createdAt
-     *
-     * @return DateTime|null
-     */
     public function getCreatedAt(): ?DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Set updatedAt
-     *
-     * @param DateTime $updatedAt
-     *
-     * @return self
-     */
     public function setUpdatedAt(DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
@@ -63,11 +35,6 @@ trait Timestamps
         return $this;
     }
 
-    /**
-     * Get updatedAt
-     *
-     * @return DateTime|null
-     */
     public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;

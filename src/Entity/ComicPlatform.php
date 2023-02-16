@@ -9,53 +9,34 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
-/**
- * @ORM\Entity(repositoryClass=App\Repository\ComicPlatformRepository::class)
- */
+#[ORM\Entity]
 class ComicPlatform
 {
     const STATUS_ENABLED = 100;
     const STATUS_SUSPENDED = 200;
     const STATUS_DISABLED = 300;
 
-    /**
-     * @var int
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    private $id;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $url;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private int $id;
 
-    /**
-     * @var int
-     * @ORM\Column(name="weight", type="integer", nullable=false)
-     */
-    private $weight = 0;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private string $url;
 
-    /**
-     * @var Platform
-     * @ORM\ManyToOne(targetEntity=Platform::class)
-     * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({"comicPlatform"})
-     */
-    private $platform;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private int $weight = 0;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="comicPlatforms")
-     */
-    private $comicLanguage;
+    #[ORM\ManyToOne(targetEntity: Platform::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private Platform $platform;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", nullable=false)
-     */
-    private $status = self::STATUS_ENABLED;
+    #[ORM\ManyToOne(targetEntity: ComicLanguage::class, inversedBy: 'comicPlatforms')]
+    private ComicLanguage $comicLanguage;
+
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private int $status = self::STATUS_ENABLED;
 
     public function __toString()
     {

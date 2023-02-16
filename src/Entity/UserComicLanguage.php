@@ -2,58 +2,55 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=UserComicLanguageRepository::class)
- *
- * @ApiResource
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'user_comic_language')]
+#[ORM\UniqueConstraint(name: 'unique_user_comic_language', columns: [ 'comic_Language_id', 'user_id' ])]
+#[ApiResource(
+    collectionOperations: [
+        'post',
+        'get' => [
+            'normalization_context' => ['groups' => ['list:UserComicLanguage']],
+        ]
+    ],
+    itemOperations: ['get', 'put']
+)]
+#[ApiFilter(SearchFilter::class, properties: ['user' => 'exact'])]
+
 class UserComicLanguage
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'list:UserComicLanguage' ])]
+    private int $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ComicLanguage::class)
-     * @ORM\JoinColumn(nullable=false)
-     * @Serializer\Groups({ "comicList" })
-     */
-    private $comicLanguage;
+    #[ORM\ManyToOne(targetEntity: ComicLanguage::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups([ 'list:UserComicLanguage' ])]
+    private ComicLanguage $comicLanguage;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="userComicLanguages")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userComicLanguages')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups([ 'list:UserComicLanguage' ])]
+    private User $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ComicIssue::class)
-     * @Serializer\Groups({ "comicList" })
-     */
-    private $lastComicIssue;
+    #[ORM\ManyToOne(targetEntity: ComicIssue::class)]
+    #[Groups([ 'list:UserComicLanguage' ])]
+    private ?ComicIssue $lastComicIssue;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer", nullable=true)
-     * @Serializer\Groups({ "comicList" })
-     */
-    private $lastPage;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups([ 'list:UserComicLanguage' ])]
+    private int $lastPage;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean")
-     * @Serializer\Groups({ "comicList" })
-     */
-    private $favorite = false;
+    #[ORM\Column(type: 'boolean')]
+    #[Groups([ 'list:UserComicLanguage' ])]
+    private bool $favorite = false;
 
     public function getId(): ?int
     {
@@ -96,10 +93,7 @@ class UserComicLanguage
         return $this;
     }
 
-    /**
-     * @return ComicIssue
-     */
-    public function getLastChapter(): ComicIssue
+    public function getLastComicIssue(): ?ComicIssue
     {
         return $this->lastComicIssue;
     }

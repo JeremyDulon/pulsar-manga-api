@@ -8,40 +8,30 @@ use App\Repository\ComicPageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-
-/**
- * @ORM\Entity(repositoryClass=ComicPageRepository::class)
- * @ApiResource
- */
+#[ORM\Entity]
+#[ApiResource]
 class ComicPage
 {
     use Timestamps;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'list:ComicPage' ])]
+    private ?int $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ComicIssue::class, inversedBy="comicPages")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $comicIssue;
+    #[ORM\ManyToOne(targetEntity: ComicIssue::class, inversedBy: 'comicPages')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ComicIssue $comicIssue;
 
-    /**
-     * @ORM\Column(type="integer")
-     * @Groups({ "list:ComicPage" })
-     */
-    private $number;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    #[Groups([ 'list:ComicPage' ])]
+    private int $number;
 
-    /**
-     * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups({ "read:File" })
-     */
-    private $file;
+    #[ORM\OneToOne(targetEntity: File::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups([ 'read:File' ])]
+    private File $file;
 
     public function getId(): ?int
     {

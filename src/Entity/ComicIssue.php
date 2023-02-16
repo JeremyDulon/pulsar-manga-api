@@ -6,17 +6,13 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Entity\Macro\Timestamps;
-use App\Repository\ComicIssueRepository;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=ComicIssueRepository::class)
- */
-
+#[ORM\Entity]
 #[ApiResource(
     collectionOperations: [
         'get' => [
@@ -36,69 +32,42 @@ class ComicIssue
     public const TYPE_VOLUME = 100;
     public const TYPE_CHAPTER = 200;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    private int $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
-     */
-    private $title;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    private string $title;
 
-    /**
-     * @var float
-     *
-     * @ORM\Column(type="float", nullable=false)
-     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
-     */
-    private $number;
+    #[ORM\Column(type: 'float', nullable: false)]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    private float $number;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", nullable=false)
-     * @Groups({ "comicList", "comicIssue" })
-     */
-    private $type;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private int $type;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({ "list:ComicIssue", "read:ComicIssue" })
-     */
-    private $date;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    private ?DateTimeInterface $date;
 
-    /**
-     * @var ComicLanguage
-     *
-     * @ORM\ManyToOne(targetEntity=ComicLanguage::class, inversedBy="comicIssues")
-     * @ORM\JoinColumn(nullable=false)
-     * @ApiFilter(SearchFilter::class, properties={"comicLanguage": "exact"})
-     */
-    private $comicLanguage;
+    #[ORM\ManyToOne(targetEntity: ComicLanguage::class, inversedBy: 'comicIssues')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[ApiFilter(SearchFilter::class, properties: ['comicLanguage' => 'exact'])]
+    #[Groups([ 'read:ComicIssue' ])]
+    private ComicLanguage $comicLanguage;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity=ComicPage::class, mappedBy="comicIssue", orphanRemoval=true, cascade={"remove"})
-     * @Groups({ "list:ComicPage" })
-     */
-    private $comicPages;
+    #[ORM\OneToMany(mappedBy: 'comicIssue', targetEntity: ComicPage::class, cascade: ['remove'], orphanRemoval: true)]
+    #[Groups([ 'list:ComicPage' ])]
+    private Collection $comicPages;
 
-    /**
-     * @var int
-     * @Groups({ "chapter" })
-     */
-    private $nextComicIssueId;
+    #[Groups([ 'read:comicIssueNext' ])]
+    private int $nextComicIssueId;
 
-    /**
-     * @var int
-     * @Groups({ "chapter" })
-     */
-    private $previousComicIssueId;
+    #[Groups([ 'read:comicIssueNext' ])]
+    private int $previousComicIssueId;
 
     public function __construct()
     {
@@ -134,18 +103,11 @@ class ComicIssue
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getType(): int
     {
         return $this->type;
     }
 
-    /**
-     * @param int $type
-     * @return ComicIssue
-     */
     public function setType(int $type): self
     {
         $this->type = $type;
@@ -164,18 +126,11 @@ class ComicIssue
         return $this;
     }
 
-    /**
-     * @return ComicLanguage
-     */
     public function getComicLanguage(): ComicLanguage
     {
         return $this->comicLanguage;
     }
 
-    /**
-     * @param ComicLanguage|null $comicLanguage
-     * @return $this
-     */
     public function setComicLanguage(?ComicLanguage $comicLanguage): self
     {
         $this->comicLanguage = $comicLanguage;
@@ -183,18 +138,11 @@ class ComicIssue
         return $this;
     }
 
-    /**
-     * @return Collection|ComicPage[]
-     */
     public function getComicPages(): Collection
     {
         return $this->comicPages;
     }
 
-    /**
-     * @param ComicPage $chapterPage
-     * @return self
-     */
     public function addComicPage(ComicPage $chapterPage): self
     {
         if (!$this->comicPages->contains($chapterPage)) {
@@ -205,10 +153,6 @@ class ComicIssue
         return $this;
     }
 
-    /**
-     * @param ComicPage $chapterPage
-     * @return self
-     */
     public function removeComicPage(ComicPage $chapterPage): self
     {
         if ($this->comicPages->contains($chapterPage)) {
@@ -222,9 +166,6 @@ class ComicIssue
         return $this;
     }
 
-    /**
-     * @return self
-     */
     public function removeAllComicPages(): self
     {
         foreach ($this->comicPages as $chapterPage) {
@@ -234,35 +175,23 @@ class ComicIssue
         return $this;
     }
 
-    /**
-     * @param int $id
-     * @return ComicIssue
-     */
     public function setNextComicIssueId(int $id): self
     {
         $this->nextComicIssueId = $id;
         return $this;
     }
 
-    /**
-     * @param int $id
-     * @return ComicIssue
-     */
     public function setPreviousComicIssueId(int $id): self
     {
         $this->nextComicIssueId = $id;
         return $this;
     }
 
-    /**
-     */
     public function getComicId(): int
     {
         return $this->getComicLanguage()->getId();
     }
 
-    /**
-     */
     public function getComicSlug(): string
     {
         return $this->getComicLanguage()->getComic()->getSlug();

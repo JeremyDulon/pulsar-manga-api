@@ -9,13 +9,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=App\Repository\ComicRepository::class)
- */
-
+#[ORM\Entity]
 #[ApiResource(
     collectionOperations: [
         'get' => [
@@ -38,87 +34,48 @@ class Comic
     public const TYPE_MANGA = 100;
     public const TYPE_COMIC = 200;
 
-    /**
-     * @var int
-     *
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({ "list:Comic", "read:Comic" })
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'list:Comic', 'read:Comic' ])]
+    private int $id;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255)
-     * @Groups({ "list:Comic", "read:Comic" })
-     */
-    private $title = '';
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups([ 'list:Comic', 'read:Comic' ])]
+    private string $title = '';
 
-    /**
-     * @var array
-     * @ORM\Column(type="simple_array", nullable=true)
-     * @Groups({ "read:Comic" })
-     */
-    private $altTitles = [];
+    #[ORM\Column(type: 'simple_array', nullable: true)]
+    #[Groups([ 'read:Comic' ])]
+    private array $altTitles = [];
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255)
-     * @Gedmo\Slug(fields={"title"})
-     * @Groups({ "list:Comic", "read:Comic" })
-     */
-    private $slug;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Gedmo\Slug(fields: ['title'])]
+    #[Groups([ 'list:Comic', 'read:Comic' ])]
+    private string $slug;
 
-    /**
-     * @var File
-     *
-     * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
-     * @Groups({ "list:Comic", "read:Comic" })
-     */
-    private $image;
+    #[ORM\OneToOne(targetEntity: File::class, cascade: ['persist', 'remove'])]
+    #[Groups([ 'list:Comic', 'read:Comic' ])]
+    private File $image;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @Groups({ "list:Comic", "read:Comic" })
-     */
-    private $type = self::TYPE_MANGA;
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'list:Comic', 'read:Comic' ])]
+    private int $type = self::TYPE_MANGA;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @Groups({ "list:Comic", "read:Comic" })
-     */
-    private $status = self::STATUS_ONGOING;
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'list:Comic', 'read:Comic' ])]
+    private int $status = self::STATUS_ONGOING;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({ "read:Comic" })
-     */
-    private $author = '';
+    #[ORM\Column(type: 'string')]
+    #[Groups([ 'read:Comic' ])]
+    private string $author = '';
 
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity=ComicLanguage::class, mappedBy="comic", orphanRemoval=true, cascade={"persist", "remove"})
-     *
-     * @Groups({ "read:Comic" })
-     */
-    private $comicLanguages;
+    #[ORM\OneToMany(mappedBy: 'comic', targetEntity: ComicLanguage::class, cascade: ['persist'], orphanRemoval: true)]
+    #[Groups([ 'read:Comic' ])]
+    private Collection $comicLanguages;
 
-    /**
-     * @var DateTimeInterface
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({ "read:Comic" })
-     */
-    private $lastUpdated;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups([ 'read:Comic' ])]
+    private DateTimeInterface $lastUpdated;
 
     public function __construct()
     {
@@ -129,152 +86,93 @@ class Comic
         return $this->getTitle();
     }
 
-    /**
-     * @return int
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @param string $title
-     * @return Comic
-     */
     public function setTitle(string $title): Comic
     {
         $this->title = $title;
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function getAltTitles(): array
     {
         return $this->altTitles;
     }
 
-    /**
-     * @param array $altTitles
-     * @return Comic
-     */
     public function setAltTitles(array $altTitles): Comic
     {
         $this->altTitles = $altTitles;
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getType(): int
     {
         return $this->type;
     }
 
-    /**
-     * @param int $type
-     * @return Comic
-     */
     public function setType(int $type): Comic
     {
         $this->type = $type;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getSlug(): string
     {
         return $this->slug;
     }
 
-    /**
-     * @param string $slug
-     * @return Comic
-     */
     public function setSlug(string $slug): Comic
     {
         $this->slug = $slug;
         return $this;
     }
 
-    /**
-     * @return File
-     */
     public function getImage(): ?File
     {
         return $this->image;
     }
 
-    /**
-     * @param File $image
-     * @return Comic
-     */
     public function setImage(File $image): Comic
     {
         $this->image = $image;
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;
     }
 
-    /**
-     * @param int $status
-     * @return Comic
-     */
     public function setStatus(int $status): Comic
     {
         $this->status = $status;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getAuthor(): string
     {
         return $this->author;
     }
 
-    /**
-     * @param string $author
-     * @return Comic
-     */
     public function setAuthor(string $author): Comic
     {
         $this->author = $author;
         return $this;
     }
 
-    /**
-     * @return Collection
-     */
     public function getComicLanguages()
     {
         return $this->comicLanguages;
     }
 
-    /**
-     * @param ComicLanguage $comicLanguage
-     * @return self
-     */
     public function addComicLanguage(ComicLanguage $comicLanguage): self
     {
         if (!$this->comicLanguages->contains($comicLanguage)) {
@@ -283,10 +181,6 @@ class Comic
         return $this;
     }
 
-    /**
-     * @param ComicLanguage $comicLanguage
-     * @return self
-     */
     public function removeComicLanguage(ComicLanguage $comicLanguage): self
     {
         if ($this->comicLanguages->contains($comicLanguage)) {

@@ -7,44 +7,31 @@ use App\Entity\Macro\Timestamps;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class File
 {
     use Timestamps;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({ "read:File" })
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups([ 'read:File' ])]
+    private int $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({ "read:File" })
-     */
-    private $name;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups([ 'read:File' ])]
+    private ?string $name;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({ "read:File" })
-     */
-    private $path;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups([ 'read:File' ])]
+    private ?string $path;
 
-    /**
-     * @var string
-     * @Groups({ "read:File" })
-     */
-    private $url;
+    #[Groups([ 'read:File' ])]
+    private string $url;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({ "read:File" })
-     */
-    private $externalUrl;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups([ 'read:File' ])]
+    private ?string $externalUrl;
 
     public function getId(): ?int
     {

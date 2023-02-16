@@ -7,19 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 trait Integrity
 {
 
-    /**
-     * @var array $error
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $error;
 
-    /**
-     * @var int $integrity
-     *
-     * @ORM\Column(type="integer", nullable=false)
-     */
-    protected $integrity = 100;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    protected array $error;
+
+    #[ORM\Column(type: 'integer', nullable: false)]
+    protected int $integrity = 100;
 
     /**
      * @return array

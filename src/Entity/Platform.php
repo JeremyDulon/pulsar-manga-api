@@ -8,9 +8,7 @@ use App\Utils\PlatformUtil;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Platform
 {
     use Timestamps;
@@ -19,32 +17,19 @@ class Platform
     const STATUS_SUSPENDED = 200;
     const STATUS_DISABLED = 300;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Serializer\Groups({ "platformData" })
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private int $id;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=false)
-     * @Serializer\Groups({ "platformData" })
-     */
-    private $name = '';
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private string $name = '';
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=255, nullable=false)
-     */
-    private $baseUrl = '';
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private string $baseUrl = '';
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer", nullable=false)
-     */
-    private $status = self::STATUS_ENABLED;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private int $status = self::STATUS_ENABLED;
 
     public function __toString()
     {
