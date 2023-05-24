@@ -14,11 +14,11 @@ use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class FanFoxPlatform extends AbstractPlatform
 {
-    protected $name = 'FanFox';
+    protected string $name = 'FanFox';
 
-    protected $baseUrl = 'http://fanfox.net';
+    protected string $baseUrl = 'http://fanfox.net';
 
-    protected $mangaPath = '/manga/' . self::MANGA_SLUG;
+    protected string $mangaPath = '/manga/' . self::MANGA_SLUG;
 
     public function __construct() {
         parent::__construct();
@@ -88,31 +88,71 @@ class FanFoxPlatform extends AbstractPlatform
     public function setComicIssuesDataNode() {
         $chapterDataNode = $this->getComicIssuesDataNode();
 
-        $chapterDataNode->setSelector('#chapterlist #list-2 .detail-main-list');
-        $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
-            $chaptersArray = $el->children('li')->reduce(function (Crawler $node) {
-                $title = $node->filterXpath('.//p[@class="title3"]')->getElement(0)->getDOMProperty('innerText');
-                preg_match('/Ch\.([0-9]+(?:\.[0-9]+)?)/', $title, $matches);
-                return !empty($matches) && ctype_digit($matches[1]) === true;
-            })->each(function (Crawler $issue) {
-                $a = $issue->filter('a');
-                $url = $a->getAttribute('href');
+        $chapterDataNode->setScript(function (Client $client, $parameters) {
+            $validIssues = $client->executeScript('
+                let nodes = document.querySelectorAll("#chapterlist #list-2 .detail-main-list li")
+                let validIssues = []
+                
+                nodes.forEach(node => {
+                    let issueTitle = node.querySelector("p.title3").innerText
+                    let matchData = issueTitle.match(/Ch\.([0-9]+(?:\.[0-9]+)?)/)
+                    let issueNumber = parseFloat(matchData[1])
+                    if (Number.isInteger(issueNumber) === true) {
+                        let url = node.querySelector("a").href
+                        let date = node.querySelector("p.title2").innerText
+                        let validIssue = {title: issueTitle, number: issueNumber, url, date}
+                        validIssues.push(validIssue)
+                    }
+                })
+                
+                return validIssues
+            ');
 
-                $title = $issue->filterXpath('.//p[@class="title3"]')->getElement(0)->getDOMProperty('innerText');
-                preg_match('/Ch\.([0-9]*)/', $title, $matches);
-                $date = $a->filterXpath('.//p[@class="title2"]')->getElement(0)->getDOMProperty('innerText');
-                return [
-                    'title' => $title,
-                    'number' => $matches[1],
-                    'url' => $url,
-                    'date' => new DateTime(trim($date))
-                ];
-            });
+            foreach ($validIssues as &$issue) {
+                $issue['date'] = new DateTime(trim($issue['date']));
+            }
+
             return PlatformUtil::filterChapters(
-                $chaptersArray,
+                $validIssues,
                 $parameters
             );
         });
+//        $chapterDataNode->setSelector('#chapterlist #list-2 .detail-main-list');
+//        $chapterDataNode->setCallback(function (Crawler $el, $parameters) {
+//            dump(date('H:i:s', time()) . ' Starting crawling');
+//            $chaptersArray = $el->filterXPath('.//li//p[@class="title3"]')->extract(['_text']);
+//            dump($chaptersArray);
+//            dump(date('H:i:s', time()) . ' After extract');
+//
+//            die;
+//            $chaptersArray = $el->children('li')->reduce(function (Crawler $node) {
+//                $nodeChild = $node->filterXpath('.//p[@class="title3"]');
+//                $title = $nodeChild->getElement(0)->getDOMProperty('innerText');
+//                preg_match('/Ch\.([0-9]+(?:\.[0-9]+)?)/', $title, $matches);
+//                return !empty($matches) && ctype_digit($matches[1]) === true;
+//            });
+//            dump(date('H:i:s', time()) . ' After reduce');
+//            die;
+//
+//            $chaptersArray = $chaptersArray->each(function (Crawler $issue) {
+//                $a = $issue->filter('a');
+//                $url = $a->getAttribute('href');
+//
+//                $title = $issue->filterXpath('.//p[@class="title3"]')->getElement(0)->getDOMProperty('innerText');
+//                preg_match('/Ch\.([0-9]*)/', $title, $matches);
+//                $date = $a->filterXpath('.//p[@class="title2"]')->getElement(0)->getDOMProperty('innerText');
+//                return [
+//                    'title' => $title,
+//                    'number' => $matches[1],
+//                    'url' => $url,
+//                    'date' => new DateTime(trim($date))
+//                ];
+//            });
+//            return PlatformUtil::filterChapters(
+//                $chaptersArray,
+//                $parameters
+//            );
+//        });
     }
 
     public function setComicPagesNode() {

@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     collectionOperations: [
         'post',
         'get' => [
-            'normalization_context' => ['groups' => ['list:UserComicLanguage']],
+            'normalization_context' => ['groups' => ['list:UserComicLanguage', 'list:ComicLanguage', 'list:Comic', 'read:File']],
         ]
     ],
     itemOperations: ['get', 'put']
@@ -41,6 +41,7 @@ class UserComicLanguage
     private User $user;
 
     #[ORM\ManyToOne(targetEntity: ComicIssue::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     #[Groups([ 'list:UserComicLanguage' ])]
     private ?ComicIssue $lastComicIssue;
 

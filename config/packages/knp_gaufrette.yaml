@@ -9,7 +9,7 @@ knp_gaufrette:
           acl: 'public-read'
     pulsar_local_storage:
       local:
-        directory: 'public/uploads'
+        directory: '%kernel.project_dir%/public/uploads'
         create: true
   filesystems:
     aws_file_storage:

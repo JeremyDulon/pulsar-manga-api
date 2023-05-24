@@ -55,7 +55,7 @@ class Comic
 
     #[ORM\OneToOne(targetEntity: File::class, cascade: ['persist', 'remove'])]
     #[Groups([ 'list:Comic', 'read:Comic' ])]
-    private File $image;
+    private ?File $image = null;
 
     #[ORM\Column(type: 'integer')]
     #[Groups([ 'list:Comic', 'read:Comic' ])]

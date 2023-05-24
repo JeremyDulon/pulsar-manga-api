@@ -71,3 +71,6 @@ services:
             - [ setAnnotationReader, [ "@annotation_reader" ] ]
 
 
+    App\EventListener\FileDeletedCleaner:
+        tags:
+            - { name: 'doctrine.orm.entity_listener', event: 'preRemove', entity: 'App\Entity\File' }

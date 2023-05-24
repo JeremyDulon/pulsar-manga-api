@@ -68,8 +68,7 @@ class ComicPlatform
         return $this;
     }
 
-    /**
-     * @return Platform
+    /**4    * @return Platform
      */
     public function getPlatform(): ?Platform
     {
@@ -134,3 +133,4 @@ class ComicPlatform
         return $this;
     }
 }
+

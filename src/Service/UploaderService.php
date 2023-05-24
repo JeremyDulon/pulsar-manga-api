@@ -3,6 +3,7 @@
 
 namespace App\Service;
 
+use App\Entity\File;
 use Gaufrette\Adapter\AwsS3;
 use Gaufrette\Adapter\Local;
 use Gaufrette\Adapter\MetadataSupporter;
@@ -13,13 +14,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class UploaderService
 {
     /** @var Filesystem $filesystem  */
-    private $filesystem;
+    private Filesystem $filesystem;
 
     /** @var LoggerInterface $logger */
-    private $logger;
+    private LoggerInterface $logger;
 
     /** @var ParameterBagInterface $parameterBag */
-    private $parameterBag;
+    private ParameterBagInterface $parameterBag;
 
     private const KEY = 'art/';
 
@@ -39,7 +40,7 @@ class UploaderService
      * @param string $extension
      * @return string
      */
-    public function upload(string $fileData, string $path, string $extension): string
+    public function upload(File &$file, string $fileData, string $path, string $extension): string
     {
         $tmpFile = tmpfile();
         $tmpFilePath = stream_get_meta_data($tmpFile)['uri'];
@@ -49,9 +50,12 @@ class UploaderService
 
         $name = md5( time() . mt_rand());
 
+        $filePath = "$path/$name.$extension";
+        $file->setPath($filePath);
+
         return  $this->uploadToAdapter(
             $fileData,
-            $path . '/' . "$name.$extension",
+            $filePath,
             $mime
         );
     }
@@ -73,13 +77,13 @@ class UploaderService
             $this->logger->error('Image not uploaded: ' . $filePath);
         }
 
-        $url = $filePath;
+        $url = '';
         if ($adapter instanceof AwsS3) {
-            $url = $this->parameterBag->get('aws_s3_url') . $url;
+            $url = $this->parameterBag->get('aws_s3_url') . $filePath;
         }
 
         if ($adapter instanceof Local) {
-            $url = $this->parameterBag->get('host_url') . 'uploads/' . $url;
+            $url = $this->parameterBag->get('host_url') . 'uploads/' . $filePath;
         }
 
         return $url;

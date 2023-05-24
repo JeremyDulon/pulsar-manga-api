@@ -15,6 +15,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
+/**
+ * A quoi tu sers ?
+ */
 class ControlCrawlCommand extends BaseCommand
 {
     public static $defaultName = 'pm:crawl:control';

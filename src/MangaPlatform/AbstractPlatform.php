@@ -12,50 +12,39 @@ abstract class AbstractPlatform implements PlatformInterface
 
     protected $language = self::LANGUAGE_EN;
 
-    protected $name;
+    protected string $name;
 
-    protected $baseUrl;
+    protected string $baseUrl;
 
-    protected $mangaPath;
+    protected string $mangaPath;
 
-    /** @var array $headers */
-    protected $headers;
+    protected array $headers;
 
     /** @var PlatformRegex $mangaRegex */
-    protected $mangaRegex;
+    protected PlatformRegex $mangaRegex;
 
     /** Utile ? */
     protected $chapterRegex;
 
-    /** @var PlatformNode $titleNode */
-    protected $titleNode;
+    protected PlatformNode $titleNode;
 
-    /** @var PlatformNode $altTitlesNode */
-    protected $altTitlesNode;
+    protected PlatformNode $altTitlesNode;
 
-    /** @var PlatformNode $statusNode */
-    protected $statusNode;
+    protected PlatformNode $statusNode;
 
-    /** @var PlatformNode $mangaImageNode */
-    protected $mangaImageNode;
+    protected PlatformNode $mangaImageNode;
 
-    /** @var PlatformNode $authorNode */
-    protected $authorNode;
+    protected PlatformNode $authorNode;
 
-    /** @var PlatformNode $viewsNode */
-    protected $viewsNode;
+    protected PlatformNode $viewsNode;
 
-    /** @var PlatformNode $lastUpdatedNode */
-    protected $lastUpdatedNode;
+    protected PlatformNode $lastUpdatedNode;
 
-    /** @var PlatformNode $descriptionNode */
-    protected $descriptionNode;
+    protected PlatformNode $descriptionNode;
 
-    /** @var PlatformNode $comicIssuesDataNode */
-    protected $comicIssuesDataNode;
+    protected PlatformNode $comicIssuesDataNode;
 
-    /** @var PlatformNode $comicPageNode */
-    protected $comicPagesNode;
+    protected PlatformNode $comicPagesNode;
 
     /**
      * AbstractPlatform constructor.

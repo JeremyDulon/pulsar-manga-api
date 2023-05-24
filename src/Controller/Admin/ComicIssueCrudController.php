@@ -37,11 +37,12 @@ class ComicIssueCrudController extends AbstractCrudController
         $createdAt = DateTimeField::new('createdAt');
         $updatedAt = DateTimeField::new('updatedAt');
         $comic = AssociationField::new('comic');
-        $comicTitle = TextareaField::new('comicLanguage.comic.title', 'Title');
+        $comicTitle = TextField::new('comicLanguage.comic.title', 'Title');
+        $comicLanguage = TextField::new('comicLanguage.language', 'Language');
         $comicPages = AssociationField::new('comicPages');
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $comicTitle, $title, $number, $date, $comicPages];
+            return [$id, $comicTitle, $comicLanguage, $title, $number, $date, $comicPages];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $title, $number, $type, $date, $createdAt, $updatedAt, $comic];
         } elseif (Crud::PAGE_NEW === $pageName) {

@@ -4,13 +4,15 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\Macro\Timestamps;
+use App\Repository\ComicLanguageRepository;
 use App\Utils\PlatformUtil;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ComicLanguageRepository::class)]
 #[ORM\Table]
 #[ORM\UniqueConstraint(name: 'search_idx', columns: ['language', 'comic_id'])]
 #[ApiResource(
@@ -41,7 +43,7 @@ class ComicLanguage
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups([ 'read:ComicLanguage' ])]
-    private string $description;
+    private ?string $description = null;
 
     #[ORM\Column(type: 'boolean', nullable: false)]
     private bool $autoUpdate = false;
@@ -178,4 +180,16 @@ class ComicLanguage
         return $this;
     }
 
+//    #[]
+    public function getLatestComicIssue(): ?ComicIssue
+    {
+        if ($this->comicIssues->isEmpty() === true) {
+            return null;
+        }
+
+        $criteria = new Criteria();
+        $criteria->orderBy(['number' => 'DESC'])
+            ->getMaxResults(1);
+        return $this->comicIssues->matching($criteria)->first();
+    }
 }

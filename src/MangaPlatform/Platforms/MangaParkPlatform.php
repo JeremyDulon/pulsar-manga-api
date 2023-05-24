@@ -13,11 +13,11 @@ use App\MangaPlatform\AbstractPlatform;
 
 class MangaParkPlatform extends AbstractPlatform
 {
-    protected $name = 'MangaPark';
+    protected string $name = 'MangaPark';
 
-    protected $baseUrl = 'https://mangapark.net';
+    protected string $baseUrl = 'https://mangapark.net';
 
-    protected $mangaPath = '/manga/' . self::MANGA_SLUG;
+    protected string $mangaPath = '/manga/' . self::MANGA_SLUG;
 
     public function __construct() {
         parent::__construct();

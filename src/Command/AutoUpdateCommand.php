@@ -2,8 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\Manga;
-use App\Entity\ComicPlatform;
+use App\Entity\ComicLanguage;
 use App\Service\ImportService;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,15 +11,17 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/*
+ * A quoi tu sers ?
+ */
 class AutoUpdateCommand extends BaseCommand
 {
     // TODO: Remake this
-    public static $defaultName = 'pm:manga:autoupdate';
+    public static $defaultName = 'pm:import:autoupdate';
 
-    /** @var ImportService $importService */
-    protected $importService;
+    protected ImportService $importService;
 
-    protected $logger;
+    protected LoggerInterface $logger;
 
     public function __construct(EntityManagerInterface $em, ImportService $importService, LoggerInterface $logger)
     {
@@ -40,23 +41,27 @@ class AutoUpdateCommand extends BaseCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws \Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
-        $mangas = $this->em->getRepository(Manga::class)
+        $comicLanguages = $this->em->getRepository(ComicLanguage::class)
             ->findBy([
                 'autoUpdate' => true
             ]);
 
-        /** @var ComicPlatform $mangaPlatform */
-        foreach ($mangas as $manga) {
-            $this->importService->importChapters(
-                $manga,
-                2,
-                $manga->getLatestChapter()->getNumber(),
-                true
-            );
+        /** @var ComicLanguage $comicLanguage */
+        foreach ($comicLanguages as $comicLanguage) {
+            if ($comicLanguage->getComicIssues()->isEmpty() === false) {
+                foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
+                    $this->importService->importComicIssues(
+                        $comicPlatform,
+                        1,
+                        $comicLanguage->getLatestComicIssue()->getNumber()
+                    );
+                }
+            }
         }
 
         // TODO: Send notifs

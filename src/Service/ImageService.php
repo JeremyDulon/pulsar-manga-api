@@ -81,7 +81,8 @@ class ImageService
      * @param string $directory
      * @return File
      */
-    public function getFile($result, string $imageUrl, string $directory) {
+    public function getFile($result, string $imageUrl, string $directory): File
+    {
         // put temp file
         $filename = md5(time() . mt_rand());
         $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
@@ -98,18 +99,19 @@ class ImageService
         return $entityFile;
     }
 
-    public function getFileUrl(File $file) {
+    public function getFileUrl(File $file): string
+    {
         return $this->parameterBag->get('host_url') . 'uploads/' . $file->getPath() . '/' . $file->getName();
     }
 
-    public function uploadChapterImage(string $imageUrl, array $headers = []): ?File
+    public function uploadIssueImage(string $imageUrl, array $headers = []): ?File
     {
-        return $this->uploadImage('chapters', $imageUrl, $headers);
+        return $this->uploadImage('issues', $imageUrl, $headers);
     }
 
-    public function uploadMangaImage(string $imageUrl, array $headers = []): ?File
+    public function uploadComicImage(string $imageUrl, array $headers = []): ?File
     {
-        return $this->uploadImage('mangas', $imageUrl, $headers);
+        return $this->uploadImage('comics', $imageUrl, $headers);
     }
 
     /**
@@ -121,10 +123,11 @@ class ImageService
      */
     public function uploadImage(string $directory, string $imageUrl, array $headers = [], array $options = []): ?File
     {
+        $file = new File();
         if ($this->parameterBag->get('save_on_filesystem') === true) {
-            $result = $this->getImage($imageUrl, $headers);
+            $fileData = $this->getImage($imageUrl, $headers);
 
-            if (empty($result)) {
+            if (empty($fileData)) {
                 return null;
             }
 
@@ -133,12 +136,11 @@ class ImageService
             $imageUrl = $this->unparse_url($parsed);
             $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
 
-            $url = $this->uploaderService->upload($result, $directory, $extension);
+            $url = $this->uploaderService->upload($file, $fileData, $directory, $extension);
         } else {
             $url = $imageUrl;
         }
 
-        $file = new File();
         $file->setExternalUrl($url);
 
         return $file;

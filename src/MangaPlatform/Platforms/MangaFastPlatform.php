@@ -12,11 +12,11 @@ use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class MangaFastPlatform extends AbstractPlatform
 {
-    protected $name = 'MangaFast';
+    protected string $name = 'MangaFast';
 
-    protected $baseUrl = 'https://mangafast.net';
+    protected string $baseUrl = 'https://mangafast.net';
 
-    protected $mangaPath = '/read/' . self::MANGA_SLUG;
+    protected string $mangaPath = '/read/' . self::MANGA_SLUG;
 
     public function __construct() {
         parent::__construct();
