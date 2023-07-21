@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     collectionOperations: [
         'post',
         'get' => [
-            'normalization_context' => ['groups' => ['list:UserComicLanguage', 'list:ComicLanguage', 'list:Comic', 'read:File']],
+            'normalization_context' => ['groups' => ['list:UserComicLanguage', 'list:ComicLanguage', 'list:Comic', 'read:File', 'list:ComicIssueFromUser']],
         ]
     ],
     itemOperations: ['get', 'put']

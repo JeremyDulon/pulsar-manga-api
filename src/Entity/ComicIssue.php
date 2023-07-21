@@ -36,22 +36,22 @@ class ComicIssue
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue', 'list:ComicIssueFromUser' ])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue', 'list:ComicIssueFromUser' ])]
     private string $title;
 
     #[ORM\Column(type: 'float', nullable: false)]
-    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue', 'list:ComicIssueFromUser' ])]
     private float $number;
 
     #[ORM\Column(type: 'integer', nullable: false)]
     private int $type;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    #[Groups([ 'list:ComicIssue', 'read:ComicIssue' ])]
+    #[Groups([ 'list:ComicIssue', 'read:ComicIssue', 'list:ComicIssueFromUser' ])]
     private ?DateTimeInterface $date;
 
     #[ORM\ManyToOne(targetEntity: ComicLanguage::class, inversedBy: 'comicIssues')]
