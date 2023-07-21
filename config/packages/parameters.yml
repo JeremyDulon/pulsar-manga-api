@@ -1,0 +1,11 @@
+parameters:
+  uploads_directory: '%kernel.project_dir%/public/uploads' # TODO: Nettoyer ?
+  chapter_pages_directory: 'chapter_pages' # TODO: Nettoyer ?
+  chapter_pages_path: '%uploads_directory%/%chapter_pages_directory%' # TODO: Nettoyer ?
+  mangas_directory: 'mangas' # TODO: Nettoyer ?
+  mangas_path: '%uploads_directory%/%mangas_directory%' # TODO: Nettoyer ?
+  aws_s3_url: '%env(resolve:AWS_S3_URL)%'
+  user_agent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'
+
+  save_on_filesystem: true # True pour stocker sur AWS S3 ou Local / False pour utiliser la vraie url
+  host_url: '%env(resolve:HOST_URL)%'
