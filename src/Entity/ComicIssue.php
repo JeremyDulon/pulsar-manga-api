@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\NextComicIssueController;
 use App\Entity\Macro\Timestamps;
 use App\Repository\ComicIssueRepository;
 use DateTimeInterface;
@@ -23,6 +24,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
     itemOperations: [
         'get' => [
             'normalization_context' => ['groups' => ['read:ComicIssue', 'list:ComicPage', 'read:File']]
+        ],
+        'get_next' => [
+            'method' => 'get',
+            'path' => '/comic_issues/{id}/next',
+            'controller' => NextComicIssueController::class,
+            'normalization_context' => ['groups' => ['list:ComicIssue']]
         ]
     ]
 )]

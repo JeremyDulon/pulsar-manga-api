@@ -27,34 +27,14 @@ class ComicIssueRepository extends ServiceEntityRepository
      * @return int|mixed|string|null
      * @throws NonUniqueResultException
      */
-    public function findNextComicIssue(int $comicId, int $number) {
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.manga', 'mp')
-            ->andWhere('mp.id = :comicId')
-            ->setParameter('comicId', $comicId)
-            ->andWhere('c.number = :number')
-            ->setParameter('number', ++$number)
+    public function findNextComicIssue(ComicIssue $comicIssue) {
+        return $this->createQueryBuilder('ci')
+            ->where('ci.comicLanguage = :comicLanguage')
+            ->setParameter('comicLanguage', $comicIssue->getComicLanguage())
+            ->andWhere('ci.number = :number')
+            ->setParameter('number', $comicIssue->getNumber() + 1)
             ->getQuery()
             ->getOneOrNullResult();
-    }
-
-    /**
-     * @param int $comicId
-     * @param int $number
-     * @return array|float|int|string
-     */
-    public function getNextAndPreviousComicIssues(int $comicId, int $number) {
-        return $this->createQueryBuilder('c')
-            ->select('c.id, c.number')
-            ->leftJoin('c.manga', 'mp')
-            ->andWhere('mp.id = :comicId')
-            ->setParameter('comicId', $comicId)
-            ->andWhere('c.number = :numberUp OR c.number = :numberDown')
-            ->setParameter('numberUp', $number + 1)
-            ->setParameter('numberDown', $number - 1)
-            ->orderBy('c.number', 'asc')
-            ->getQuery()
-            ->getArrayResult();
     }
 
     public function getComicIssuesBySlugAndLanguage(string $slug, string $language)
