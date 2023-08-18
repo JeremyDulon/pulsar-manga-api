@@ -18,7 +18,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
             'normalization_context' => ['groups' => ['list:UserComicLanguage', 'list:ComicLanguage', 'list:Comic', 'read:File', 'list:ComicIssueFromUser']],
         ]
     ],
-    itemOperations: ['get', 'put']
+    itemOperations: ['get',
+        'put' => [
+            'normalization_context' => ['groups' => ['list:UserComicLanguage', 'list:ComicLanguage', 'list:Comic', 'read:File', 'list:ComicIssueFromUser']],
+        ]
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: ['user' => 'exact'])]
 
