@@ -71,6 +71,10 @@ class ImportService
         $this->executionDetail['comic']['id'] = $comicLanguage->getComic()->getId();
         $this->executionDetail['comic']['title'] = $comicLanguage->getComic()->getTitle();
 
+        if ($comicLanguage->getComicPlatforms()->isEmpty()) {
+            throw new Exception('No Platforms');
+        }
+
         foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
             $this->importComicPlatform($comicPlatform, $offset, $issueNumber);
         }
