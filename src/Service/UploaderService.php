@@ -79,7 +79,7 @@ class UploaderService
 
         $url = '';
         if ($adapter instanceof AwsS3) {
-            $url = $this->parameterBag->get('aws_s3_url') . $filePath;
+            $url = $this->parameterBag->get('bucket_endpoint') . $filePath;
         }
 
         if ($adapter instanceof Local) {
