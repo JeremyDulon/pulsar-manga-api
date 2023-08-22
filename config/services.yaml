@@ -46,12 +46,14 @@ services:
         #factory_class: Aws\S3\S3Client
         arguments:
             -   version: 'latest'
+                bucket_endpoint: false
+                endpoint: '%env(resolve:AWS_S3_URL)%'
                 region: '%env(resolve:AWS_S3_REGION)%'
                 credentials:
                     key: '%env(resolve:AWS_S3_ACCESS_KEY)%'
                     secret: '%env(resolve:AWS_S3_SECRET)%'
 
-    Gaufrette\Filesystem: '@gaufrette.pulsar_local_storage_filesystem'
+    Gaufrette\Filesystem: '@gaufrette.aws_file_storage'
 
     gedmo.listener.sluggable:
         class: Gedmo\Sluggable\SluggableListener
