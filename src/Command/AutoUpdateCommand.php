@@ -57,7 +57,7 @@ class AutoUpdateCommand extends BaseCommand
                 foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
                     $this->importService->importComicIssues(
                         $comicPlatform,
-                        1,
+                        10,
                         $comicLanguage->getLatestComicIssue()->getNumber()
                     );
                 }
