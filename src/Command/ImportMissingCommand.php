@@ -16,6 +16,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
+/**
+ * @deprecated A JOUR ?
+ */
 class ImportMissingCommand extends BaseCommand
 {
     public static $defaultName = 'pm:import:missing';

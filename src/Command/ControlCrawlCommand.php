@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
 /**
- * A quoi tu sers ?
+ * @deprecated A JOUR ?
  */
 class ControlCrawlCommand extends BaseCommand
 {

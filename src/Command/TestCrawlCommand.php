@@ -10,6 +10,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
+/**
+ * @deprecated A JOUR ?
+ */
 class TestCrawlCommand extends BaseCommand
 {
     public static $defaultName = 'pm:crawl';

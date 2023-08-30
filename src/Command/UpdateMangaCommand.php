@@ -15,6 +15,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @deprecated A JOUR ?
+ */
 class UpdateMangaCommand extends BaseCommand
 {
     // TODO: Remake this

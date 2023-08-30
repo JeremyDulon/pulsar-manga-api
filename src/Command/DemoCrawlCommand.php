@@ -10,7 +10,9 @@ use Facebook\WebDriver\Exception\TimeoutException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
-
+/**
+ * @deprecated A JOUR ?
+ */
 class DemoCrawlCommand extends BaseCommand
 {
     public static $defaultName = 'pm:crawl:demo';
