@@ -92,14 +92,16 @@ class ImportService
     ): void
     {
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
-        $this->crawlService->openUrl($comicPlatform->getUrl(), [
-            'domain' => $platform->getDomain(),
-            'baseUrl' => $platform->getBaseUrl()
-        ]);
 
         if ($platform === null) {
             throw new Exception('Platform not found');
         }
+
+        $this->crawlService->openUrl($comicPlatform->getUrl(), [
+            'domain' => $platform->getDomain(),
+            'baseUrl' => $platform->getBaseUrl(),
+            'cookies' => $platform->getCookies()
+        ]);
 
         try {
             $comicLanguage = $comicPlatform->getComicLanguage();
@@ -155,18 +157,22 @@ class ImportService
      */
     public function importComicIssues(ComicPlatform $comicPlatform, int $offset = 0, int $chapterNumber = null): void
     {
-        try {
-            $this->crawlService->openUrl($comicPlatform->getUrl());
-        } catch (Exception $e) {
-            $this->executionDetail['errors']['comic'][] = ['comicIssues' => $comicPlatform->getUrl()];
-            $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
-            return;
-        }
-
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
         if ($platform === null) {
             $this->logger->error('ComicPlatform ' . $comicPlatform->getPlatform()->getName() . ' not found !');
+            return;
+        }
+
+        try {
+            $this->crawlService->openUrl($comicPlatform->getUrl(), [
+                'domain' => $platform->getDomain(),
+                'baseUrl' => $platform->getBaseUrl(),
+                'cookies' => $platform->getCookies()
+            ]);
+        } catch (Exception $e) {
+            $this->executionDetail['errors']['comic'][] = ['comicIssues' => $comicPlatform->getUrl()];
+            $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
             return;
         }
 
@@ -224,7 +230,11 @@ class ImportService
     public function importComicIssueImages(ComicIssue $comicIssue, PlatformInterface $platform, $issueUrl): void
     {
         try {
-            $this->crawlService->openUrl($issueUrl);
+            $this->crawlService->openUrl($issueUrl, [
+                'domain' => $platform->getDomain(),
+                'baseUrl' => $platform->getBaseUrl(),
+                'cookies' => $platform->getCookies()
+            ]);
         } catch (Exception $e) {
             $this->executionDetail['errors']['comicIssue'][] = ['url' => $issueUrl, 'comicIssue' => $comicIssue->getId()];
             $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
