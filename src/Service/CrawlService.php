@@ -2,13 +2,11 @@
 
 namespace App\Service;
 
-use App\Entity\Platform;
 use App\MangaPlatform\PlatformNode;
 use Facebook\WebDriver\Exception\WebDriverCurlException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Panther\Client;
-use Symfony\Component\Panther\DomCrawler\Crawler;
 
 class CrawlService
 {
@@ -48,15 +46,19 @@ class CrawlService
         $this->logger = $logger;
     }
 
-    public function initClient(): void
+    public function initClient(array $options = []): void
     {
         $this->client = Client::createChromeClient(null, $this->clientArgs, $this->clientOptions);
+        $this->client->request('GET', $options['baseUrl']);
+        foreach ($options['cookies'] ?? [] as $cookie) {
+            $this->client->getCookieJar()->set(new Cookie($cookie['name'], $cookie['value'], strtotime('+1 day'), '/', $options['domain']));
+        }
     }
 
-    public function openUrl(string $url): void
+    public function openUrl(string $url, array $options = []): void
     {
         if (!$this->client) {
-            $this->initClient();
+            $this->initClient($options);
         }
 
         if ($this->client instanceof Client && $this->client->getCurrentURL() !== $url) {

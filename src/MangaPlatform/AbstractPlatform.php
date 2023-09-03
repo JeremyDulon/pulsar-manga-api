@@ -20,6 +20,10 @@ abstract class AbstractPlatform implements PlatformInterface
 
     protected array $headers;
 
+    protected string $domain;
+
+    protected array $cookies;
+
     /** @var PlatformRegex $mangaRegex */
     protected PlatformRegex $mangaRegex;
 
@@ -182,5 +186,15 @@ abstract class AbstractPlatform implements PlatformInterface
     public function getComicPagesNode(): PlatformNode
     {
         return $this->comicPagesNode;
+    }
+
+    public function getDomain(): string
+    {
+        return $this->domain;
+    }
+
+    public function getCookies(): array
+    {
+        return $this->cookies;
     }
 }

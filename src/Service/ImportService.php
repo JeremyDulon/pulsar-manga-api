@@ -91,8 +91,11 @@ class ImportService
         int $issueNumber = null
     ): void
     {
-        $this->crawlService->openUrl($comicPlatform->getUrl());
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
+        $this->crawlService->openUrl($comicPlatform->getUrl(), [
+            'domain' => $platform->getDomain(),
+            'baseUrl' => $platform->getBaseUrl()
+        ]);
 
         if ($platform === null) {
             throw new Exception('Platform not found');

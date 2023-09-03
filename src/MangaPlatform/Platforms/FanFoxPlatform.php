@@ -16,12 +16,16 @@ class FanFoxPlatform extends AbstractPlatform
 {
     protected string $name = 'FanFox';
 
-    protected string $baseUrl = 'http://fanfox.net';
-
     protected string $mangaPath = '/manga/' . self::MANGA_SLUG;
 
     public function __construct() {
         parent::__construct();
+
+        $this->domain = 'fanfox.net';
+        $this->baseUrl = 'http://fanfox.net';
+        $this->cookies = [
+            [ 'name' => 'isAdult', 'value' => '1' ]
+        ];
 
         $this->setTitleNode();
         $this->setStatusNode();

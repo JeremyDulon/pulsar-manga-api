@@ -56,25 +56,33 @@ class ControlCrawlCommand extends BaseCommand
 
     private function controlFindNode() {
         // MANGA PARK
-        $this->crawlService->openUrl('https://mangapark.net/comic/10016/naruto');
-
-        $platform = new MangaParkPlatform();
-        dump([
-            'title' => $this->crawlService->findNode($platform->getTitleNode()),
-            'altTitles' => $this->crawlService->findNode($platform->getAltTitlesNode()),
-            'status' => $this->crawlService->findNode($platform->getStatusNode()),
-        ]);
-        $this->crawlService->closeClient();
+//        $this->crawlService->openUrl('https://mangapark.net/comic/10016/naruto');
+//
+//        $platform = new MangaParkPlatform();
+//        dump([
+//            'title' => $this->crawlService->findNode($platform->getTitleNode()),
+//            'altTitles' => $this->crawlService->findNode($platform->getAltTitlesNode()),
+//            'status' => $this->crawlService->findNode($platform->getStatusNode()),
+//        ]);
+//        $this->crawlService->closeClient();
 
 
         // FANFOX
-        $this->crawlService->openUrl('https://fanfox.net/manga/boku_no_hero_academia/');
+//        $this->crawlService->openUrl('https://fanfox.net/manga/boku_no_hero_academia/');
+        $platform = new FanFoxPlatform();
+        $this->crawlService->openUrl('https://fanfox.net/manga/berserk/', [
+            'domain' => $platform->getDomain(),
+            'baseUrl' => $platform->getBaseUrl(),
+            'cookies' => $platform->getCookies()
+        ]);
 
         $platform = new FanFoxPlatform();
         dump([
             'title' => $this->crawlService->findNode($platform->getTitleNode()),
             'author' => $this->crawlService->findNode($platform->getAuthorNode()),
             'status' => $this->crawlService->findNode($platform->getStatusNode()),
+            'issues' => $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['offset' => 2, 'chapterNumber' => 0])
+
         ]);
         $this->crawlService->closeClient();
     }
