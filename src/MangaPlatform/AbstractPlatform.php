@@ -14,15 +14,15 @@ abstract class AbstractPlatform implements PlatformInterface
 
     protected string $name;
 
-    protected string $baseUrl;
+    protected string $baseUrl = '';
 
-    protected string $mangaPath;
+    protected string $mangaPath = '';
 
-    protected array $headers;
+    protected array $headers = [];
 
-    protected string $domain;
+    protected string $domain = '';
 
-    protected array $cookies;
+    protected array $cookies = [];
 
     /** @var PlatformRegex $mangaRegex */
     protected PlatformRegex $mangaRegex;

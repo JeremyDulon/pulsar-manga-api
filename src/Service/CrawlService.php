@@ -48,22 +48,24 @@ class CrawlService
 
     public function initClient(array $options = []): void
     {
-        $this->client = Client::createChromeClient(null, $this->clientArgs, $this->clientOptions);
+        if (!$this->client) {
+            $this->client = Client::createChromeClient(null, $this->clientArgs, $this->clientOptions);
+        }
+
         $this->client->request('GET', $options['baseUrl']);
         foreach ($options['cookies'] ?? [] as $cookie) {
-            $this->client->getCookieJar()->set(new Cookie($cookie['name'], $cookie['value'], strtotime('+1 day'), '/', $options['domain']));
+            $this->client->getCookieJar()->set(new Cookie($cookie['name'], $cookie['value'], strtotime('+1 day'), '/', $options['domain'], false, false));
         }
     }
 
     public function openUrl(string $url, array $options = []): void
     {
-        if (!$this->client) {
-            $this->initClient($options);
-        }
+        $this->initClient($options);
 
         if ($this->client instanceof Client && $this->client->getCurrentURL() !== $url) {
             $this->logger->info("[URL] opening $url");
             $this->client->request('GET', $url);
+            dump($this->client->getWebDriver()->manage()->getCookieNamed('isAdult'));
             $this->logger->info("[URL] $url opened.");
         }
     }
