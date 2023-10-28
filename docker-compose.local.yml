@@ -1,32 +1,45 @@
-version: '3'
-services:
+version: '3.4'
+services:  
   web:
     build:
       context: ./docker
       dockerfile: web.Dockerfile
-    ports:
-      - '9000:9000'
-    volumes:
-      - .:/var/www/pulsar
-    depends_on:
-      - mariadb
-    links:
-      - mariadb
-    user: 1000:1000
+      target: frankenphp_dev
+    image: ${IMAGES_PREFIX:-}app-php
+    restart: unless-stopped
     env_file:
       - .env.local
-
-  nginx:
-    image: nginx:stable-alpine
-    ports:
-      - '8888:80'
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-local.pulsar.fr}, web:443
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      TRUSTED_HOSTS: ^${SERVER_NAME:-local\.pulsar\.fr|localhost}|web$$
+      # The two next lines can be removed after initial installation
+      SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+      STABILITY: ${STABILITY:-stable}
+      # See https://xdebug.org/docs/all_settings#mode
+      XDEBUG_MODE: "${XDEBUG_MODE:-off}"
+      CADDY_EXTRA_CONFIG: "tls /etc/caddy/certs/local.pulsar.fr.pem /etc/caddy/certs/local.pulsar.fr-key.pem"
     volumes:
-      - .:/var/www/pulsar
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - web
-      - mariadb
-
+      - ./:/app
+      - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docker/frankenphp/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
+      - ./docker/frankenphp/certs:/etc/caddy/certs:rw
+      # If you develop on Mac or Windows you can remove the vendor/ directory
+      #  from the bind-mount for better performance by enabling the next line:
+      #- /app/vendor
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:host-gateway
+    ports:
+      # HTTP
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+      # HTTPS
+      - target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      
   mariadb:
     image: mysql:5.7
     command: --default-authentication-plugin=mysql_native_password
@@ -57,3 +70,8 @@ services:
     volumes:
       - "./volume:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+
+
+volumes:
+  caddy_data:
+  caddy_config:

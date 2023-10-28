@@ -32,3 +32,7 @@
 ### localstack ###
 /volume/
 ### localstack ###
+
+### frankenphp ###
+/docker/frankenphp/certs/
+### frankenphp ###
