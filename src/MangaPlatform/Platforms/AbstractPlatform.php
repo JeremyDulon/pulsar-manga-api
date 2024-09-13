@@ -1,7 +1,10 @@
 <?php
 
-namespace App\MangaPlatform;
+namespace App\MangaPlatform\Platforms;
 
+use App\MangaPlatform\PlatformInterface;
+use App\MangaPlatform\PlatformNode;
+use App\MangaPlatform\PlatformRegex;
 use Exception;
 
 abstract class AbstractPlatform implements PlatformInterface

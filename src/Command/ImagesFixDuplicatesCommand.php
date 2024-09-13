@@ -5,10 +5,12 @@ namespace App\Command;
 use App\Entity\Comic;
 use App\Entity\ComicIssue;
 use App\Entity\ComicLanguage;
+use App\Entity\ComicPage;
 use App\Entity\Platform;
 use App\Service\ImportService;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
+use Imagick;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,11 +19,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
 /**
- * @deprecated A JOUR ?
+ * @todo Faire de la comparaison avec les pages de fin
  */
-class ImportMissingCommand extends BaseCommand
+class ImagesFixDuplicatesCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:import:missing';
+    public static $defaultName = 'pm:images:fix-duplicates';
 
     /** @var ImportService $importService */
     protected $importService;
@@ -43,18 +45,6 @@ class ImportMissingCommand extends BaseCommand
     protected function configure()
     {
         parent::configure();
-
-        $this->addArgument(
-            'slug',
-            InputArgument::REQUIRED,
-            'The slug of the comic'
-        );
-        $this->addArgument(
-            'language',
-            InputArgument::OPTIONAL,
-            'Language to check',
-            PlatformUtil::LANGUAGE_EN
-        );
     }
 
 
@@ -66,14 +56,30 @@ class ImportMissingCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
-        $this->stopwatch->start('manga');
+        $comicPages = $this->em->getRepository(ComicPage::class)
+            ->findByComicSlugAndLanguage('one-piece', 'EN');
 
-        $comicSlug = $this->input->getArgument('slug');
-        $language = $this->input->getArgument('language');
+        $output->writeln('How much One Piece pages: ' . count($comicPages));
 
-        $this->importService->getMissingImportChapters($comicSlug, $language);
+        $endPageUrl = 'https://cdn.manga.lykaos.fr/issues/54206efe40be1ba8eba19622956b1192.jpg';
 
-        $eventInfo = $this->stopEvent('manga');
+        $endPageContent = file_get_contents($endPageUrl);
+        $endPageContentMD5 = md5($endPageContent);
+
+        $imageContent = file_get_contents('https://cdn.manga.lykaos.fr/issues/4a7c05f8421c7fa874da30fed2fdf89d.jpg');
+        $imageContentMD5 = md5($imageContent);
+
+        dump($endPageContentMD5);
+        dump($imageContentMD5);
+        die;
+
+        /** @var ComicPage $comicPage */
+        foreach ($comicPages as $comicPage) {
+            $imageUrl = $comicPage->getFile()->getExternalUrl();
+
+            $imageContent = file_get_contents($imageUrl);
+            $imageContentMD5 = md5($imageContent);
+        }
 
         return 0;
     }

@@ -3,8 +3,12 @@
 namespace App\Command;
 
 use App\MangaPlatform\Platforms\MangaParkPlatform;
+use App\MangaPlatform\Platforms\MangaSeePlatform;
+use App\MangaPlatform\Platforms\TCBScansPlatform;
+use App\Service\CrawlService;
 use App\Service\ImageService;
 use App\Service\ImportService;
+use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,12 +27,20 @@ class TestCrawlCommand extends BaseCommand
     /** @var ImageService $imageService */
     protected $imageService;
 
-    public function __construct(EntityManagerInterface $em, ImportService $importService, ImageService $imageService)
+    protected $crawler;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        ImportService $importService,
+        ImageService $imageService,
+        CrawlService $crawler
+    )
     {
         parent::__construct($em);
 
         $this->importService = $importService;
         $this->imageService = $imageService;
+        $this->crawler = $crawler;
     }
 
     protected function configure()
@@ -46,13 +58,50 @@ class TestCrawlCommand extends BaseCommand
     {
         parent::execute($input, $output);
 
-        $this->test();
+//        $this->crawlTSBScans();
+        $this->crawlMangaSee();
         return 0;
     }
 
-    protected function test() {
-        dump('beforeClient');
+    protected function crawlTSBScans(): void
+    {
+        $platform = new TCBScansPlatform();
+//        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/', [
+        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/chapter-203/', [
+            'domain' => $platform->getDomain(),
+            'baseUrl' => $platform->getBaseUrl(),
+            'cookies' => $platform->getCookies()
+        ]);
 
+        $pages = $this->crawler->findNode($platform->getComicPagesNode());
+        dump($pages);
+
+        $this->crawler->closeClient();
+    }
+
+    protected function crawlMangaSee()
+    {
+        $platform = new MangaSeePlatform();
+        $this->crawler->openUrl('https://mangasee123.com/manga/One-Piece', [
+//        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/chapter-203/', [
+            'domain' => $platform->getDomain(),
+            'baseUrl' => $platform->getBaseUrl(),
+            'cookies' => $platform->getCookies()
+        ]);
+
+        dump([
+            'title' => $this->crawler->findNode($platform->getTitleNode()),
+            'author' => $this->crawler->findNode($platform->getAuthorNode()),
+            'status' => $this->crawler->findNode($platform->getStatusNode()),
+            'img' => $this->crawler->findNode($platform->getMainImageNode()),
+//            'issues' => count($this->crawler->findNode($platform->getComicPagesNode()))
+        ]);
+
+        $this->crawler->closeClient();
+    }
+
+    protected function crawlMangaFox()
+    {
         $args = [
             "--headless",
             "--disable-gpu",
@@ -62,6 +111,31 @@ class TestCrawlCommand extends BaseCommand
         $options = [
             'connection_timeout_in_ms' => 60000,
             'request_timeout_in_ms' => 60000,
+        ];
+
+        $client = Client::createChromeClient(null, $args, $options);
+        $client->request('GET', 'https://fanfox.net/manga/boku_no_hero_academia/v00/c000/1.html');
+
+    }
+
+    protected function test() {
+        dump('beforeClient');
+
+        $args = [
+            "--headless",
+            "--disable-gpu",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36', // Avoir obligatoirement un user agent !!!
+        ];;
+
+        $options = [
+            'port' => mt_rand(9500, 9600),
+            'connection_timeout_in_ms' => 60000,
+            'request_timeout_in_ms' => 60000,
+//            'capabilities' => [
+//                ChromeOptions::CAPABILITY => $chromeOptions
+//            ]
         ];
 
         $client = Client::createChromeClient(null, $args, $options);

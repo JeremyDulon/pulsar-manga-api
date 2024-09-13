@@ -5,7 +5,6 @@ namespace App\MangaPlatform\Platforms;
 use App\Entity\Chapter;
 use App\Entity\Comic;
 use App\Entity\Manga;
-use App\MangaPlatform\AbstractPlatform;
 use App\Utils\PlatformUtil;
 use DateTime;
 use Symfony\Component\Panther\DomCrawler\Crawler;
@@ -108,7 +107,7 @@ class MangaFastPlatform extends AbstractPlatform
                 ];
             });
 
-            $chaptersArray = PlatformUtil::filterChapters(
+            $chaptersArray = PlatformUtil::filterIssues(
                 $chaptersArray,
                 $parameters
             );

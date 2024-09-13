@@ -2,10 +2,7 @@
 
 namespace App\MangaPlatform\Platforms;
 
-use App\Entity\Chapter;
 use App\Entity\Comic;
-use App\Entity\Manga;
-use App\MangaPlatform\AbstractPlatform;
 use App\Utils\PlatformUtil;
 use Closure;
 use DateTime;
@@ -22,7 +19,7 @@ class FanFoxPlatform extends AbstractPlatform
         parent::__construct();
 
         $this->domain = 'fanfox.net';
-        $this->baseUrl = 'http://fanfox.net';
+        $this->baseUrl = 'https://fanfox.net';
         $this->cookies = [
             [ 'name' => 'isAdult', 'value' => '1' ]
         ];
@@ -36,14 +33,14 @@ class FanFoxPlatform extends AbstractPlatform
         $this->setComicPagesNode();
     }
 
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return [
             'Referer: ' . $this->getBaseUrl()
         ];
     }
 
-    public function setMangaRegex()
+    public function setMangaRegex(): void
     {
         $mangaRegex = $this->getMangaRegex();
 
@@ -51,14 +48,16 @@ class FanFoxPlatform extends AbstractPlatform
             ->setMangaPosition(1);
     }
 
-    public function setTitleNode() {
+    public function setTitleNode(): void
+    {
         $titleNode = $this->getTitleNode();
 
         $titleNode->setSelector('.detail-info-right-title-font');
         $titleNode->setText(true);
     }
 
-    public function setStatusNode() {
+    public function setStatusNode(): void
+    {
         $statusNode = $this->getStatusNode();
 
         $statusNode->setSelector('.detail-info-right-title-tip');
@@ -68,28 +67,32 @@ class FanFoxPlatform extends AbstractPlatform
     }
 
     // Checkme: Is url accessible with params ?
-    public function setMainImageNode() {
+    public function setMainImageNode(): void
+    {
         $mangaImageNode = $this->getMainImageNode();
 
         $mangaImageNode->setSelector('.detail-info-cover-img');
         $mangaImageNode->setAttribute('src');
     }
 
-    public function setAuthorNode() {
+    public function setAuthorNode(): void
+    {
         $authorNode = $this->getAuthorNode();
 
         $authorNode->setSelector('.detail-info-right-say a');
         $authorNode->setText(true);
     }
 
-    public function setDescriptionNode() {
+    public function setDescriptionNode(): void
+    {
         $descriptionNode = $this->getDescriptionNode();
 
         $descriptionNode->setSelector('.fullcontent');
         $descriptionNode->setText(true);
     }
 
-    public function setComicIssuesDataNode() {
+    public function setComicIssuesDataNode(): void
+    {
         $chapterDataNode = $this->getComicIssuesDataNode();
 
         $chapterDataNode->setScript(function (Client $client, $parameters) {
@@ -116,7 +119,7 @@ class FanFoxPlatform extends AbstractPlatform
                 $issue['date'] = new DateTime(trim($issue['date']));
             }
 
-            return PlatformUtil::filterChapters(
+            return PlatformUtil::filterIssues(
                 $validIssues,
                 $parameters
             );
@@ -159,7 +162,8 @@ class FanFoxPlatform extends AbstractPlatform
 //        });
     }
 
-    public function setComicPagesNode() {
+    public function setComicPagesNode(): void
+    {
         $chapterPagesNode = $this->getComicPagesNode();
 
         $chapterPagesNode->setScript(function (Client $client, $parameters) {

@@ -8,7 +8,7 @@ use App\Repository\ComicPageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ComicPageRepository::class)]
 #[ApiResource]
 class ComicPage
 {

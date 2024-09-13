@@ -6,13 +6,14 @@ use App\Entity\ComicLanguage;
 use App\Service\ImportService;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /*
- * A quoi tu sers ?
+ * Importe les x prochains chapitres de chaque comic en autoupdate=true
  */
 class AutoUpdateCommand extends BaseCommand
 {
@@ -41,7 +42,7 @@ class AutoUpdateCommand extends BaseCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

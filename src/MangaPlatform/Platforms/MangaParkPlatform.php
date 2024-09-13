@@ -9,7 +9,6 @@ use App\Entity\Manga;
 use App\Utils\PlatformUtil;
 use DateTime;
 use Symfony\Component\Panther\DomCrawler\Crawler;
-use App\MangaPlatform\AbstractPlatform;
 
 class MangaParkPlatform extends AbstractPlatform
 {
@@ -108,12 +107,7 @@ class MangaParkPlatform extends AbstractPlatform
                 ];
             });
 
-            $chaptersArray = PlatformUtil::filterChapters(
-                $chaptersArray,
-                $parameters
-            );
-
-            return PlatformUtil::filterChapters($chaptersArray, $parameters);
+            return PlatformUtil::filterIssues($chaptersArray, $parameters);
         });
     }
 

@@ -19,6 +19,21 @@ class ComicPageRepository extends ServiceEntityRepository
         parent::__construct($registry, ComicPage::class);
     }
 
+    public function findByComicSlugAndLanguage(string $comicSlug, string $language = 'EN')
+    {
+        return $this->createQueryBuilder('cp')
+            ->join('cp.comicIssue', 'ci')
+            ->join('ci.comicLanguage', 'cl')
+            ->join('cl.comic', 'c')
+            ->andWhere('c.slug = :comicSlug')
+            ->andWhere('cl.language = :language')
+            ->setParameter('comicSlug', $comicSlug)
+            ->setParameter('language', $language)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return ChapterPage[] Returns an array of ChapterPage objects
     //  */

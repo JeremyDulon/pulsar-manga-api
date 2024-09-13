@@ -10,6 +10,9 @@ class PlatformNode
     /** @var $selector string */
     private $selector;
 
+    /** @var $XPathSelector string */
+    private $XPathSelector;
+
     /** @var $text boolean */
     private $text;
 
@@ -27,6 +30,8 @@ class PlatformNode
 
     /** @var string $name */
     private $name = '';
+
+    private $mustWait = false;
 
     public function __construct(string $name) {
         $this->name = $name;
@@ -58,6 +63,18 @@ class PlatformNode
     {
         $this->init = true;
         $this->selector = $selector;
+        return $this;
+    }
+
+    public function getXPathSelector(): ?string
+    {
+        return $this->XPathSelector;
+    }
+
+    public function setXPathSelector(string $XPathSelector): PlatformNode
+    {
+        $this->init = true;
+        $this->XPathSelector = $XPathSelector;
         return $this;
     }
 
@@ -156,5 +173,15 @@ class PlatformNode
     public function executeScript($client, $cbParams) {
         $script = $this->script;
         return $script($client, $cbParams);
+    }
+
+    public function setMustWait(bool $mustWait) {
+        $this->mustWait = $mustWait;
+        return $this;
+    }
+
+    public function getMustWait(): bool
+    {
+        return $this->mustWait;
     }
 }

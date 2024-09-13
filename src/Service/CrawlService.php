@@ -65,7 +65,6 @@ class CrawlService
         if ($this->client instanceof Client && $this->client->getCurrentURL() !== $url) {
             $this->logger->info("[URL] opening $url");
             $this->client->request('GET', $url);
-            dump($this->client->getWebDriver()->manage()->getCookieNamed('isAdult'));
             $this->logger->info("[URL] $url opened.");
         }
     }
@@ -76,12 +75,23 @@ class CrawlService
     ) {
         $returnValue = null;
         $nodeName = $platformNode->getName();
-        if (!empty($selector = $platformNode->getSelector())) {
-            $this->logger->debug("[CRAWL]: " . $nodeName . ' - selector: ' . $selector);
+        $selector = $platformNode->getSelector();
+        $XPathSelector = $platformNode->getXPathSelector();
+        if ($selector || $XPathSelector) {
+            $this->logger->debug("[CRAWL] " . $nodeName . ' - selector: ' . $selector);
             $crawler = $this->client->getCrawler();
 
-//            $this->client->waitFor($selector);
-            $node = $crawler->filter($selector);
+            if ($platformNode->getMustWait() === true) {
+                $this->client->waitFor($XPathSelector ?? $selector);
+                $this->logger->warning('[CRAWL] waited');
+            }
+
+
+            if ($XPathSelector !== null) {
+                $node = $crawler->filterXPath($XPathSelector);
+            } else {
+                $node = $crawler->filter($selector);
+            }
 
             if ($platformNode->hasCallback() === true) {
                 try {

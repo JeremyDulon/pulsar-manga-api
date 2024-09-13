@@ -4,10 +4,12 @@
 namespace App\Utils;
 
 use App\Entity\Platform;
-use App\MangaPlatform\AbstractPlatform;
+use App\MangaPlatform\Platforms\AbstractPlatform;
 use App\MangaPlatform\Platforms\FanFoxPlatform;
 use App\MangaPlatform\Platforms\MangaFastPlatform;
 use App\MangaPlatform\Platforms\MangaParkPlatform;
+use App\MangaPlatform\Platforms\MangaSeePlatform;
+use App\MangaPlatform\Platforms\TCBScansPlatform;
 
 class PlatformUtil
 {
@@ -19,7 +21,9 @@ class PlatformUtil
         return [
             new MangaParkPlatform(),
             new MangaFastPlatform(),
-            new FanFoxPlatform()
+            new FanFoxPlatform(),
+            new TCBScansPlatform(),
+            new MangaSeePlatform()
         ];
     }
 
@@ -53,28 +57,21 @@ class PlatformUtil
         return self::getPlatformFromBaseUrl($baseUrl);
     }
 
-    /**
-     * @param int $lastChapterNumber
-     * @param int $offset
-     * @param int|null $chapterNumber
-     * @return int[]
-     */
-    public static function getMinMaxChapter(int $lastChapterNumber, int $offset = 0, int $chapterNumber = null): array
+    public static function getMinMaxNumber(int $lastNumber, int $startingNumber = null, int $limit = 0): array
     {
-        if ($chapterNumber === null) {
-            $min = $offset < 0 ? $lastChapterNumber + $offset : 0;
-            $max = $offset > 0 ? $offset : $lastChapterNumber;
-        } else {
-            if ($offset === 0) {
-                $min = $chapterNumber;
-                $max = $lastChapterNumber;
-            } else if ($offset > 0) {
-                $min = $chapterNumber;
-                $max = $chapterNumber + $offset;
-            } else {
-                $min = $chapterNumber + $offset;
-                $max = $chapterNumber;
-            }
+        if ($limit < 0) {
+            throw new \Exception('Limit below 0');
+        }
+
+        $min = 0;
+        $max = $lastNumber;
+
+        if ($startingNumber !== null) {
+            $min = $startingNumber;
+        }
+
+        if ($limit > 0) {
+            $max = $min + $limit;
         }
 
         return [
@@ -83,33 +80,33 @@ class PlatformUtil
         ];
     }
 
-    public static function filterChapters(
-        array $chapters,
+    public static function filterIssues(
+        array $issueArray,
         array $parameters
     ): array
     {
-        $offset = $parameters['offset'];
-        $chapterNumber = $parameters['chapterNumber'];
+        if ($issueArray === []) {
+            return $issueArray;
+        }
 
-        usort($chapters, function ($chA, $chB) {
+        $limit = $parameters['limit'] ?? 0;
+        $startingNumber = $parameters['issueNumber'] ?? null;
+
+        usort($issueArray, function ($chA, $chB) {
             return $chA['number'] < $chB['number'] ? -1 : 1;
         });
 
-        if ($chapters === []) {
-            return $chapters;
-        }
-
-        $lastChapterNumber = (int) end($chapters)['number'];
+        $lastIssueNumber = (int) end($issueArray)['number'];
 
         [
             'min' => $min,
             'max' => $max
-        ] = self::getMinMaxChapter($lastChapterNumber, $offset, $chapterNumber);
+        ] = self::getMinMaxNumber($lastIssueNumber, $startingNumber, $limit);
 
         return array_filter(
-            $chapters,
-            function ($chapter) use ($lastChapterNumber, $min, $max) {
-                $chNumber = (int) $chapter['number'];
+            $issueArray,
+            function ($issue) use ($lastIssueNumber, $min, $max) {
+                $chNumber = (int) $issue['number'];
                 return Functions::in_range(
                     $chNumber,
                     $min,

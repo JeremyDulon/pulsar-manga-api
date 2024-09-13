@@ -6,15 +6,15 @@ namespace App\Service;
 
 use App\Entity\Chapter;
 use App\Entity\ChapterPage;
+use App\Entity\ComicPlatform;
 use App\Entity\File;
 use App\Entity\Manga;
-use App\Entity\ComicPlatform;
 use App\Entity\Platform;
-use App\MangaPlatform\AbstractPlatform;
 use App\MangaPlatform\PlatformNode;
+use App\MangaPlatform\Platforms\AbstractPlatform;
 use App\Utils\Functions;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Utils\PlatformUtil;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Panther\Client;
@@ -201,12 +201,12 @@ class OldImportService
      * @param bool $addImages
      *
      */
-    public function importChapters(ComicPlatform $mangaPlatform, int $offset = 0, int $chapterNumber = null, bool $addImages = false) {
+    public function importChapters(ComicPlatform $mangaPlatform, int $limit = 0, int $issueNumber = null, bool $addImages = false) {
         $mangaUrl = $mangaPlatform->getSourceUrl();
         $this->openUrl(self::MANGA_CLIENT, $mangaUrl);
         $platform = PlatformUtil::getPlatform($mangaPlatform->getPlatform());
 
-        $chaptersData = $this->findNode(self::MANGA_CLIENT, $platform->getChapterDataNode(), ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+        $chaptersData = $this->findNode(self::MANGA_CLIENT, $platform->getChapterDataNode(), ['limit' => $limit, 'issueNumber' => $issueNumber]);
 
         foreach ($chaptersData as $chapterData) {
             $chapter = $this->em->getRepository(Chapter::class)->findOneBy([

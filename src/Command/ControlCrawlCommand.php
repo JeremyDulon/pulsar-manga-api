@@ -81,7 +81,7 @@ class ControlCrawlCommand extends BaseCommand
             'title' => $this->crawlService->findNode($platform->getTitleNode()),
             'author' => $this->crawlService->findNode($platform->getAuthorNode()),
             'status' => $this->crawlService->findNode($platform->getStatusNode()),
-            'issues' => $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['offset' => 2, 'chapterNumber' => 0])
+            'issues' => $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['offset' => 2, 'issueNumber' => 0])
 
         ]);
         $this->crawlService->closeClient();

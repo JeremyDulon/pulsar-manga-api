@@ -155,7 +155,7 @@ class ImportService
     /**
      * @throws Exception
      */
-    public function importComicIssues(ComicPlatform $comicPlatform, int $offset = 0, int $chapterNumber = null): void
+    public function importComicIssues(ComicPlatform $comicPlatform, int $limit = 0, int $startingNumber = null): void
     {
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
@@ -176,7 +176,7 @@ class ImportService
             return;
         }
 
-        $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['offset' => $offset, 'chapterNumber' => $chapterNumber]);
+        $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['limit' => $limit, 'startingNumber' => $startingNumber]);
 
         if (empty($issues)) {
             $this->logger->error('No comic issues.');
