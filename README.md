@@ -17,22 +17,22 @@
 - [X] Docker local
 
 ### Chapters
-- [ ] Next chapter
+- [X] Next chapter
 - [ ] No update read mode
 
 ### Users
 - [ ] Register
 
 ### Favorites
-- [ ] User Chapter details (last read and last available)
+- [X] User Chapter details (last read and last available)
 
 ### Admin
-- [ ] Add User
-- [ ] Add manga to import
-- [ ] EasyAdmin 3.x
+- [X] Add User
+- [X] Add manga to import
+- [X] EasyAdmin 3.x
 
 ### Import
-- [ ] Panther 1.x
+- [X] Panther 1.x
 - [ ] Autoupdate parameter
 
 ### Platforms
