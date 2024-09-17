@@ -19,7 +19,7 @@ use Symfony\Component\Panther\Client;
  */
 class TestCrawlCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:crawl';
+    public static $defaultName = 'pm:crawl:test';
 
     /** @var ImportService $importService */
     protected $importService;
@@ -82,19 +82,35 @@ class TestCrawlCommand extends BaseCommand
     protected function crawlMangaSee()
     {
         $platform = new MangaSeePlatform();
-        $this->crawler->openUrl('https://mangasee123.com/manga/One-Piece', [
-//        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/chapter-203/', [
+//        $this->crawler->openUrl('https://mangasee123.com/manga/One-Piece', [
+        $this->crawler->openUrl('https://mangasee123.com/manga/Dragon-Ball', [
             'domain' => $platform->getDomain(),
             'baseUrl' => $platform->getBaseUrl(),
             'cookies' => $platform->getCookies()
         ]);
+
+        $issues = $this->crawler->findNode($platform->getComicIssuesDataNode());
 
         dump([
             'title' => $this->crawler->findNode($platform->getTitleNode()),
             'author' => $this->crawler->findNode($platform->getAuthorNode()),
             'status' => $this->crawler->findNode($platform->getStatusNode()),
             'img' => $this->crawler->findNode($platform->getMainImageNode()),
-//            'issues' => count($this->crawler->findNode($platform->getComicPagesNode()))
+            'description' => $this->crawler->findNode($platform->getDescriptionNode()),
+            'issues' => count($issues),
+            'firstIssue' => $issues[0] ?? null
+        ]);
+
+        $this->crawler->openUrl($issues[0]['url'] ?? '', [
+            'domain' => $platform->getDomain(),
+            'baseUrl' => $platform->getBaseUrl(),
+            'cookies' => $platform->getCookies()
+        ]);
+
+        $issuePages = $this->crawler->findNode($platform->getComicPagesNode());
+
+        dump([
+            'pages' => $issuePages
         ]);
 
         $this->crawler->closeClient();

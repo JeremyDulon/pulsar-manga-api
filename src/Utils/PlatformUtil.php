@@ -92,8 +92,8 @@ class PlatformUtil
         $limit = $parameters['limit'] ?? 0;
         $startingNumber = $parameters['issueNumber'] ?? null;
 
-        usort($issueArray, function ($chA, $chB) {
-            return $chA['number'] < $chB['number'] ? -1 : 1;
+        usort($issueArray, function ($issueA, $issueB) {
+            return $issueA['number'] < $issueB['number'] ? -1 : 1;
         });
 
         $lastIssueNumber = (int) end($issueArray)['number'];

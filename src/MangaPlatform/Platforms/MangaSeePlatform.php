@@ -74,34 +74,47 @@ class MangaSeePlatform extends AbstractPlatform
 
     public function setDescriptionNode(): void
     {
-        $this->descriptionNode->setSelector('.fullcontent');
+        $this->descriptionNode->setXPathSelector('.//li[contains(@class, "list-group-item")]/span[text()="Description:"]/following-sibling::div');
         $this->descriptionNode->setText(true);
     }
 
     public function setComicIssuesDataNode(): void
     {
+        $this->comicIssuesDataNode->setSelector('.ChapterLink');
         $this->comicIssuesDataNode->setScript(function (Client $client, $parameters) {
             $validIssues = $client->executeScript('
-                let nodes = document.querySelectorAll("#chapterlist #list-2 .detail-main-list li")
-                let validIssues = []
+                let mainScope = angular.element(document.getElementsByClassName("MainContainer")).scope();
+                let issues = mainScope.vm.Chapters;
+                let validIssues = [];
                 
-                nodes.forEach(node => {
-                    let issueTitle = node.querySelector("p.title3").innerText
-                    let matchData = issueTitle.match(/Ch\.([0-9]+(?:\.[0-9]+)?)/)
-                    let issueNumber = parseFloat(matchData[1])
-                    if (Number.isInteger(issueNumber) === true) {
-                        let url = node.querySelector("a").href
-                        let date = node.querySelector("p.title2").innerText
-                        let validIssue = {title: issueTitle, number: issueNumber, url, date}
-                        validIssues.push(validIssue)
-                    }
+                issues.forEach(issue => {
+                    let chapterData = decodeChapterUrlAndNumber(issue.Chapter);
+                    let date = issue.Date;
+                    let url = location.origin + "/read-online/" + mainScope.vm.IndexName + chapterData.url;
+                    let validIssue = {title: "", number: chapterData.number, url, date}
+                    validIssues.push(validIssue)
                 })
                 
-                return validIssues
+                function decodeChapterUrlAndNumber(e) {
+                    let index = "";
+                    let t = e.substring(0,1);
+                    if (t != 1) {
+                        index = "-index-" + t;
+                    }
+                    let n = parseInt(e.slice(1, -1))
+                      , m = ""
+                      , a = e[e.length - 1];
+                    if (a != 0) {
+                        m = "." + a
+                    }
+                    return {url: "-chapter-" + n + m + index + "-page-1.html", number: n};
+                }
+                
+                return validIssues;
             ');
 
             foreach ($validIssues as &$issue) {
-                $issue['date'] = new DateTime(trim($issue['date']));
+                $issue['date'] = new DateTime($issue['date']);
             }
 
             return PlatformUtil::filterIssues(
@@ -113,6 +126,32 @@ class MangaSeePlatform extends AbstractPlatform
 
     public function setComicPagesNode(): void
     {
+        $this->comicPagesNode->setScript(function (Client $client, $parameters) {
+            $pages = $client->executeScript('
+                let mainScope = angular.element(document.getElementsByClassName("MainContainer")).scope();
+                
+                let pages = [];
+                mainScope.vm.Pages.forEach((page) => {
+                    let curPathName = mainScope.vm.CurPathName
+                    let curChapterDirectory = mainScope.vm.CurChapter.Directory == "" ? "" : mainScope.vm.CurChapter.Directory + "/";
+                    let chapterImage = mainScope.vm.ChapterImage(mainScope.vm.CurChapter.Chapter);
+                    let pageImage = mainScope.vm.PageImage(page);
+                    let pageUrl = `https://${curPathName}/manga/Dragon-Ball/${curChapterDirectory}${chapterImage}-${pageImage}.png`
+                    pages.push(pageUrl);
+                });
+                
+                return pages;
+            ');
 
+            $pagesArray = [];
+            foreach ($pages as $i => $page) {
+                $pagesArray[] = [
+                    'url' => $page,
+                    'number' => $i + 1
+                ];
+            }
+
+            return $pagesArray;
+        });
     }
 }
