@@ -2,24 +2,21 @@
 
 namespace App\Command;
 
+use App\Entity\ComicLanguage;
+use App\Entity\ComicPlatform;
 use App\MangaPlatform\Platforms\MangaParkPlatform;
 use App\MangaPlatform\Platforms\MangaSeePlatform;
 use App\MangaPlatform\Platforms\TCBScansPlatform;
 use App\Service\CrawlService;
 use App\Service\ImageService;
 use App\Service\ImportService;
-use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Panther\Client;
 
-/**
- * @deprecated A JOUR ?
- */
 class TestCrawlCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:crawl:test';
+    public static $defaultName = 'mk:crawl:test';
 
     /** @var ImportService $importService */
     protected $importService;
@@ -59,8 +56,26 @@ class TestCrawlCommand extends BaseCommand
         parent::execute($input, $output);
 
 //        $this->crawlTSBScans();
-        $this->crawlMangaSee();
+//        $this->crawlMangaSee();
+
+        $this->testPlatformWeight();
+
         return 0;
+    }
+
+    protected function testPlatformWeight(): void
+    {
+        $slug = 'one-piece';
+        $language = 'EN';
+        /** @var ComicLanguage $comicLanguage */
+        $comicLanguage = $this->em->getRepository(ComicLanguage::class)->findOneBySlugAndLanguage($slug, $language);
+        /** @var ComicPlatform $comicPlatform */
+        foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
+            dump([
+                'name' => $comicPlatform->getPlatform()->getName(),
+                'weight' => $comicPlatform->getWeight()
+            ]);
+        }
     }
 
     protected function crawlTSBScans(): void
@@ -114,109 +129,5 @@ class TestCrawlCommand extends BaseCommand
         ]);
 
         $this->crawler->closeClient();
-    }
-
-    protected function crawlMangaFox()
-    {
-        $args = [
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox"
-        ];
-
-        $options = [
-            'connection_timeout_in_ms' => 60000,
-            'request_timeout_in_ms' => 60000,
-        ];
-
-        $client = Client::createChromeClient(null, $args, $options);
-        $client->request('GET', 'https://fanfox.net/manga/boku_no_hero_academia/v00/c000/1.html');
-
-    }
-
-    protected function test() {
-        dump('beforeClient');
-
-        $args = [
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36', // Avoir obligatoirement un user agent !!!
-        ];;
-
-        $options = [
-            'port' => mt_rand(9500, 9600),
-            'connection_timeout_in_ms' => 60000,
-            'request_timeout_in_ms' => 60000,
-//            'capabilities' => [
-//                ChromeOptions::CAPABILITY => $chromeOptions
-//            ]
-        ];
-
-        $client = Client::createChromeClient(null, $args, $options);
-        dump('beforeRequest');
-        $client->request('GET', 'https://fanfox.net/manga/boku_no_hero_academia/v00/c000/1.html');
-//        $crawler = $client->waitFor('#viewer');
-//        dump($client);
-        dump('afterRequest');
-
-
-
-        $client->executeScript("
-            var mkey = '';
-            if ($('#dm5_key').length > 0) {
-                mkey = $('#dm5_key').val();
-            }
-            window.pages = [];
-            window.ajaxDone = false;
-            $.ajax({
-                url: 'chapterfun.ashx',
-                data: { cid: chapterid, page: 1, key: '' },
-                type: 'GET',
-                error: function (msg) {
-                },
-                success: function (msg) {
-                    if (msg != '') {
-                        var arr;
-                        eval(msg);
-                        window.pages = d;
-                        window.ajaxDone = true;
-                    }
-                }
-            });
-        ");
-        $client->getWebDriver()->wait()->until(ajaxChapter());
-        $pages = $client->executeScript("return window.pages;");
-
-        dump($pages);
-        $client->executeScript("
-            window.pages = [];
-            window.ajaxDone = false;
-            $.ajax({
-                url: 'chapterfun.ashx',
-                data: { cid: chapterid, page: 2, key: mkey },
-                type: 'GET',
-                error: function (msg) {
-                },
-                success: function (msg) {
-                    if (msg != '') {
-                        var arr;
-                        eval(msg);
-                        window.pages = d;
-                        window.ajaxDone = true;
-                    }
-                }
-            });
-        ");
-        $client->getWebDriver()->wait()->until(ajaxChapter());
-        $pages = $client->executeScript("return window.pages;");
-        dump($chapterId);
-        dump($pages);
-//        foreach ($pages as $page) {
-//            $url = 'https:' . $page;
-//            $image = $this->imageService->uploadChapterImage($url);
-//            dump($image->getExternalUrl());
-//        }
     }
 }

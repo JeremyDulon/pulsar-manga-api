@@ -20,7 +20,7 @@ use Symfony\Component\Panther\Client;
  */
 class ImportCommand extends BaseCommand
 {
-    public static $defaultName = 'pm:import';
+    public static $defaultName = 'mk:import';
 
     protected ImportService $importService;
 

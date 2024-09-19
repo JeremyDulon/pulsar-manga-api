@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class AutoUpdateCommand extends BaseCommand
 {
     // TODO: Remake this
-    public static $defaultName = 'pm:import:autoupdate';
+    public static $defaultName = 'mk:import:autoupdate';
 
     protected ImportService $importService;
 
