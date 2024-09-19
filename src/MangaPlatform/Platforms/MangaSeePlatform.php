@@ -132,11 +132,12 @@ class MangaSeePlatform extends AbstractPlatform
                 
                 let pages = [];
                 mainScope.vm.Pages.forEach((page) => {
+                    let indexName = mainScope.vm.IndexName
                     let curPathName = mainScope.vm.CurPathName
                     let curChapterDirectory = mainScope.vm.CurChapter.Directory == "" ? "" : mainScope.vm.CurChapter.Directory + "/";
                     let chapterImage = mainScope.vm.ChapterImage(mainScope.vm.CurChapter.Chapter);
                     let pageImage = mainScope.vm.PageImage(page);
-                    let pageUrl = `https://${curPathName}/manga/Dragon-Ball/${curChapterDirectory}${chapterImage}-${pageImage}.png`
+                    let pageUrl = `https://${curPathName}/manga/${indexName}/${curChapterDirectory}${chapterImage}-${pageImage}.png`
                     pages.push(pageUrl);
                 });
                 
