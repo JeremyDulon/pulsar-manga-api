@@ -98,8 +98,8 @@ class ImportService
         }
 
         $this->crawlService->openUrl($comicPlatform->getUrl(), [
-            'domain' => $platform->getDomain(),
             'baseUrl' => $platform->getBaseUrl(),
+            'domain' => $platform->getDomain(),
             'cookies' => $platform->getCookies()
         ]);
 

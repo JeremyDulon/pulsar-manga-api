@@ -16,45 +16,17 @@ class PlatformUtil
     public const LANGUAGE_EN = 'EN';
     public const LANGUAGE_FR = 'FR';
 
-    public static function getPlatforms(): array
-    {
-        return [
-            new MangaParkPlatform(),
-            new MangaFastPlatform(),
-            new FanFoxPlatform(),
-            new TCBScansPlatform(),
-            new MangaSeePlatform()
-        ];
-    }
-
     public static function getPlatform(Platform $platformEntity): ?AbstractPlatform
     {
-        foreach (self::getPlatforms() as $platform) {
-            /** @var AbstractPlatform $platform */
-            if ($platformEntity->getName() === $platform->getName()) {
-                return $platform;
-            }
-        }
+        $platforms = [
+            'MangaPark' => new MangaParkPlatform(),
+            'MangaFast' => new MangaFastPlatform(),
+            'FanFox' => new FanFoxPlatform(),
+            'TCBScans' => new TCBScansPlatform(),
+            'MangaSee' => new MangaSeePlatform()
+        ];
 
-        return null;
-    }
-
-    public static function getPlatformFromBaseUrl($baseUrl): ?AbstractPlatform
-    {
-        foreach (self::getPlatforms() as $platform) {
-            if ($platform->getBaseUrl() === $baseUrl) {
-                return $platform;
-            }
-        }
-
-        return null;
-    }
-
-    public static function findPlatformFromUrl($url): ?AbstractPlatform
-    {
-        $urlInfo = parse_url($url);
-        $baseUrl = $urlInfo['scheme'] . '://' . $urlInfo['host'];
-        return self::getPlatformFromBaseUrl($baseUrl);
+        return $platforms[$platformEntity->getName()] ?? null;
     }
 
     public static function getMinMaxNumber(int $lastNumber, int $startingNumber = null, int $limit = 0): array
