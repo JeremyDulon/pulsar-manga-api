@@ -46,7 +46,7 @@ class MangaSeePlatform extends AbstractPlatform
 
     public function setTitleNode(): void
     {
-        $this->titleNode->setSelector('.list-group-item > h1');
+        $this->titleNode->setSelector('.list-group-item > h2');
         $this->titleNode->setText(true);
 
     }

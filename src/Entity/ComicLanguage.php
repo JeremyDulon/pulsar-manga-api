@@ -153,9 +153,10 @@ class ComicLanguage
 
     public function getComicPlatforms(): Collection
     {
-        return $this->comicPlatforms->filter(function (ComicPlatform $comicPlatform) {
-            return $comicPlatform->getStatus() === ComicPlatform::STATUS_ENABLED;
-        });
+        $criteria = new Criteria();
+        $criteria->orderBy(['trust' => 'DESC']);
+        $criteria->andWhere(Criteria::expr()->eq('status', ComicPlatform::STATUS_ENABLED));
+        return $this->comicPlatforms->matching($criteria);
     }
 
     public function addComicPlatform(ComicPlatform $comicPlatform): self
@@ -188,8 +189,7 @@ class ComicLanguage
         }
 
         $criteria = new Criteria();
-        $criteria->orderBy(['number' => 'DESC'])
-            ->getMaxResults(1);
+        $criteria->orderBy(['number' => 'DESC']);
         return $this->comicIssues->matching($criteria)->first();
     }
 }

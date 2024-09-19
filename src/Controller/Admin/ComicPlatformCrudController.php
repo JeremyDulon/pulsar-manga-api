@@ -43,7 +43,7 @@ class ComicPlatformCrudController extends AbstractCrudController
             'Inactif' => ComicPlatform::STATUS_DISABLED
         ]);
 
-        $newEdit = [$url, $comicLanguage, $platform, $status];
+        $newEdit = [$url, $comicLanguage, $platform, $weight, $status];
 
         if (Crud::PAGE_INDEX === $pageName) {
             return [$id, $comicTitle, $platformName, $url, $weight, $status];

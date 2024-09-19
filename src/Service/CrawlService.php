@@ -2,7 +2,10 @@
 
 namespace App\Service;
 
+use App\Exception\NodeEmptyException;
 use App\MangaPlatform\PlatformNode;
+use Facebook\WebDriver\Exception\NoSuchElementException;
+use Facebook\WebDriver\Exception\TimeoutException;
 use Facebook\WebDriver\Exception\WebDriverCurlException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\BrowserKit\Cookie;
@@ -69,6 +72,10 @@ class CrawlService
         }
     }
 
+    /**
+     * @throws NoSuchElementException
+     * @throws TimeoutException
+     */
     public function findNode(
         PlatformNode $platformNode,
         array $callbackParameters = []
@@ -109,8 +116,10 @@ class CrawlService
             if ($platformNode->isText() === true) {
                 try {
                     $returnValue = $node->getText();
-                } catch (\Exception $e) {
-                    $this->logger->error($e->getMessage(), ['node' => $nodeName]);
+                } catch (\InvalidArgumentException $invalidArgumentException) {
+                    throw new NodeEmptyException($invalidArgumentException->getMessage());
+                } catch (\Exception $exception) {
+                    $this->logger->error($exception->getMessage(), ['node' => $nodeName]);
                 }
             }
 
@@ -120,7 +129,7 @@ class CrawlService
         }
 
         if ($platformNode->hasScript()) {
-            $this->logger->debug("[CRAWL]: " . $nodeName . ' - script');
+            $this->logger->debug('[CRAWL]: ' . $nodeName . ' - script');
             $returnValue = $platformNode->executeScript($this->client, $callbackParameters);
         }
 

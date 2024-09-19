@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Macro\Trust;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -12,10 +13,15 @@ use JMS\Serializer\Annotation as Serializer;
 #[ORM\Entity]
 class ComicPlatform
 {
+    use Trust;
+
+    const TRUST_FACTOR_POSITIVE = 1;
+    const TRUST_FACTOR_NEGATIVE = -1;
+    const TRUST_FACTOR_BAD = -3;
+
     const STATUS_ENABLED = 100;
     const STATUS_SUSPENDED = 200;
     const STATUS_DISABLED = 300;
-
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,9 +30,6 @@ class ComicPlatform
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private string $url;
-
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private int $weight = 0;
 
     #[ORM\ManyToOne(targetEntity: Platform::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -44,7 +47,7 @@ class ComicPlatform
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getId(): ?int
     {
@@ -82,24 +85,6 @@ class ComicPlatform
     public function setPlatform(Platform $platform): ComicPlatform
     {
         $this->platform = $platform;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getWeight(): int
-    {
-        return $this->weight;
-    }
-
-    /**
-     * @param int $weight
-     * @return ComicPlatform
-     */
-    public function setWeight(int $weight): ComicPlatform
-    {
-        $this->weight = $weight;
         return $this;
     }
 

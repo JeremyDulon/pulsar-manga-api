@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class TestCrawlCommand extends BaseCommand
 {
-    public static $defaultName = 'mk:crawl:test';
+    public static $defaultName = 'mk:test';
 
     /** @var ImportService $importService */
     protected $importService;
@@ -57,8 +57,8 @@ class TestCrawlCommand extends BaseCommand
 
 //        $this->crawlTSBScans();
 //        $this->crawlMangaSee();
-
-        $this->testPlatformWeight();
+        $this->crawlMangaSeeExceptions();
+//        $this->testPlatformWeight();
 
         return 0;
     }
@@ -73,7 +73,7 @@ class TestCrawlCommand extends BaseCommand
         foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
             dump([
                 'name' => $comicPlatform->getPlatform()->getName(),
-                'weight' => $comicPlatform->getWeight()
+                'weight' => $comicPlatform->getTrust()
             ]);
         }
     }
@@ -117,8 +117,8 @@ class TestCrawlCommand extends BaseCommand
         ]);
 
         $this->crawler->openUrl($issues[0]['url'] ?? '', [
-            'domain' => $platform->getDomain(),
             'baseUrl' => $platform->getBaseUrl(),
+            'domain' => $platform->getDomain(),
             'cookies' => $platform->getCookies()
         ]);
 
@@ -126,6 +126,29 @@ class TestCrawlCommand extends BaseCommand
 
         dump([
             'pages' => $issuePages
+        ]);
+
+        $this->crawler->closeClient();
+    }
+
+    protected function crawlMangaSeeExceptions()
+    {
+        $platform = new MangaSeePlatform();
+//        $this->crawler->openUrl('https://mangasee123.com/manga/One-Piece', [
+        $this->crawler->openUrl('https://mangasee123.com/manga/Dragon-Ball', [
+            'baseUrl' => $platform->getBaseUrl(),
+            'domain' => $platform->getDomain(),
+            'cookies' => $platform->getCookies()
+        ]);
+
+        $title = $this->crawler->findNode($platform->getTitleNode());
+
+        dump([
+            'title' => $title,
+            'author' => $this->crawler->findNode($platform->getAuthorNode()),
+            'status' => $this->crawler->findNode($platform->getStatusNode()),
+            'img' => $this->crawler->findNode($platform->getMainImageNode()),
+            'description' => $this->crawler->findNode($platform->getDescriptionNode()),
         ]);
 
         $this->crawler->closeClient();

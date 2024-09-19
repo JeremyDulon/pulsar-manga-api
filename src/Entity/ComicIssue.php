@@ -40,6 +40,11 @@ class ComicIssue
     public const TYPE_VOLUME = 100;
     public const TYPE_CHAPTER = 200;
 
+    public const QUALITY_GOOD = 100;
+    public const QUALITY_POOR = 200;
+    public const QUALITY_BAD = 300;
+    public const QUALITY_ERROR = 400;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -61,11 +66,17 @@ class ComicIssue
     #[Groups([ 'list:ComicIssue', 'read:ComicIssue', 'list:ComicIssueFromUser' ])]
     private ?DateTimeInterface $date;
 
+    #[ORM\Column(type: 'integer', nullable: false, options: ['default' => self::QUALITY_GOOD])]
+    private int $quality = self::QUALITY_GOOD;
+
     #[ORM\ManyToOne(targetEntity: ComicLanguage::class, inversedBy: 'comicIssues')]
     #[ORM\JoinColumn(nullable: false)]
     #[ApiFilter(SearchFilter::class, properties: ['comicLanguage' => 'exact'])]
     #[Groups([ 'read:ComicIssue' ])]
     private ComicLanguage $comicLanguage;
+
+    #[ORM\ManyToOne(targetEntity: ComicPlatform::class, fetch: "EXTRA_LAZY")]
+    private ComicPlatform $comicPlatform;
 
     #[ORM\OneToMany(mappedBy: 'comicIssue', targetEntity: ComicPage::class, cascade: ['remove'], orphanRemoval: true)]
     #[Groups([ 'list:ComicPage' ])]
@@ -130,6 +141,18 @@ class ComicIssue
     public function setDate(DateTimeInterface $date): self
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    public function getQuality(): int
+    {
+        return $this->quality;
+    }
+
+    public function setQuality(int $quality): self
+    {
+        $this->quality = $quality;
 
         return $this;
     }
@@ -203,5 +226,16 @@ class ComicIssue
     public function getComicSlug(): string
     {
         return $this->getComicLanguage()->getComic()->getSlug();
+    }
+
+    public function getComicPlatform(): ComicPlatform
+    {
+        return $this->comicPlatform;
+    }
+
+    public function setComicPlatform(ComicPlatform $comicPlatform): ComicIssue
+    {
+        $this->comicPlatform = $comicPlatform;
+        return $this;
     }
 }

@@ -8,6 +8,8 @@ use App\Entity\ComicLanguage;
 use App\Entity\ComicPage;
 use App\Entity\ComicPlatform;
 use App\Entity\File;
+use App\Entity\Platform;
+use App\Exception\NodeEmptyException;
 use App\MangaPlatform\PlatformInterface;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
@@ -97,16 +99,21 @@ class ImportService
             throw new Exception('Platform not found');
         }
 
-        $this->crawlService->openUrl($comicPlatform->getUrl(), [
-            'baseUrl' => $platform->getBaseUrl(),
-            'domain' => $platform->getDomain(),
-            'cookies' => $platform->getCookies()
-        ]);
+        try {
+            $this->crawlService->openUrl($comicPlatform->getUrl(), [
+                'baseUrl' => $platform->getBaseUrl(),
+                'domain' => $platform->getDomain(),
+                'cookies' => $platform->getCookies()
+            ]);
+        } catch (Exception $e) {
+            $this->logger->error($e);
+            return;
+        }
+
+        $comicLanguage = $comicPlatform->getComicLanguage();
+        $comic = $comicLanguage->getComic();
 
         try {
-            $comicLanguage = $comicPlatform->getComicLanguage();
-            $comic = $comicLanguage->getComic();
-
             if (empty($comic->getTitle())) {
                 $title = $this->crawlService->findNode($platform->getTitleNode());
                 if (!empty($title)) {
@@ -121,15 +128,6 @@ class ImportService
                 }
             }
 
-            if ($comic->getImage() === null) {
-                $imageUrl = $this->crawlService->findNode($platform->getMainImageNode());
-                $this->logger->info('[Comic] Getting image from url: ' . $imageUrl);
-                if (!empty($imageUrl)) {
-                    $imageEntity = $this->imageService->uploadComicImage($imageUrl, [ 'Referer: ' . $platform->getBaseUrl() ]);
-                    $comic->setImage($imageEntity);
-                }
-            }
-
             if (empty($comicLanguage->getDescription())) {
                 $description = $this->crawlService->findNode($platform->getDescriptionNode());
                 if (!empty($description)) {
@@ -141,11 +139,38 @@ class ImportService
             if (!empty($status)) {
                 $comic->setStatus($status);
             }
-
+        } catch (NodeEmptyException $nodeEmptyException) {
+            $this->logger->error($nodeEmptyException->getMessage());
+            $comicPlatform->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
             $this->em->flush();
-        } catch (Exception $e) {
-            $this->logger->error($e->getMessage());
+
+            return;
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            return;
         }
+
+        try {
+            if ($comic->getImage() === null) {
+                $imageUrl = $this->crawlService->findNode($platform->getMainImageNode());
+                $this->logger->info('[Comic] Getting image from url: ' . $imageUrl);
+                if (!empty($imageUrl)) {
+                    $imageEntity = $this->imageService->uploadComicImage($imageUrl, ['Referer: ' . $platform->getBaseUrl()]);
+                    $comic->setImage($imageEntity);
+                }
+            }
+        } catch (NodeEmptyException $nodeEmptyException) {
+            $this->logger->error($nodeEmptyException->getMessage());
+            $comicPlatform->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
+            $this->em->flush();
+
+            return;
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            return;
+        }
+
+        $this->em->flush();
 
         $this->crawlService->closeClient();
 
@@ -176,12 +201,28 @@ class ImportService
             return;
         }
 
-        $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['limit' => $limit, 'startingNumber' => $startingNumber]);
+        try {
+            $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['limit' => $limit, 'startingNumber' => $startingNumber]);
+        } catch (NodeEmptyException $nodeEmptyException) {
+            $this->logger->error($nodeEmptyException->getMessage());
+            $comicPlatform->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
+            $this->em->flush();
+
+            return;
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            return;
+        }
+
 
         if (empty($issues)) {
             $this->logger->error('No comic issues.');
+            $comicPlatform->updateTrust(ComicPlatform::TRUST_FACTOR_BAD);
+
+            $this->em->flush();
             return;
         }
+
         $this->logger->info('Issues fetched.');
         $this->executionDetail['comic']['issues']['detected'] = count($issues);
         $this->crawlService->closeClient();
@@ -201,6 +242,8 @@ class ImportService
                     ->setNumber($issueData['number'])
                     ->setType(ComicIssue::TYPE_CHAPTER)
                     ->setComicLanguage($comicPlatform->getComicLanguage())
+                    ->setComicPlatform($comicPlatform)
+                    ->setQuality(ComicIssue::QUALITY_GOOD)
                     ->setDate($issueData['date']);
 
                 $this->em->persist($comicIssue);
@@ -241,12 +284,25 @@ class ImportService
             return;
         }
 
-        $issuePages = $this->crawlService->findNode($platform->getComicPagesNode());
+        try {
+            $issuePages = $this->crawlService->findNode($platform->getComicPagesNode());
+        } catch (NodeEmptyException $nodeEmptyException) {
+            $this->logger->error($nodeEmptyException->getMessage());
+            $comicIssue->getComicPlatform()->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
+            $this->em->flush();
+
+            return;
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            return;
+        }
 
         $this->logger->info(count($issuePages) . ' pages fetched');
         if (empty($issuePages)) {
             $this->logger->error('No pages');
+            $comicIssue->getComicPlatform()->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
         }
+
         $this->crawlService->closeClient();
 
         $this->logger->info('[Comic] Getting comic issue images');
@@ -264,6 +320,7 @@ class ImportService
                 $this->em->persist($comicPage);
             } else {
                 $this->logger->error('Page #' . $issuePageData['number'] . ' not uploaded');
+                // Todo: Peut etre updateTrust ici, en fonction de l'erreur si jamais j'en vois des pertinentes
                 $comicIssue->removeAllComicPages();
                 break;
             }
@@ -272,6 +329,7 @@ class ImportService
 
     /**
      * @throws Exception
+     * todo: update this
      */
     public function getMissingImportChapters(
         string $comicSlug,
