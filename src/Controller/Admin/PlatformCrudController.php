@@ -32,6 +32,7 @@ class PlatformCrudController extends AbstractCrudController
         $name = TextField::new('name');
         $baseUrl = TextField::new('baseUrl');
         $status = ChoiceField::new('status');
+        $trust = IntegerField::new('trust');
         $createdAt = DateTimeField::new('createdAt');
         $updatedAt = DateTimeField::new('updatedAt');
         $status->setChoices([
@@ -41,13 +42,13 @@ class PlatformCrudController extends AbstractCrudController
         ]);
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $name, $baseUrl, $status];
+            return [$id, $name, $baseUrl, $trust, $status];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
-            return [$id, $name, $baseUrl, $status, $createdAt, $updatedAt];
+            return [$id, $name, $baseUrl, $trust, $status, $createdAt, $updatedAt];
         } elseif (Crud::PAGE_NEW === $pageName) {
-            return [$name, $baseUrl, $status];
+            return [$name, $baseUrl, $trust, $status];
         } elseif (Crud::PAGE_EDIT === $pageName) {
-            return [$id, $name, $baseUrl, $status];
+            return [$id, $name, $baseUrl, $trust, $status];
         }
     }
 }

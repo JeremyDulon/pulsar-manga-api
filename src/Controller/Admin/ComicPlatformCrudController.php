@@ -29,7 +29,7 @@ class ComicPlatformCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $id = IntegerField::new('id', 'ID');
-        $weight = IntegerField::new('weight');
+        $trust = IntegerField::new('trust');
         $status = ChoiceField::new('status');
         $url = UrlField::new('url');
         $platform = AssociationField::new('platform');
@@ -43,10 +43,10 @@ class ComicPlatformCrudController extends AbstractCrudController
             'Inactif' => ComicPlatform::STATUS_DISABLED
         ]);
 
-        $newEdit = [$url, $comicLanguage, $platform, $weight, $status];
+        $newEdit = [$url, $comicLanguage, $platform, $trust, $status];
 
         if (Crud::PAGE_INDEX === $pageName) {
-            return [$id, $comicTitle, $platformName, $url, $weight, $status];
+            return [$id, $comicTitle, $platformName, $url, $trust, $status];
         } elseif (Crud::PAGE_DETAIL === $pageName) {
             return [$id, $url, $platformName, $status];
         } elseif (Crud::PAGE_NEW  === $pageName) {
