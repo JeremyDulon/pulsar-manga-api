@@ -62,7 +62,7 @@ class PlatformUtil
         }
 
         $limit = $parameters['limit'] ?? 0;
-        $startingNumber = $parameters['issueNumber'] ?? null;
+        $startingNumber = $parameters['startingNumber'] ?? null;
 
         usort($issueArray, function ($issueA, $issueB) {
             return $issueA['number'] < $issueB['number'] ? -1 : 1;

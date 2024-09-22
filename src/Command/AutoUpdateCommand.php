@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\ComicLanguage;
+use App\Entity\ComicPlatform;
 use App\Service\ImportService;
 use App\Utils\PlatformUtil;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,6 +56,7 @@ class AutoUpdateCommand extends BaseCommand
         /** @var ComicLanguage $comicLanguage */
         foreach ($comicLanguages as $comicLanguage) {
             if ($comicLanguage->getComicIssues()->isEmpty() === false) {
+                /** @var ComicPlatform $comicPlatform */
                 foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
                     $this->importService->setLimit(10);
                     $this->importService->setStartingNumber($comicLanguage->getLatestComicIssue()->getNumber());
