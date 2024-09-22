@@ -56,11 +56,10 @@ class AutoUpdateCommand extends BaseCommand
         foreach ($comicLanguages as $comicLanguage) {
             if ($comicLanguage->getComicIssues()->isEmpty() === false) {
                 foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
-                    $this->importService->importComicIssues(
-                        $comicPlatform,
-                        10,
-                        $comicLanguage->getLatestComicIssue()->getNumber()
-                    );
+                    $this->importService->setLimit(10);
+                    $this->importService->setStartingNumber($comicLanguage->getLatestComicIssue()->getNumber());
+                    
+                    $this->importService->importComicIssues($comicPlatform);
                 }
             }
         }

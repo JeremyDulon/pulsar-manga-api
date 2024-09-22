@@ -54,13 +54,13 @@ class ImportCommand extends BaseCommand
             PlatformUtil::LANGUAGE_EN
         );
         $this->addArgument(
-            'issueNumber',
+            'startingNumber',
             InputArgument::OPTIONAL,
             'Issue number to start from',
             null
         );
         $this->addArgument(
-            'offset',
+            'limit',
             InputArgument::OPTIONAL,
             'Offset to start from',
             0
@@ -81,10 +81,12 @@ class ImportCommand extends BaseCommand
 
         $comicSlug = $this->input->getArgument('slug');
         $language = $this->input->getArgument('language');
-        $issueNumber = $this->input->getArgument('issueNumber');
-        $offset = $this->input->getArgument('offset');
+        $startingNumber = $this->input->getArgument('startingNumber');
+        $limit = $this->input->getArgument('limit');
 
-        $executionDetail = $this->importService->importComic($comicSlug, $language, $offset, $issueNumber);
+        $this->importService->setLimit($limit);
+        $this->importService->setStartingNumber($startingNumber);
+        $executionDetail = $this->importService->importComic($comicSlug, $language);
 
         $eventInfo = $this->stopEvent('manga');
 

@@ -18,6 +18,8 @@ use Psr\Log\LoggerInterface;
 
 class ImportService
 {
+    private int $limit;
+    private ?int $startingNumber;
     private EntityManagerInterface $em;
 
     private LoggerInterface $logger;
@@ -52,14 +54,24 @@ class ImportService
         $this->imageService = $imageService;
     }
 
+    public function setLimit(int $limit = 0): self
+    {
+        $this->limit = $limit;
+        return $this;
+    }
+
+    public function setStartingNumber(int $startingNumber = null): self
+    {
+        $this->startingNumber = $startingNumber;
+        return $this;
+    }
+
     /**
      * @throws Exception
      */
     public function importComic(
         string $slug,
-        string $language = PlatformUtil::LANGUAGE_EN,
-        int $offset = 0,
-        int $issueNumber = null
+        string $language = PlatformUtil::LANGUAGE_EN
     ): array
     {
         /** @var ComicLanguage|null $comicLanguage */
@@ -78,7 +90,7 @@ class ImportService
         }
 
         foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
-            $this->importComicPlatform($comicPlatform, $offset, $issueNumber);
+            $this->importComicPlatform($comicPlatform);
         }
 
         return $this->executionDetail;
@@ -88,9 +100,7 @@ class ImportService
      * @throws Exception
      */
     public function importComicPlatform(
-        ComicPlatform $comicPlatform,
-        int $offset = 0,
-        int $issueNumber = null
+        ComicPlatform $comicPlatform
     ): void
     {
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
@@ -174,13 +184,13 @@ class ImportService
 
         $this->crawlService->closeClient();
 
-        $this->importComicIssues($comicPlatform, $offset, $issueNumber);
+        $this->importComicIssues($comicPlatform);
     }
 
     /**
      * @throws Exception
      */
-    public function importComicIssues(ComicPlatform $comicPlatform, int $limit = 0, int $startingNumber = null): void
+    public function importComicIssues(ComicPlatform $comicPlatform): void
     {
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
@@ -202,7 +212,7 @@ class ImportService
         }
 
         try {
-            $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['limit' => $limit, 'startingNumber' => $startingNumber]);
+            $issues = $this->crawlService->findNode($platform->getComicIssuesDataNode(), ['limit' => $this->limit, 'startingNumber' => $this->startingNumber]);
         } catch (NodeEmptyException $nodeEmptyException) {
             $this->logger->error($nodeEmptyException->getMessage());
             $comicPlatform->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
@@ -213,7 +223,6 @@ class ImportService
             $this->logger->error($exception->getMessage());
             return;
         }
-
 
         if (empty($issues)) {
             $this->logger->error('No comic issues.');
@@ -252,7 +261,15 @@ class ImportService
 
             // TODO: Add force argument to reupload images
             if ($comicIssue->getComicPages()->isEmpty()) {
-                $this->importComicIssueImages($comicIssue, $platform, $issueData['url']);
+                $issueImagesImported = $this->importComicIssueImages($comicIssue, $platform, $issueData['url']);
+
+                if ($issueImagesImported === false) {
+//                    $this->logger->error('No images imported');
+//                    $comicPlatform->updateTrust(ComicPlatform::TRUST_FACTOR_BAD);
+                    $this->em->flush();
+                    $this->startingNumber = $issueData['number'];
+                    return;
+                }
             }
 
             $this->em->flush();
@@ -263,14 +280,15 @@ class ImportService
                 $this->executionDetail['comic']['issues']['added']++;
             }
             $this->logger->info($message . $comicIssue->getNumber());
+            $this->limit--;
         }
-        $this->logger->info('Chapters done');
+        $this->logger->info('Issues imported on platform ' . $comicPlatform->getPlatform()->getName());
     }
 
     /**
      * @throws Exception
      */
-    public function importComicIssueImages(ComicIssue $comicIssue, PlatformInterface $platform, $issueUrl): void
+    public function importComicIssueImages(ComicIssue $comicIssue, PlatformInterface $platform, $issueUrl): bool
     {
         try {
             $this->crawlService->openUrl($issueUrl, [
@@ -281,7 +299,7 @@ class ImportService
         } catch (Exception $e) {
             $this->executionDetail['errors']['comicIssue'][] = ['url' => $issueUrl, 'comicIssue' => $comicIssue->getId()];
             $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
-            return;
+            return false;
         }
 
         try {
@@ -291,16 +309,17 @@ class ImportService
             $comicIssue->getComicPlatform()->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
             $this->em->flush();
 
-            return;
+            return false;
         } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
-            return;
+            return false;
         }
 
         $this->logger->info(count($issuePages) . ' pages fetched');
         if (empty($issuePages)) {
             $this->logger->error('No pages');
             $comicIssue->getComicPlatform()->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
+            return false;
         }
 
         $this->crawlService->closeClient();
@@ -322,22 +341,26 @@ class ImportService
                 $this->logger->error('Page #' . $issuePageData['number'] . ' not uploaded');
                 // Todo: Peut etre updateTrust ici, en fonction de l'erreur si jamais j'en vois des pertinentes
                 $comicIssue->removeAllComicPages();
-                break;
+                return false;
             }
         }
+
+        return true;
     }
 
     /**
      * @throws Exception
      * todo: update this
      */
-    public function getMissingImportChapters(
+    public function getMissingImportIssues(
         string $comicSlug,
         string $language = PlatformUtil::LANGUAGE_EN
     ): array
     {
         /** @var array $comicIssues */
         $comicIssues = $this->em->getRepository(ComicIssue::class)->getComicIssuesBySlugAndLanguage($comicSlug, $language);
+
+        dump(count($comicIssues));
 
         if (empty($comicIssues)) {
             throw new Exception('Comic issues not found');
@@ -351,12 +374,12 @@ class ImportService
 
         $max = max($comicIssueNumbers);
 
-        $missingChapters = array_diff(
-            range(0, $max),
+        $missingIssues = array_diff(
+            range(1, $max),
             $comicIssueNumbers
         );
 
-        $this->logger->info('[COMIC-ISSUE]: Missing chapters for ' . $comicSlug . ': ' . (count($missingChapters) ? implode(',', $missingChapters) : 'None'));
-        return $missingChapters;
+        $this->logger->info('[COMIC-ISSUE]: Missing issues for ' . $comicSlug . ': ' . (count($missingIssues) ? implode(',', $missingIssues) : 'None'));
+        return $missingIssues;
     }
 }
