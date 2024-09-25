@@ -38,7 +38,8 @@ class ImportService
                 'updated' => 0
             ]
         ],
-        'errors' => []
+        'errors' => [],
+        'completed' => false
     ];
 
     public function __construct(
@@ -91,6 +92,10 @@ class ImportService
 
         foreach ($comicLanguage->getComicPlatforms() as $comicPlatform) {
             $this->importComicPlatform($comicPlatform);
+
+            if ($this->executionDetail['completed'] === true) {
+                break;
+            }
         }
 
         return $this->executionDetail;
@@ -282,7 +287,8 @@ class ImportService
             $this->logger->info($message . $comicIssue->getNumber());
             $this->limit--;
         }
-        $this->logger->info('Issues imported on platform ' . $comicPlatform->getPlatform()->getName());
+
+        $this->executionDetail['completed'] = true;
     }
 
     /**
