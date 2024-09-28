@@ -15,7 +15,7 @@ class ComicPlatformType extends AbstractType
     {
         $builder
             ->add('url')
-            ->add('weight', IntegerType::class, [
+            ->add('trust', IntegerType::class, [
                 'data' => 0
             ])
             ->add('status', ChoiceType::class, [
