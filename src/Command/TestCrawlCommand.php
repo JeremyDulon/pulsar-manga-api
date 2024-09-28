@@ -55,9 +55,9 @@ class TestCrawlCommand extends BaseCommand
     {
         parent::execute($input, $output);
 
-//        $this->crawlTSBScans();
+        $this->crawlTSBScans();
 //        $this->crawlMangaSee();
-        $this->crawlMangaSeeExceptions();
+//        $this->crawlMangaSeeExceptions();
 //        $this->testPlatformWeight();
 
         return 0;
@@ -81,14 +81,14 @@ class TestCrawlCommand extends BaseCommand
     protected function crawlTSBScans(): void
     {
         $platform = new TCBScansPlatform();
-//        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/', [
-        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/chapter-203/', [
+        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-piece/', [
+//        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/chapter-203/', [
             'domain' => $platform->getDomain(),
             'baseUrl' => $platform->getBaseUrl(),
             'cookies' => $platform->getCookies()
         ]);
 
-        $pages = $this->crawler->findNode($platform->getComicPagesNode());
+        $pages = $this->crawler->findNode($platform->getComicIssuesDataNode());
         dump($pages);
 
         $this->crawler->closeClient();
