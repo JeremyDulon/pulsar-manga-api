@@ -24,8 +24,10 @@ class ComicLanguageType extends AbstractType
             ->add('description')
             ->add('autoUpdate')
             ->add('comicPlatforms', CollectionType::class, [
+                'prototype_name' => '__comic_platform_collection__',
                 'entry_type' => ComicPlatformType::class,
-                'allow_add' => true
+                'allow_add' => true,
+                'allow_delete' => true
             ])
         ;
     }
