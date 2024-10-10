@@ -232,10 +232,7 @@ class ImportService
         }
 
         if (empty($issues)) {
-            $this->logger->error('No comic issues.');
-            $comicPlatform->updateTrust(ComicPlatform::TRUST_FACTOR_BAD);
-
-            $this->em->flush();
+            $this->logger->warning('No new issues for' . $comicPlatform->getComicLanguage()->getComic()->getTitle() . ' on ' . $platform->getName());
             $this->crawlService->closeClient();
             return;
         }

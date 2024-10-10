@@ -90,7 +90,6 @@ class CrawlService
 
             if ($platformNode->getMustWait() === true) {
                 $this->client->waitFor($XPathSelector ?? $selector);
-                $this->logger->warning('[CRAWL] waited');
             }
 
 
