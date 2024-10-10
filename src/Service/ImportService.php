@@ -213,6 +213,7 @@ class ImportService
         } catch (Exception $e) {
             $this->executionDetail['errors']['comic'][] = ['comicIssues' => $comicPlatform->getUrl()];
             $this->logger->error('[CRAWL][ERROR] ' . $e->getMessage());
+            $this->crawlService->closeClient();
             return;
         }
 
@@ -222,6 +223,7 @@ class ImportService
             $this->logger->error($nodeEmptyException->getMessage());
             $comicPlatform->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
             $this->em->flush();
+            $this->crawlService->closeClient();
 
             return;
         } catch (Exception $exception) {
@@ -234,6 +236,7 @@ class ImportService
             $comicPlatform->updateTrust(ComicPlatform::TRUST_FACTOR_BAD);
 
             $this->em->flush();
+            $this->crawlService->closeClient();
             return;
         }
 
