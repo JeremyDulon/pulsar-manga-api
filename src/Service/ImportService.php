@@ -232,7 +232,7 @@ class ImportService
         }
 
         if (empty($issues)) {
-            $this->logger->warning('No new issues for' . $comicPlatform->getComicLanguage()->getComic()->getTitle() . ' on ' . $platform->getName());
+            $this->logger->warning('No new issues for ' . $comicPlatform->getComicLanguage()->getComic()->getTitle() . ' on ' . $platform->getName());
             $this->crawlService->closeClient();
             return;
         }
