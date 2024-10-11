@@ -87,7 +87,11 @@ class TCBScansPlatform extends AbstractPlatform
                $issueLinkNode = $node->filter('a');
                $issueTitle = $issueLinkNode->getElement(0)->getDOMProperty('innerText');
                $issueLink = $issueLinkNode->getAttribute('href');
-               $strDate = $node->filter('.chapter-release-date i')->getElement(0)->getDOMProperty('innerText');
+               $dateNode = $node->filter('.chapter-release-date');
+               $strDate = 'today';
+               if ($dateNode->getElement(0) !== null) {
+                   $strDate = $dateNode->getElement(0)->getDOMProperty('innerText');
+               }
                return [
                    'title' => $issueTitle,
                    'number' => str_replace('Chapter ', '', $issueTitle),
