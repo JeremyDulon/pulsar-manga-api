@@ -228,6 +228,7 @@ class ImportService
             return;
         } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
+            $this->crawlService->closeClient();
             return;
         }
 
