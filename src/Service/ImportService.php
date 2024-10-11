@@ -230,6 +230,10 @@ class ImportService
             $this->logger->error($exception->getMessage());
             $this->crawlService->closeClient();
             return;
+        } catch (\Error $error) {
+            $this->logger->critical($error->getMessage());
+            $this->crawlService->closeClient();
+            return;
         }
 
         if (empty($issues)) {
