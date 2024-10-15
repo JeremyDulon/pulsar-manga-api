@@ -238,4 +238,9 @@ class ComicIssue
         $this->comicPlatform = $comicPlatform;
         return $this;
     }
+
+    public function getPlatformAndLanguage(): string
+    {
+        return $this->comicPlatform->getPlatform()->getName() . ' - ' . $this->comicLanguage->getLanguage();
+    }
 }
