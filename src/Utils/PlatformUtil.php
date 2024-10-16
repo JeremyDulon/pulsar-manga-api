@@ -29,7 +29,7 @@ class PlatformUtil
         return $platforms[$platformEntity->getName()] ?? null;
     }
 
-    public static function getMinMaxNumber(int $lastNumber, int $startingNumber = null, int $limit = 0): array
+    public static function getMinMaxNumber(int $lastNumber, int $startingNumber = null, int $limit = null): array
     {
         if ($limit < 0) {
             throw new \Exception('Limit below 0');
@@ -42,8 +42,12 @@ class PlatformUtil
             $min = $startingNumber;
         }
 
-        if ($limit > 0) {
-            $max = $min + $limit;
+        if ($limit !== null) {
+            $max = $min + $limit - 1;
+        }
+
+        if ($max > $lastNumber) {
+            $max = $lastNumber;
         }
 
         return [

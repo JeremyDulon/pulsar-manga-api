@@ -30,6 +30,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
             'path' => '/comic_issues/{id}/next',
             'controller' => NextComicIssueController::class,
             'normalization_context' => ['groups' => ['list:ComicIssue']]
+        ],
+        'put' => [
+            'normalization_context' => ['groups' => ['read:ComicIssue', 'list:ComicPage', 'read:File']]
         ]
     ]
 )]

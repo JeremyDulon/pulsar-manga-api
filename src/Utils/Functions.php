@@ -88,13 +88,8 @@ class Functions
      */
     public static function in_range(int $number, int $min, int $max, bool $inclusive = true)
     {
-        if (is_int($number) && is_int($min) && is_int($max))
-        {
-            return $inclusive
-                ? ($number >= $min && $number <= $max)
-                : ($number > $min && $number < $max) ;
-        }
-
-        return FALSE;
+        return $inclusive
+            ? ($number >= $min && $number <= $max)
+            : ($number > $min && $number < $max);
     }
 }

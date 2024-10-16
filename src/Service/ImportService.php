@@ -195,7 +195,7 @@ class ImportService
     /**
      * @throws Exception
      */
-    public function importComicIssues(ComicPlatform $comicPlatform): void
+    public function importComicIssues(ComicPlatform $comicPlatform, $reimportImages = false): void
     {
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
@@ -269,17 +269,23 @@ class ImportService
                 $new = true;
             }
 
+            if ($reimportImages === true) {
+                $comicIssue->removeAllComicPages();
+            }
+
             // TODO: Add force argument to reupload images
             if ($comicIssue->getComicPages()->isEmpty()) {
                 $issueImagesImported = $this->importComicIssueImages($comicIssue, $platform, $issueData['url']);
 
                 if ($issueImagesImported === false) {
-//                    $this->logger->error('No images imported');
+                    $this->logger->error('No images imported');
 //                    $comicPlatform->updateTrust(ComicPlatform::TRUST_FACTOR_BAD);
                     $this->em->flush();
                     $this->startingNumber = $issueData['number'];
                     return;
                 }
+
+                $comicIssue->setQuality(ComicIssue::QUALITY_GOOD);
             }
 
             $this->em->flush();

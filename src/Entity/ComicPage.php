@@ -22,7 +22,7 @@ class ComicPage
 
     #[ORM\ManyToOne(targetEntity: ComicIssue::class, inversedBy: 'comicPages')]
     #[ORM\JoinColumn(nullable: false)]
-    private ComicIssue $comicIssue;
+    private ?ComicIssue $comicIssue;
 
     #[ORM\Column(type: 'integer', nullable: false)]
     #[Groups([ 'list:ComicPage' ])]

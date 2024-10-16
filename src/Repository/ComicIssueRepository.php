@@ -51,4 +51,12 @@ class ComicIssueRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findByMinimumQuality(int $quality = ComicIssue::QUALITY_ERROR) {
+        return $this->createQueryBuilder('ci')
+            ->where('ci.quality >= :quality')
+            ->setParameter('quality', $quality)
+            ->getQuery()
+            ->getResult();
+    }
 }
