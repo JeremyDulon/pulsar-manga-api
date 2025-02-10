@@ -31,7 +31,7 @@ class CrawlService
             "--disable-gpu",
             "--no-sandbox",
             "--disable-dev-shm-usage",
-            '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36', // Avoir obligatoirement un user agent !!!
+            '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', // Avoir obligatoirement un user agent !!!
         ];
 
 //        $chromeOptions = new ChromeOptions();
@@ -41,6 +41,10 @@ class CrawlService
             'port' => mt_rand(9500, 9600),
             'connection_timeout_in_ms' => 60000,
             'request_timeout_in_ms' => 60000,
+//            'chromedriver_arguments' => [
+//                '--log-path=myfile.log',
+//                '--log-level=DEBUG'
+//            ]
 //            'capabilities' => [
 //                ChromeOptions::CAPABILITY => $chromeOptions
 //            ]
@@ -72,6 +76,10 @@ class CrawlService
         }
     }
 
+    public function getClient() {
+        return $this->client;
+    }
+
     /**
      * @throws NoSuchElementException
      * @throws TimeoutException
@@ -92,14 +100,16 @@ class CrawlService
                 $this->client->waitFor($XPathSelector ?? $selector);
             }
 
-
             if ($XPathSelector !== null) {
                 $node = $crawler->filterXPath($XPathSelector);
             } else {
                 $node = $crawler->filter($selector);
             }
 
+
             if ($platformNode->hasCallback() === true) {
+                $this->logger->info($selector);
+
                 try {
                     $returnValue = $platformNode->executeCallback($node, $callbackParameters);
                 } catch (\Exception $e) {

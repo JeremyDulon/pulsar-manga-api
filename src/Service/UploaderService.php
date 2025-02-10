@@ -22,8 +22,6 @@ class UploaderService
     /** @var ParameterBagInterface $parameterBag */
     private ParameterBagInterface $parameterBag;
 
-    private const KEY = 'art/';
-
     public function __construct(
         Filesystem $filesystem,
         ParameterBagInterface $parameterBag,

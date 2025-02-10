@@ -83,7 +83,7 @@ class TCBScansPlatform extends AbstractPlatform
         $this->comicIssuesDataNode->setSelector('.listing-chapters_wrap .main.version-chap');
         $this->comicIssuesDataNode->setMustWait(true);
         $this->comicIssuesDataNode->setCallback(function (Crawler $el, $parameters) {
-           $issueArray = $el->children('.wp-manga-chapter')->each(function (Crawler $node) {
+           $issueArray = $el->children('li.wp-manga-chapter')->each(function (Crawler $node) {
                $issueLinkNode = $node->filter('a');
                $issueTitle = $issueLinkNode->getElement(0)->getDOMProperty('innerText');
                $issueLink = $issueLinkNode->getAttribute('href');
@@ -106,10 +106,10 @@ class TCBScansPlatform extends AbstractPlatform
 
     public function setComicPagesNode(): void
     {
-        $this->comicPagesNode->setSelector('#chapter-video-frame p');
+        $this->comicPagesNode->setXPathSelector('//div[@id="chapter-video-frame"]//img');
         $this->comicPagesNode->setCallback(function(Crawler $el, $parameters) {
             $pageNumber = 1;
-            return $el->children('img')->each(function (Crawler $node) use (&$pageNumber) {
+            return $el->each(function (Crawler $node) use (&$pageNumber) {
                 $url = $node->getAttribute('src');
                 return [
                     'url' => $url,

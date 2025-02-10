@@ -81,14 +81,16 @@ class TestCrawlCommand extends BaseCommand
     protected function crawlTSBScans(): void
     {
         $platform = new TCBScansPlatform();
-        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-piece/', [
+//        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-piece/', [
+        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-piece/chapter-1136/', [
 //        $this->crawler->openUrl('https://tcbscans-manga.com/manga/one-punch-man/chapter-203/', [
             'domain' => $platform->getDomain(),
             'baseUrl' => $platform->getBaseUrl(),
             'cookies' => $platform->getCookies()
         ]);
 
-        $pages = $this->crawler->findNode($platform->getComicIssuesDataNode());
+        $pages = $this->crawler->findNode($platform->getComicPagesNode());
+//        $pages = $this->crawler->findNode($platform->getComicIssuesDataNode(), ['startingNumber' => 1130]);
         dump($pages);
 
         $this->crawler->closeClient();

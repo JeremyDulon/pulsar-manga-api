@@ -65,7 +65,7 @@ class PlatformUtil
             return $issueArray;
         }
 
-        $limit = $parameters['limit'] ?? 0;
+        $limit = $parameters['limit'] ?? 10;
         $startingNumber = $parameters['startingNumber'] ?? null;
 
         usort($issueArray, function ($issueA, $issueB) {
