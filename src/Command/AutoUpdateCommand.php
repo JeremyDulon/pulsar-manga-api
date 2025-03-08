@@ -75,14 +75,16 @@ class AutoUpdateCommand extends BaseCommand
             }
 
             $comicSlug = $comicLanguage->getComic()->getSlug();
-            if (array_key_exists($comicSlug, $this->issuesImported) === false) {
-                $this->issuesImported[$comicSlug] = [
-                    'name' => $comicLanguage->getComic()->getTitle(),
-                    'issues' => []
-                ];
-            }
+            if (count($this->importService->getIssuesImported()) > 0) {
+                if (array_key_exists($comicSlug, $this->issuesImported) === false) {
+                    $this->issuesImported[$comicSlug] = [
+                        'name' => $comicLanguage->getComic()->getTitle(),
+                        'issues' => []
+                    ];
+                }
 
-            array_push($this->issuesImported[$comicSlug]['issues'], $this->importService->getIssuesImported());
+                array_push($this->issuesImported[$comicSlug]['issues'], $this->importService->getIssuesImported());
+            }
         }
 
         // TODO: Send notifs
@@ -94,6 +96,7 @@ class AutoUpdateCommand extends BaseCommand
     private function sendNotification(): void
     {
         $email = (new TemplatedEmail())
+            ->from('j.dulon.64@gmail.com')
             ->to('jeremy.dulon@live.fr')
             ->subject('MangaKaos: Nouveaux chapitres sortis !')
             ->htmlTemplate('email/newChapters.html.twig')

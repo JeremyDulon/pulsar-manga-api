@@ -2,6 +2,6 @@
 
 {% for comic in data %}
 <p>
-    <b>comic.name</b>: {{ comic.issues|join(',') }}
+    <b>{{ comic.name }}</b>: {{ comic.issues|join(',') }}
 </p>
 {% endfor %}
