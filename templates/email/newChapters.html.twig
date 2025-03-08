@@ -1,7 +1,7 @@
-<h1>Nouveaux chapitres sortis !</h1>
+<h3>Nouveaux chapitres sortis !</h3>
 
 {% for comic in data %}
 <p>
-    <b>{{ comic.name }}</b>: {{ comic.issues|map(c => c.number)|join(',') }}
+    <b>{{ comic.name }}</b>: {{ comic.issues|map(i => i.number)|join(',') }}
 </p>
 {% endfor %}

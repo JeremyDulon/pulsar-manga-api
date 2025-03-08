@@ -83,7 +83,7 @@ class AutoUpdateCommand extends BaseCommand
                     ];
                 }
 
-                array_push($this->issuesImported[$comicSlug]['issues'], $this->importService->getIssuesImported());
+                array_push($this->issuesImported[$comicSlug]['issues'], ...$this->importService->getIssuesImported());
             }
         }
 
