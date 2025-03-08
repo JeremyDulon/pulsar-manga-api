@@ -1,0 +1,7 @@
+<h1>Nouveaux chapitres sortis !</h1>
+
+{% for comic in data %}
+<p>
+    <b>comic.name</b>: {{ comic.issues|join(',') }}
+</p>
+{% endfor %}

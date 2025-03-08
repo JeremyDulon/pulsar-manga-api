@@ -42,6 +42,8 @@ class ImportService
         'completed' => false
     ];
 
+    private array $issuesImported = [];
+
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
@@ -65,6 +67,11 @@ class ImportService
     {
         $this->startingNumber = $startingNumber;
         return $this;
+    }
+
+    public function getIssuesImported(): array
+    {
+        return $this->issuesImported;
     }
 
     /**
@@ -295,6 +302,7 @@ class ImportService
                 $message = '[COMIC-ISSUE] Added:';
                 $this->executionDetail['comic']['issues']['added']++;
             }
+            $this->issuesImported[] = $comicIssue;
             $this->logger->info($message . $comicIssue->getNumber());
             $this->limit--;
         }
