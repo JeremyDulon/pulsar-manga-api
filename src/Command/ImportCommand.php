@@ -62,7 +62,7 @@ class ImportCommand extends BaseCommand
         $this->addArgument(
             'limit',
             InputArgument::OPTIONAL,
-            'Offset to start from',
+            'Limit ',
             0
         );
     }

@@ -88,7 +88,9 @@ class AutoUpdateCommand extends BaseCommand
         }
 
         // TODO: Send notifs
-        $this->sendNotification();
+        if (count($this->issuesImported) > 0) {
+            $this->sendNotification();
+        }
 
         return 0;
     }
