@@ -73,6 +73,10 @@ class CrawlService
             $this->logger->info("[URL] opening $url");
             $this->client->request('GET', $url);
             $this->logger->info("[URL] $url opened.");
+
+            if ($this->client->getCurrentURL() !== $url) {
+                throw new \Exception("Wrong url opened. Expected: $url, got: " . $this->client->getCurrentURL());
+            }
         }
     }
 
@@ -93,7 +97,7 @@ class CrawlService
         $selector = $platformNode->getSelector();
         $XPathSelector = $platformNode->getXPathSelector();
         if ($selector || $XPathSelector) {
-            $this->logger->debug("[CRAWL] " . $nodeName . ' - selector: ' . $selector);
+            $this->logger->debug("[CRAWL] " . $nodeName . ' - selector: ' . ($XPathSelector ?? $selector));
             $crawler = $this->client->getCrawler();
 
             if ($platformNode->getMustWait() === true) {

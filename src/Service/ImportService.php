@@ -202,7 +202,7 @@ class ImportService
     /**
      * @throws Exception
      */
-    public function importComicIssues(ComicPlatform $comicPlatform, $reimportImages = false): void
+    public function importComicIssues(ComicPlatform $comicPlatform, $reimport = false): void
     {
         $platform = PlatformUtil::getPlatform($comicPlatform->getPlatform());
 
@@ -255,28 +255,30 @@ class ImportService
 
         foreach ($issues as $issueData) {
             $this->logger->info('Issue: ' . $issueData['number']);
+
             $comicIssue = $this->em->getRepository(ComicIssue::class)->findOneBy([
                 'number' => $issueData['number'],
                 'comicLanguage' => $comicPlatform->getComicLanguage()
             ]);
 
-            $new = false;
-            if (empty($comicIssue)) {
-                $comicIssue = new ComicIssue();
-                $comicIssue
-                    ->setTitle($issueData['title'])
-                    ->setNumber($issueData['number'])
-                    ->setType(ComicIssue::TYPE_CHAPTER)
-                    ->setComicLanguage($comicPlatform->getComicLanguage())
-                    ->setComicPlatform($comicPlatform)
-                    ->setQuality(ComicIssue::QUALITY_GOOD)
-                    ->setDate($issueData['date']);
-
-                $this->em->persist($comicIssue);
-                $new = true;
+            if ($comicIssue !== null && $reimport === false) {
+                $this->logger->info('Issue already imported: ' . $comicIssue->getNumber());
+                continue;
             }
 
-            if ($reimportImages === true) {
+            $comicIssue = new ComicIssue();
+            $comicIssue
+                ->setTitle($issueData['title'])
+                ->setNumber($issueData['number'])
+                ->setType(ComicIssue::TYPE_CHAPTER)
+                ->setComicLanguage($comicPlatform->getComicLanguage())
+                ->setComicPlatform($comicPlatform)
+                ->setQuality(ComicIssue::QUALITY_GOOD)
+                ->setDate($issueData['date']);
+
+            $this->em->persist($comicIssue);
+
+            if ($reimport === true) {
                 $comicIssue->removeAllComicPages();
             }
 
@@ -297,13 +299,9 @@ class ImportService
 
             $this->em->flush();
 
-            $message = '[COMIC-ISSUE] Already added:';
-            if ($new) {
-                $message = '[COMIC-ISSUE] Added:';
-                $this->executionDetail['comic']['issues']['added']++;
-            }
+            $this->executionDetail['comic']['issues']['added']++;
             $this->issuesImported[] = $comicIssue;
-            $this->logger->info($message . $comicIssue->getNumber());
+            $this->logger->info('[COMIC-ISSUE] Added: ' . $comicIssue->getNumber());
             $this->limit--;
         }
 
@@ -340,12 +338,13 @@ class ImportService
             return false;
         }
 
-        $this->logger->info(count($issuePages) . ' pages fetched');
         if (empty($issuePages)) {
             $this->logger->error('No pages');
             $comicIssue->getComicPlatform()->getPlatform()->updateTrust(Platform::TRUST_FACTOR_BAD);
             return false;
         }
+
+        $this->logger->info(count($issuePages) . ' pages fetched');
 
         $this->crawlService->closeClient();
 
