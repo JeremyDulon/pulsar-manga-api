@@ -74,6 +74,11 @@ class ImportService
         return $this->issuesImported;
     }
 
+    public function resetIssuesImported(): void
+    {
+        $this->issuesImported = [];
+    }
+
     /**
      * @throws Exception
      */

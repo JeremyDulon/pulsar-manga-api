@@ -85,6 +85,8 @@ class AutoUpdateCommand extends BaseCommand
 
                 array_push($this->issuesImported[$comicSlug]['issues'], ...$this->importService->getIssuesImported());
             }
+
+            $this->importService->resetIssuesImported();
         }
 
         // TODO: Send notifs
